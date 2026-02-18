@@ -54,6 +54,25 @@ async function fetchFromCoinCap(): Promise<CryptoData[]> {
     }));
 }
 
+async function fetchFearGreed(supabase: any): Promise<void> {
+  try {
+    const res = await fetch("https://api.alternative.me/fng/?limit=1");
+    if (!res.ok) return;
+    const json = await res.json();
+    const entry = json?.data?.[0];
+    if (entry) {
+      await supabase.from("cache_fear_greed").upsert({
+        id: "current",
+        value: Number(entry.value),
+        value_classification: entry.value_classification,
+        last_updated: new Date().toISOString(),
+      }, { onConflict: "id" });
+    }
+  } catch (e) {
+    console.warn("Fear & Greed fetch failed:", e);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -76,6 +95,7 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Upsert crypto data
     for (const coin of coins) {
       await supabase.from("cache_crypto_data").upsert(
         {
@@ -89,6 +109,9 @@ Deno.serve(async (req) => {
         { onConflict: "symbol" }
       );
     }
+
+    // Also fetch Fear & Greed index
+    await fetchFearGreed(supabase);
 
     return new Response(
       JSON.stringify({ ok: true, source, count: coins.length }),

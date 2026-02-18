@@ -82,6 +82,27 @@ export type Database = {
         }
         Relationships: []
       }
+      cache_fear_greed: {
+        Row: {
+          id: string
+          last_updated: string
+          value: number
+          value_classification: string
+        }
+        Insert: {
+          id?: string
+          last_updated?: string
+          value?: number
+          value_classification?: string
+        }
+        Update: {
+          id?: string
+          last_updated?: string
+          value?: number
+          value_classification?: string
+        }
+        Relationships: []
+      }
       cache_news: {
         Row: {
           fetched_at: string
