@@ -5,8 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import AddWidgetSheet from "@/components/AddWidgetSheet";
 import WidgetRenderer from "@/components/widgets/WidgetRenderer";
 import { Pencil, Check, LogOut, Share2 } from "lucide-react";
-// @ts-ignore - react-grid-layout types issue
-import { Responsive, WidthProvider } from "react-grid-layout";
+import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { useCallback } from "react";
@@ -104,7 +103,7 @@ const DashboardContent = () => {
             rowHeight={80}
             isDraggable={editMode}
             isResizable={editMode}
-            onLayoutChange={(l) => onLayoutChange(l)}
+            onLayoutChange={(l) => onLayoutChange([...l])}
             draggableHandle=".glass-card"
           >
             {widgets.map((w) => (
