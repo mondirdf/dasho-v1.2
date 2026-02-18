@@ -1,8 +1,3 @@
-/**
- * Scheduler Edge Function — replaces manual pg_cron setup.
- * Self-manages timing for all data pipeline functions.
- * Call this once to kick off, it re-invokes itself.
- */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -14,15 +9,10 @@ const corsHeaders = {
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
-interface ScheduleEntry {
-  name: string;
-  intervalMs: number;
-}
-
-const SCHEDULES: ScheduleEntry[] = [
-  { name: "fetch-crypto-data", intervalMs: 60_000 },   // 1 min
-  { name: "fetch-news", intervalMs: 300_000 },          // 5 min
-  { name: "check-alerts", intervalMs: 60_000 },         // 1 min
+const SCHEDULES = [
+  { name: "fetch-crypto-data", intervalMs: 60_000 },
+  { name: "fetch-news", intervalMs: 300_000 },
+  { name: "check-alerts", intervalMs: 60_000 },
 ];
 
 async function invokeFunction(name: string): Promise<void> {
@@ -42,6 +32,13 @@ async function invokeFunction(name: string): Promise<void> {
   }
 }
 
+async function cleanupOldLogs(supabase: any): Promise<void> {
+  try {
+    const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    await supabase.from("system_logs").delete().lt("created_at", cutoff);
+  } catch (_) { /* non-blocking */ }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -52,7 +49,6 @@ Deno.serve(async (req) => {
     const targetFunction = (body as any)?.function;
 
     if (targetFunction) {
-      // Single function invocation
       await invokeFunction(targetFunction);
       return new Response(
         JSON.stringify({ ok: true, invoked: targetFunction }),
@@ -64,6 +60,10 @@ Deno.serve(async (req) => {
     const results = await Promise.allSettled(
       SCHEDULES.map((s) => invokeFunction(s.name))
     );
+
+    // Cleanup old logs on every scheduler run (non-blocking)
+    const supabase = createClient(SUPABASE_URL, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    cleanupOldLogs(supabase);
 
     return new Response(
       JSON.stringify({

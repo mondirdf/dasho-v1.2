@@ -6,18 +6,26 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+async function logEvent(supabase: any, type: string, status: string, message: string, metadata: any = {}) {
+  try {
+    await supabase.from("system_logs").insert({ type, status, message, metadata });
+  } catch (_) { /* logging must never break pipeline */ }
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
-  try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+  const startMs = Date.now();
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
 
-    // Get active alerts
+  try {
+    await logEvent(supabase, "check-alerts", "started", "Execution started");
+
     const { data: alerts, error: alertsErr } = await supabase
       .from("alerts")
       .select("*")
@@ -25,13 +33,14 @@ Deno.serve(async (req) => {
 
     if (alertsErr) throw alertsErr;
     if (!alerts || alerts.length === 0) {
+      const durationMs = Date.now() - startMs;
+      await logEvent(supabase, "check-alerts", "success", "No active alerts", { triggered: 0, durationMs });
       return new Response(
         JSON.stringify({ ok: true, triggered: 0 }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    // Get current prices
     const symbols = [...new Set(alerts.map((a) => a.coin_symbol))];
     const { data: prices, error: pricesErr } = await supabase
       .from("cache_crypto_data")
@@ -40,10 +49,7 @@ Deno.serve(async (req) => {
 
     if (pricesErr) throw pricesErr;
 
-    const priceMap = new Map(
-      (prices || []).map((p) => [p.symbol, p.price])
-    );
-
+    const priceMap = new Map((prices || []).map((p) => [p.symbol, p.price]));
     let triggered = 0;
 
     for (const alert of alerts) {
@@ -55,29 +61,30 @@ Deno.serve(async (req) => {
         (alert.condition_type === "below" && currentPrice <= alert.target_price);
 
       if (met) {
-        // Insert triggered alert
         await supabase.from("triggered_alerts").insert({
           user_id: alert.user_id,
           alert_id: alert.id,
           coin_symbol: alert.coin_symbol,
           triggered_price: currentPrice,
         });
-
-        // Deactivate alert
         await supabase
           .from("alerts")
           .update({ is_active: false, triggered_at: new Date().toISOString() })
           .eq("id", alert.id);
-
         triggered++;
       }
     }
+
+    const durationMs = Date.now() - startMs;
+    await logEvent(supabase, "check-alerts", "success", `Completed in ${durationMs}ms`, { triggered, checked: alerts.length, durationMs });
 
     return new Response(
       JSON.stringify({ ok: true, triggered }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    const durationMs = Date.now() - startMs;
+    await logEvent(supabase, "check-alerts", "error", (error as Error).message, { durationMs });
     console.error("check-alerts error:", error);
     return new Response(
       JSON.stringify({ error: (error as Error).message }),
