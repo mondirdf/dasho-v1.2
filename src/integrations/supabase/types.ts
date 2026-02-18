@@ -14,13 +14,216 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      alerts: {
+        Row: {
+          coin_symbol: string
+          condition_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          target_price: number
+          triggered_at: string | null
+          user_id: string
+        }
+        Insert: {
+          coin_symbol: string
+          condition_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          target_price: number
+          triggered_at?: string | null
+          user_id: string
+        }
+        Update: {
+          coin_symbol?: string
+          condition_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          target_price?: number
+          triggered_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cache_crypto_data: {
+        Row: {
+          change_24h: number | null
+          last_updated: string
+          market_cap: number | null
+          price: number | null
+          symbol: string
+          volume: number | null
+        }
+        Insert: {
+          change_24h?: number | null
+          last_updated?: string
+          market_cap?: number | null
+          price?: number | null
+          symbol: string
+          volume?: number | null
+        }
+        Update: {
+          change_24h?: number | null
+          last_updated?: string
+          market_cap?: number | null
+          price?: number | null
+          symbol?: string
+          volume?: number | null
+        }
+        Relationships: []
+      }
+      cache_news: {
+        Row: {
+          fetched_at: string
+          id: string
+          published_at: string | null
+          source: string | null
+          summary: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          fetched_at?: string
+          id?: string
+          published_at?: string | null
+          source?: string | null
+          summary?: string | null
+          title: string
+          url: string
+        }
+        Update: {
+          fetched_at?: string
+          id?: string
+          published_at?: string | null
+          source?: string | null
+          summary?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      dashboards: {
+        Row: {
+          created_at: string
+          id: string
+          layout_json: Json
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          layout_json?: Json
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          layout_json?: Json
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          display_name: string | null
+          email: string | null
+          id: string
+          plan: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id: string
+          plan?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          display_name?: string | null
+          email?: string | null
+          id?: string
+          plan?: string
+        }
+        Relationships: []
+      }
+      widgets: {
+        Row: {
+          config_json: Json
+          created_at: string
+          dashboard_id: string
+          height: number
+          id: string
+          position_x: number
+          position_y: number
+          type: string
+          width: number
+        }
+        Insert: {
+          config_json?: Json
+          created_at?: string
+          dashboard_id: string
+          height?: number
+          id?: string
+          position_x?: number
+          position_y?: number
+          type: string
+          width?: number
+        }
+        Update: {
+          config_json?: Json
+          created_at?: string
+          dashboard_id?: string
+          height?: number
+          id?: string
+          position_x?: number
+          position_y?: number
+          type?: string
+          width?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "widgets_dashboard_id_fkey"
+            columns: ["dashboard_id"]
+            isOneToOne: false
+            referencedRelation: "dashboards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      owns_dashboard: { Args: { _dashboard_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
