@@ -174,6 +174,83 @@ export type Database = {
         }
         Relationships: []
       }
+      public_templates: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          layout_json: Json
+          name: string
+          widgets_json: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          layout_json?: Json
+          name: string
+          widgets_json?: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          layout_json?: Json
+          name?: string
+          widgets_json?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_templates_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      triggered_alerts: {
+        Row: {
+          alert_id: string
+          coin_symbol: string
+          created_at: string
+          id: string
+          triggered_price: number
+          user_id: string
+        }
+        Insert: {
+          alert_id: string
+          coin_symbol: string
+          created_at?: string
+          id?: string
+          triggered_price: number
+          user_id: string
+        }
+        Update: {
+          alert_id?: string
+          coin_symbol?: string
+          created_at?: string
+          id?: string
+          triggered_price?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "triggered_alerts_alert_id_fkey"
+            columns: ["alert_id"]
+            isOneToOne: false
+            referencedRelation: "alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "triggered_alerts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       widgets: {
         Row: {
           config_json: Json
