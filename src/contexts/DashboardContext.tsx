@@ -1,6 +1,6 @@
 /**
  * Dashboard state context — manages widgets, layout, edit mode.
- * Supports multiple dashboards per user.
+ * Supports multiple dashboards per user with plan limit enforcement.
  */
 import {
   createContext,
@@ -24,7 +24,7 @@ import {
   type Dashboard,
   type Widget,
 } from "@/services/dataService";
-import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export interface LayoutItem {
   i: string;
@@ -63,6 +63,7 @@ export const useDashboard = () => useContext(DashboardContext);
 
 export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [widgets, setWidgets] = useState<Widget[]>([]);
@@ -72,47 +73,7 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   const [renameOpen, setRenameOpen] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const loadDashboard = useCallback(async (dashId: string) => {
-    const w = await fetchWidgets(dashId);
-    setWidgets(w);
-    const dash = dashboards.find((d) => d.id === dashId) || dashboard;
-    const savedLayout = Array.isArray(dash?.layout_json) ? (dash.layout_json as unknown as LayoutItem[]) : [];
-    if (savedLayout.length > 0) {
-      setLayout(savedLayout);
-    } else {
-      setLayout(
-        w.map((widget) => ({
-          i: widget.id,
-          x: widget.position_x,
-          y: widget.position_y,
-          w: widget.width,
-          h: widget.height,
-        }))
-      );
-    }
-  }, [dashboards, dashboard]);
-
-  const load = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      let dashes = await fetchDashboards(user.id);
-      if (dashes.length === 0) {
-        const newDash = await createDashboard(user.id);
-        dashes = [newDash];
-      }
-      setDashboards(dashes);
-      const active = dashes[0];
-      setDashboard(active);
-      await loadDashboardWidgets(active, dashes);
-    } catch (e) {
-      console.error("Dashboard load error:", e);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  const loadDashboardWidgets = async (dash: Dashboard, dashes?: Dashboard[]) => {
+  const loadDashboardWidgets = async (dash: Dashboard) => {
     const w = await fetchWidgets(dash.id);
     setWidgets(w);
     const savedLayout = Array.isArray(dash.layout_json) ? (dash.layout_json as unknown as LayoutItem[]) : [];
@@ -131,6 +92,26 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const load = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    try {
+      let dashes = await fetchDashboards(user.id);
+      if (dashes.length === 0) {
+        const newDash = await createDashboard(user.id);
+        dashes = [newDash];
+      }
+      setDashboards(dashes);
+      const active = dashes[0];
+      setDashboard(active);
+      await loadDashboardWidgets(active);
+    } catch (e) {
+      console.error("Dashboard load error:", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [user]);
+
   useEffect(() => { load(); }, [load]);
 
   const switchDashboard = useCallback(async (id: string) => {
@@ -143,12 +124,22 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
 
   const createNewDashboard = useCallback(async () => {
     if (!user) return;
-    const dash = await createDashboard(user.id, "New Dashboard");
-    setDashboards((prev) => [...prev, dash]);
-    setDashboard(dash);
-    setWidgets([]);
-    setLayout([]);
-  }, [user]);
+    try {
+      const dash = await createDashboard(user.id, "New Dashboard");
+      setDashboards((prev) => [...prev, dash]);
+      setDashboard(dash);
+      setWidgets([]);
+      setLayout([]);
+      toast({ title: "Dashboard created" });
+    } catch (e: any) {
+      const msg = e?.message || "";
+      if (msg.includes("Free plan")) {
+        toast({ title: "Plan limit reached", description: msg, variant: "destructive" });
+      } else {
+        toast({ title: "Error creating dashboard", variant: "destructive" });
+      }
+    }
+  }, [user, toast]);
 
   const deleteDashboardFn = useCallback(async () => {
     if (!dashboard || dashboards.length <= 1) return;
@@ -157,27 +148,40 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     setDashboards(remaining);
     setDashboard(remaining[0]);
     await loadDashboardWidgets(remaining[0]);
-  }, [dashboard, dashboards]);
+    toast({ title: "Dashboard deleted" });
+  }, [dashboard, dashboards, toast]);
 
   const renameDashboardFn = useCallback(async (name: string) => {
     if (!dashboard) return;
-    await renameDashboardService(dashboard.id, name);
-    setDashboard({ ...dashboard, name });
-    setDashboards((prev) => prev.map((d) => d.id === dashboard.id ? { ...d, name } : d));
-  }, [dashboard]);
+    const trimmed = name.trim().slice(0, 100);
+    if (!trimmed) return;
+    await renameDashboardService(dashboard.id, trimmed);
+    setDashboard({ ...dashboard, name: trimmed });
+    setDashboards((prev) => prev.map((d) => d.id === dashboard.id ? { ...d, name: trimmed } : d));
+    toast({ title: "Dashboard renamed" });
+  }, [dashboard, toast]);
 
   const duplicateDashboardFn = useCallback(async () => {
     if (!dashboard || !user) return;
-    const newDash = await createDashboard(user.id, dashboard.name + " (Copy)");
-    // Copy widgets
-    for (const w of widgets) {
-      await createWidget(newDash.id, w.type, w.config_json as any);
+    try {
+      const newDash = await createDashboard(user.id, dashboard.name + " (Copy)");
+      for (const w of widgets) {
+        await createWidget(newDash.id, w.type, w.config_json as any);
+      }
+      await updateDashboardLayout(newDash.id, layout);
+      setDashboards((prev) => [...prev, { ...newDash, layout_json: layout as any }]);
+      setDashboard({ ...newDash, layout_json: layout as any });
+      await loadDashboardWidgets({ ...newDash, layout_json: layout as any });
+      toast({ title: "Dashboard duplicated" });
+    } catch (e: any) {
+      const msg = e?.message || "";
+      if (msg.includes("Free plan")) {
+        toast({ title: "Plan limit reached", description: msg, variant: "destructive" });
+      } else {
+        toast({ title: "Error duplicating dashboard", variant: "destructive" });
+      }
     }
-    await updateDashboardLayout(newDash.id, layout);
-    setDashboards((prev) => [...prev, { ...newDash, layout_json: layout as any }]);
-    setDashboard({ ...newDash, layout_json: layout as any });
-    await loadDashboardWidgets({ ...newDash, layout_json: layout as any });
-  }, [dashboard, user, widgets, layout]);
+  }, [dashboard, user, widgets, layout, toast]);
 
   const resetLayout = useCallback(() => {
     const newLayout = widgets.map((w, i) => ({
@@ -191,7 +195,8 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     if (dashboard) {
       updateDashboardLayout(dashboard.id, newLayout);
     }
-  }, [widgets, dashboard]);
+    toast({ title: "Layout reset" });
+  }, [widgets, dashboard, toast]);
 
   const onLayoutChange = useCallback(
     (newLayout: LayoutItem[]) => {
@@ -212,24 +217,34 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   const addWidget = useCallback(
     async (type: string, config: any = {}) => {
       if (!dashboard) return;
-      const w = await createWidget(dashboard.id, type, config);
-      setWidgets((prev) => [...prev, w]);
-      setLayout((prev: LayoutItem[]) => [
-        ...prev,
-        { i: w.id, x: 0, y: Infinity, w: 4, h: 3 },
-      ]);
+      try {
+        const w = await createWidget(dashboard.id, type, config);
+        setWidgets((prev) => [...prev, w]);
+        setLayout((prev: LayoutItem[]) => [
+          ...prev,
+          { i: w.id, x: 0, y: Infinity, w: 4, h: 3 },
+        ]);
+        toast({ title: "Widget added" });
+      } catch (e: any) {
+        const msg = e?.message || "";
+        if (msg.includes("Free plan")) {
+          toast({ title: "Plan limit reached", description: msg, variant: "destructive" });
+        } else {
+          toast({ title: "Error adding widget", variant: "destructive" });
+        }
+      }
     },
-    [dashboard]
+    [dashboard, toast]
   );
 
   const removeWidget = useCallback(
     async (id: string) => {
-      // Optimistic removal
       setWidgets((prev) => prev.filter((w) => w.id !== id));
       setLayout((prev: LayoutItem[]) => prev.filter((l) => l.i !== id));
       await deleteWidgetService(id);
+      toast({ title: "Widget removed" });
     },
-    []
+    [toast]
   );
 
   return (

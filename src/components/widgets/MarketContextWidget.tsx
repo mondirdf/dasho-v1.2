@@ -1,20 +1,44 @@
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 import { fetchCryptoData, type CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Globe } from "lucide-react";
+import { Globe, AlertCircle } from "lucide-react";
+import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
 
 const MarketContextWidget = memo(() => {
   const [data, setData] = useState<CryptoData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    fetchCryptoData().then((d) => {
-      setData(d);
-      setLoading(false);
-    });
+  const loadData = useCallback(() => {
+    fetchCryptoData()
+      .then((d) => { setData(d); setError(false); })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Skeleton className="h-full w-full rounded-lg" />;
+  useEffect(() => { loadData(); }, [loadData]);
+  useRealtimeCrypto(loadData);
+
+  if (loading) {
+    return (
+      <div className="h-full p-4 space-y-3">
+        <Skeleton className="h-5 w-32" />
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-4 text-center gap-2">
+        <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
+        <p className="text-muted-foreground text-sm">Failed to load data</p>
+        <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
+      </div>
+    );
+  }
 
   const totalMcap = data.reduce((s, c) => s + (c.market_cap ?? 0), 0);
   const totalVol = data.reduce((s, c) => s + (c.volume ?? 0), 0);
@@ -30,12 +54,10 @@ const MarketContextWidget = memo(() => {
 
   return (
     <div className="h-full p-4 relative overflow-hidden">
-      {/* Header */}
       <div className="flex items-center gap-2 mb-4">
         <Globe className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-semibold text-foreground">Market Context</h3>
       </div>
-
       <div className="grid grid-cols-2 gap-3">
         {stats.map((s) => (
           <div key={s.label} className="flex flex-col justify-center p-2.5 rounded-lg bg-secondary/30">
@@ -46,8 +68,6 @@ const MarketContextWidget = memo(() => {
           </div>
         ))}
       </div>
-
-      {/* Live indicator */}
       <div className="flex items-center justify-end mt-3">
         <span className="animate-pulse-glow text-[10px] text-muted-foreground">● Live</span>
       </div>

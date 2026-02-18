@@ -202,6 +202,7 @@ export type Database = {
           id: string
           layout_json: Json
           name: string
+          use_count: number
           widgets_json: Json
         }
         Insert: {
@@ -210,6 +211,7 @@ export type Database = {
           id?: string
           layout_json?: Json
           name: string
+          use_count?: number
           widgets_json?: Json
         }
         Update: {
@@ -218,6 +220,7 @@ export type Database = {
           id?: string
           layout_json?: Json
           name?: string
+          use_count?: number
           widgets_json?: Json
         }
         Relationships: [
@@ -348,6 +351,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      count_dashboard_widgets: {
+        Args: { _dashboard_id: string }
+        Returns: number
+      }
+      count_user_alerts: { Args: { _user_id: string }; Returns: number }
+      count_user_dashboards: { Args: { _user_id: string }; Returns: number }
+      get_user_plan: { Args: { _user_id: string }; Returns: string }
       owns_dashboard: { Args: { _dashboard_id: string }; Returns: boolean }
     }
     Enums: {
