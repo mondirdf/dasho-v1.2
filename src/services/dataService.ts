@@ -10,6 +10,7 @@ export type NewsData = Tables<"cache_news">;
 export type Alert = Tables<"alerts">;
 export type Dashboard = Tables<"dashboards">;
 export type Widget = Tables<"widgets">;
+export type Profile = Tables<"profiles">;
 
 // ── Crypto ──
 export async function fetchCryptoData(): Promise<CryptoData[]> {
@@ -58,6 +59,19 @@ export async function updateDashboardLayout(id: string, layoutJson: any) {
     .from("dashboards")
     .update({ layout_json: layoutJson })
     .eq("id", id);
+  if (error) throw error;
+}
+
+export async function renameDashboard(id: string, name: string) {
+  const { error } = await supabase
+    .from("dashboards")
+    .update({ name })
+    .eq("id", id);
+  if (error) throw error;
+}
+
+export async function deleteDashboard(id: string) {
+  const { error } = await supabase.from("dashboards").delete().eq("id", id);
   if (error) throw error;
 }
 
@@ -173,4 +187,23 @@ export async function shareTemplate(
     .single();
   if (error) throw error;
   return data;
+}
+
+// ── Profile ──
+export async function fetchProfile(userId: string): Promise<Profile | null> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateProfile(userId: string, updates: { display_name?: string; avatar_url?: string }) {
+  const { error } = await supabase
+    .from("profiles")
+    .update(updates)
+    .eq("id", userId);
+  if (error) throw error;
 }
