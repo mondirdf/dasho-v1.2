@@ -6,7 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Coins to track
 const COINS = ["bitcoin", "ethereum", "solana", "cardano", "dogecoin", "ripple", "polkadot", "avalanche-2", "chainlink", "polygon"];
 const SYMBOL_MAP: Record<string, string> = {
   bitcoin: "BTC", ethereum: "ETH", solana: "SOL", cardano: "ADA",
@@ -20,6 +19,12 @@ interface CryptoData {
   change_24h: number;
   market_cap: number;
   volume: number;
+}
+
+async function logEvent(supabase: any, type: string, status: string, message: string, metadata: any = {}) {
+  try {
+    await supabase.from("system_logs").insert({ type, status, message, metadata });
+  } catch (_) { /* logging must never break pipeline */ }
 }
 
 async function fetchFromCoinGecko(): Promise<CryptoData[]> {
@@ -78,7 +83,15 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const startMs = Date.now();
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
   try {
+    await logEvent(supabase, "fetch-crypto-data", "started", "Execution started");
+
     let coins: CryptoData[];
     let source = "coingecko";
 
@@ -90,34 +103,25 @@ Deno.serve(async (req) => {
       source = "coincap";
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
-
-    // Upsert crypto data
     for (const coin of coins) {
       await supabase.from("cache_crypto_data").upsert(
-        {
-          symbol: coin.symbol,
-          price: coin.price,
-          change_24h: coin.change_24h,
-          market_cap: coin.market_cap,
-          volume: coin.volume,
-          last_updated: new Date().toISOString(),
-        },
+        { symbol: coin.symbol, price: coin.price, change_24h: coin.change_24h, market_cap: coin.market_cap, volume: coin.volume, last_updated: new Date().toISOString() },
         { onConflict: "symbol" }
       );
     }
 
-    // Also fetch Fear & Greed index
     await fetchFearGreed(supabase);
+
+    const durationMs = Date.now() - startMs;
+    await logEvent(supabase, "fetch-crypto-data", "success", `Completed in ${durationMs}ms`, { source, count: coins.length, durationMs });
 
     return new Response(
       JSON.stringify({ ok: true, source, count: coins.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
+    const durationMs = Date.now() - startMs;
+    await logEvent(supabase, "fetch-crypto-data", "error", (error as Error).message, { durationMs });
     console.error("fetch-crypto-data error:", error);
     return new Response(
       JSON.stringify({ error: (error as Error).message }),
