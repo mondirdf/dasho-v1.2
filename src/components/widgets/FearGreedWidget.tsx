@@ -2,11 +2,6 @@ import { useEffect, useState, memo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 
-/**
- * Fear & Greed widget — reads from cache_fear_greed table.
- * Data is populated server-side by the fetch-crypto-data edge function.
- * NO direct external API calls from the frontend.
- */
 const FearGreedWidget = memo(() => {
   const [value, setValue] = useState<number | null>(null);
   const [label, setLabel] = useState("");
@@ -36,26 +31,49 @@ const FearGreedWidget = memo(() => {
   if (loading) return <Skeleton className="h-full w-full" />;
 
   const v = value ?? 50;
+
   const getColor = (val: number) => {
-    if (val <= 25) return "text-destructive";
-    if (val <= 45) return "text-destructive/70";
-    if (val <= 55) return "text-muted-foreground";
-    if (val <= 75) return "text-success/70";
-    return "text-success";
+    if (val <= 25) return { text: "text-destructive", hsl: "var(--destructive)" };
+    if (val <= 45) return { text: "text-destructive/80", hsl: "var(--destructive)" };
+    if (val <= 55) return { text: "text-muted-foreground", hsl: "var(--muted-foreground)" };
+    if (val <= 75) return { text: "text-success/80", hsl: "var(--success)" };
+    return { text: "text-success", hsl: "var(--success)" };
   };
   const color = getColor(v);
+
+  // Gauge arc
+  const angle = (v / 100) * 180;
+  const rad = (angle - 90) * (Math.PI / 180);
+  const endX = 50 + 35 * Math.cos(rad);
+  const endY = 50 + 35 * Math.sin(rad);
+  const largeArc = angle > 180 ? 1 : 0;
 
   return (
     <div className="h-full flex flex-col items-center justify-center p-4 text-center">
       <p className="text-xs text-muted-foreground mb-2">Fear & Greed Index</p>
-      <div className={`text-5xl font-bold ${color}`}>{v}</div>
-      <p className={`text-sm font-semibold mt-1 ${color}`}>{label}</p>
-      <div className="w-full mt-4 h-2 rounded-full bg-secondary overflow-hidden">
-        <div
-          className="h-full rounded-full bg-gradient-to-r from-destructive via-muted-foreground to-success transition-all"
-          style={{ width: `${v}%` }}
+
+      {/* Gauge */}
+      <svg viewBox="0 0 100 60" className="w-28 h-16 mx-auto">
+        {/* Background arc */}
+        <path
+          d="M 15 50 A 35 35 0 0 1 85 50"
+          fill="none"
+          stroke="hsl(var(--secondary))"
+          strokeWidth="6"
+          strokeLinecap="round"
         />
-      </div>
+        {/* Value arc */}
+        <path
+          d={`M 15 50 A 35 35 0 ${largeArc} 1 ${endX} ${endY}`}
+          fill="none"
+          stroke={`hsl(${color.hsl})`}
+          strokeWidth="6"
+          strokeLinecap="round"
+        />
+      </svg>
+
+      <div className={`text-4xl font-bold ${color.text} -mt-1`}>{v}</div>
+      <p className={`text-sm font-semibold mt-0.5 ${color.text}`}>{label}</p>
     </div>
   );
 });

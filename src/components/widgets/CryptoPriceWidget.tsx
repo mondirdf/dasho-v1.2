@@ -9,11 +9,13 @@ interface Props {
 
 const CryptoPriceWidget = memo(({ config }: Props) => {
   const [coin, setCoin] = useState<CryptoData | null>(null);
+  const [allCoins, setAllCoins] = useState<CryptoData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const symbol = config.symbol || "BTC";
     fetchCryptoData().then((data) => {
+      setAllCoins(data);
       setCoin(data.find((c) => c.symbol === symbol) || data[0] || null);
       setLoading(false);
     });
@@ -23,6 +25,15 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
   if (!coin) return <div className="p-4 text-muted-foreground text-sm">No data</div>;
 
   const positive = (coin.change_24h ?? 0) >= 0;
+
+  // Generate simple sparkline path from price data
+  const sparkline = allCoins.slice(0, 7).map((c, i) => ({
+    x: (i / 6) * 100,
+    y: 50 - ((c.change_24h ?? 0) * 2),
+  }));
+  const sparkPath = sparkline.map((p, i) =>
+    `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`
+  ).join(" ");
 
   return (
     <div className="h-full flex flex-col justify-between p-4">
@@ -36,6 +47,16 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
       <div className="text-2xl font-bold text-foreground">
         ${(coin.price ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
       </div>
+      {/* Mini sparkline */}
+      <svg viewBox="0 0 100 60" className="w-full h-8 mt-1" preserveAspectRatio="none">
+        <path
+          d={sparkPath}
+          fill="none"
+          stroke={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"}
+          strokeWidth="2"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
       <div className="text-xs text-muted-foreground">
         MCap: ${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B
       </div>

@@ -1,6 +1,6 @@
 /**
  * Dashboard state context — manages widgets, layout, edit mode.
- * Single source of truth for the active dashboard.
+ * Supports multiple dashboards per user.
  */
 import {
   createContext,
@@ -19,11 +19,13 @@ import {
   updateDashboardLayout,
   createWidget,
   deleteWidget as deleteWidgetService,
+  deleteDashboard as deleteDashboardService,
+  renameDashboard as renameDashboardService,
   type Dashboard,
   type Widget,
 } from "@/services/dataService";
+import { supabase } from "@/integrations/supabase/client";
 
-// Layout item shape for react-grid-layout
 export interface LayoutItem {
   i: string;
   x: number;
@@ -34,6 +36,7 @@ export interface LayoutItem {
 }
 
 interface DashboardState {
+  dashboards: Dashboard[];
   dashboard: Dashboard | null;
   widgets: Widget[];
   layout: LayoutItem[];
@@ -44,6 +47,12 @@ interface DashboardState {
   removeWidget: (id: string) => Promise<void>;
   onLayoutChange: (layout: LayoutItem[]) => void;
   refresh: () => Promise<void>;
+  switchDashboard: (id: string) => void;
+  createNewDashboard: () => Promise<void>;
+  deleteDashboard: () => Promise<void>;
+  renameDashboard: (name: string) => Promise<void>;
+  duplicateDashboard: () => Promise<void>;
+  resetLayout: () => void;
 }
 
 const DashboardContext = createContext<DashboardState>({} as DashboardState);
@@ -52,6 +61,7 @@ export const useDashboard = () => useContext(DashboardContext);
 
 export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
+  const [dashboards, setDashboards] = useState<Dashboard[]>([]);
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [widgets, setWidgets] = useState<Widget[]>([]);
   const [layout, setLayout] = useState<LayoutItem[]>([]);
@@ -59,35 +69,39 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   const [editMode, setEditMode] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const loadDashboard = useCallback(async (dashId: string) => {
+    const w = await fetchWidgets(dashId);
+    setWidgets(w);
+    const dash = dashboards.find((d) => d.id === dashId) || dashboard;
+    const savedLayout = Array.isArray(dash?.layout_json) ? (dash.layout_json as unknown as LayoutItem[]) : [];
+    if (savedLayout.length > 0) {
+      setLayout(savedLayout);
+    } else {
+      setLayout(
+        w.map((widget) => ({
+          i: widget.id,
+          x: widget.position_x,
+          y: widget.position_y,
+          w: widget.width,
+          h: widget.height,
+        }))
+      );
+    }
+  }, [dashboards, dashboard]);
+
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
-      let dashboards = await fetchDashboards(user.id);
-      if (dashboards.length === 0) {
+      let dashes = await fetchDashboards(user.id);
+      if (dashes.length === 0) {
         const newDash = await createDashboard(user.id);
-        dashboards = [newDash];
+        dashes = [newDash];
       }
-      const dash = dashboards[0];
-      setDashboard(dash);
-
-      const w = await fetchWidgets(dash.id);
-      setWidgets(w);
-
-      const savedLayout = Array.isArray(dash.layout_json) ? dash.layout_json : [];
-      if (savedLayout.length > 0) {
-        setLayout(savedLayout as unknown as LayoutItem[]);
-      } else {
-        setLayout(
-          w.map((widget) => ({
-            i: widget.id,
-            x: widget.position_x,
-            y: widget.position_y,
-            w: widget.width,
-            h: widget.height,
-          }))
-        );
-      }
+      setDashboards(dashes);
+      const active = dashes[0];
+      setDashboard(active);
+      await loadDashboardWidgets(active, dashes);
     } catch (e) {
       console.error("Dashboard load error:", e);
     } finally {
@@ -95,7 +109,86 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
+  const loadDashboardWidgets = async (dash: Dashboard, dashes?: Dashboard[]) => {
+    const w = await fetchWidgets(dash.id);
+    setWidgets(w);
+    const savedLayout = Array.isArray(dash.layout_json) ? (dash.layout_json as unknown as LayoutItem[]) : [];
+    if (savedLayout.length > 0) {
+      setLayout(savedLayout);
+    } else {
+      setLayout(
+        w.map((widget) => ({
+          i: widget.id,
+          x: widget.position_x,
+          y: widget.position_y,
+          w: widget.width,
+          h: widget.height,
+        }))
+      );
+    }
+  };
+
   useEffect(() => { load(); }, [load]);
+
+  const switchDashboard = useCallback(async (id: string) => {
+    const dash = dashboards.find((d) => d.id === id);
+    if (!dash) return;
+    setDashboard(dash);
+    setEditMode(false);
+    await loadDashboardWidgets(dash);
+  }, [dashboards]);
+
+  const createNewDashboard = useCallback(async () => {
+    if (!user) return;
+    const dash = await createDashboard(user.id, "New Dashboard");
+    setDashboards((prev) => [...prev, dash]);
+    setDashboard(dash);
+    setWidgets([]);
+    setLayout([]);
+  }, [user]);
+
+  const deleteDashboardFn = useCallback(async () => {
+    if (!dashboard || dashboards.length <= 1) return;
+    await deleteDashboardService(dashboard.id);
+    const remaining = dashboards.filter((d) => d.id !== dashboard.id);
+    setDashboards(remaining);
+    setDashboard(remaining[0]);
+    await loadDashboardWidgets(remaining[0]);
+  }, [dashboard, dashboards]);
+
+  const renameDashboardFn = useCallback(async (name: string) => {
+    if (!dashboard) return;
+    await renameDashboardService(dashboard.id, name);
+    setDashboard({ ...dashboard, name });
+    setDashboards((prev) => prev.map((d) => d.id === dashboard.id ? { ...d, name } : d));
+  }, [dashboard]);
+
+  const duplicateDashboardFn = useCallback(async () => {
+    if (!dashboard || !user) return;
+    const newDash = await createDashboard(user.id, dashboard.name + " (Copy)");
+    // Copy widgets
+    for (const w of widgets) {
+      await createWidget(newDash.id, w.type, w.config_json as any);
+    }
+    await updateDashboardLayout(newDash.id, layout);
+    setDashboards((prev) => [...prev, { ...newDash, layout_json: layout as any }]);
+    setDashboard({ ...newDash, layout_json: layout as any });
+    await loadDashboardWidgets({ ...newDash, layout_json: layout as any });
+  }, [dashboard, user, widgets, layout]);
+
+  const resetLayout = useCallback(() => {
+    const newLayout = widgets.map((w, i) => ({
+      i: w.id,
+      x: (i * 4) % 12,
+      y: Math.floor((i * 4) / 12) * 3,
+      w: 4,
+      h: 3,
+    }));
+    setLayout(newLayout);
+    if (dashboard) {
+      updateDashboardLayout(dashboard.id, newLayout);
+    }
+  }, [widgets, dashboard]);
 
   const onLayoutChange = useCallback(
     (newLayout: LayoutItem[]) => {
@@ -128,9 +221,10 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
 
   const removeWidget = useCallback(
     async (id: string) => {
-      await deleteWidgetService(id);
+      // Optimistic removal
       setWidgets((prev) => prev.filter((w) => w.id !== id));
       setLayout((prev: LayoutItem[]) => prev.filter((l) => l.i !== id));
+      await deleteWidgetService(id);
     },
     []
   );
@@ -138,9 +232,11 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   return (
     <DashboardContext.Provider
       value={{
-        dashboard, widgets, layout, loading, editMode,
+        dashboards, dashboard, widgets, layout, loading, editMode,
         setEditMode, addWidget, removeWidget, onLayoutChange,
-        refresh: load,
+        refresh: load, switchDashboard, createNewDashboard,
+        deleteDashboard: deleteDashboardFn, renameDashboard: renameDashboardFn,
+        duplicateDashboard: duplicateDashboardFn, resetLayout,
       }}
     >
       {children}
