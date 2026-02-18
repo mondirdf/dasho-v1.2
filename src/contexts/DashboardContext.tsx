@@ -53,6 +53,8 @@ interface DashboardState {
   renameDashboard: (name: string) => Promise<void>;
   duplicateDashboard: () => Promise<void>;
   resetLayout: () => void;
+  renameOpen: boolean;
+  setRenameOpen: (v: boolean) => void;
 }
 
 const DashboardContext = createContext<DashboardState>({} as DashboardState);
@@ -67,6 +69,7 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   const [layout, setLayout] = useState<LayoutItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
+  const [renameOpen, setRenameOpen] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const loadDashboard = useCallback(async (dashId: string) => {
@@ -237,6 +240,7 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
         refresh: load, switchDashboard, createNewDashboard,
         deleteDashboard: deleteDashboardFn, renameDashboard: renameDashboardFn,
         duplicateDashboard: duplicateDashboardFn, resetLayout,
+        renameOpen, setRenameOpen,
       }}
     >
       {children}

@@ -28,16 +28,16 @@ const FearGreedWidget = memo(() => {
     loadData();
   }, []);
 
-  if (loading) return <Skeleton className="h-full w-full" />;
+  if (loading) return <Skeleton className="h-full w-full rounded-lg" />;
 
   const v = value ?? 50;
 
   const getColor = (val: number) => {
-    if (val <= 25) return { text: "text-destructive", hsl: "var(--destructive)" };
-    if (val <= 45) return { text: "text-destructive/80", hsl: "var(--destructive)" };
-    if (val <= 55) return { text: "text-muted-foreground", hsl: "var(--muted-foreground)" };
-    if (val <= 75) return { text: "text-success/80", hsl: "var(--success)" };
-    return { text: "text-success", hsl: "var(--success)" };
+    if (val <= 25) return { cls: "text-destructive", hsl: "var(--destructive)", bg: "bg-destructive/10", lbl: "Extreme Fear" };
+    if (val <= 45) return { cls: "text-warning", hsl: "var(--warning)", bg: "bg-warning/10", lbl: "Fear" };
+    if (val <= 55) return { cls: "text-muted-foreground", hsl: "var(--muted-foreground)", bg: "bg-secondary", lbl: "Neutral" };
+    if (val <= 75) return { cls: "text-success", hsl: "var(--success)", bg: "bg-success/10", lbl: "Greed" };
+    return { cls: "text-success", hsl: "var(--success)", bg: "bg-success/10", lbl: "Extreme Greed" };
   };
   const color = getColor(v);
 
@@ -48,32 +48,48 @@ const FearGreedWidget = memo(() => {
   const endY = 50 + 35 * Math.sin(rad);
   const largeArc = angle > 180 ? 1 : 0;
 
+  // Needle
+  const needleRad = ((v / 100) * 180 - 90) * (Math.PI / 180);
+  const needleX = 50 + 28 * Math.cos(needleRad);
+  const needleY = 50 + 28 * Math.sin(needleRad);
+
   return (
-    <div className="h-full flex flex-col items-center justify-center p-4 text-center">
-      <p className="text-xs text-muted-foreground mb-2">Fear & Greed Index</p>
+    <div className="h-full flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
+      {/* Background glow */}
+      <div className={`absolute inset-0 opacity-5 ${color.bg}`} />
+
+      <p className="text-xs font-medium text-muted-foreground mb-3 relative z-10">Fear & Greed Index</p>
 
       {/* Gauge */}
-      <svg viewBox="0 0 100 60" className="w-28 h-16 mx-auto">
+      <svg viewBox="0 0 100 58" className="w-32 h-20 mx-auto relative z-10">
         {/* Background arc */}
         <path
           d="M 15 50 A 35 35 0 0 1 85 50"
           fill="none"
           stroke="hsl(var(--secondary))"
-          strokeWidth="6"
+          strokeWidth="7"
           strokeLinecap="round"
         />
+        {/* Colored segments */}
+        <path d="M 15 50 A 35 35 0 0 1 26.7 26.7" fill="none" stroke="hsl(var(--destructive))" strokeWidth="7" strokeLinecap="round" opacity="0.3" />
+        <path d="M 73.3 26.7 A 35 35 0 0 1 85 50" fill="none" stroke="hsl(var(--success))" strokeWidth="7" strokeLinecap="round" opacity="0.3" />
         {/* Value arc */}
         <path
           d={`M 15 50 A 35 35 0 ${largeArc} 1 ${endX} ${endY}`}
           fill="none"
           stroke={`hsl(${color.hsl})`}
-          strokeWidth="6"
+          strokeWidth="7"
           strokeLinecap="round"
         />
+        {/* Needle dot */}
+        <circle cx={needleX} cy={needleY} r="3" fill={`hsl(${color.hsl})`} />
+        <circle cx={needleX} cy={needleY} r="1.5" fill="hsl(var(--background))" />
       </svg>
 
-      <div className={`text-4xl font-bold ${color.text} -mt-1`}>{v}</div>
-      <p className={`text-sm font-semibold mt-0.5 ${color.text}`}>{label}</p>
+      <div className={`text-4xl font-bold ${color.cls} -mt-1 relative z-10 tabular-nums`}>{v}</div>
+      <div className={`mt-1 px-3 py-1 rounded-full text-xs font-semibold ${color.cls} ${color.bg} relative z-10`}>
+        {label || color.lbl}
+      </div>
     </div>
   );
 });
