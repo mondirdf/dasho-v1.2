@@ -1,6 +1,6 @@
 /**
  * WidgetRenderer — dynamically renders the correct widget component
- * based on widget.type. Passes normalized config only.
+ * based on widget.type. Premium glass styling with edit controls.
  */
 import { memo } from "react";
 import { X, GripVertical } from "lucide-react";
@@ -37,23 +37,27 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
   const Component = WIDGET_MAP[widget.type];
 
   return (
-    <div className="glass-card h-full relative overflow-hidden group" role="region" aria-label={WIDGET_LABELS[widget.type] || widget.type}>
+    <div
+      className={`widget-container h-full group ${editMode ? "editing" : ""}`}
+      role="region"
+      aria-label={WIDGET_LABELS[widget.type] || widget.type}
+    >
       {/* Drag handle — only visible in edit mode */}
       {editMode && (
-        <div className="widget-drag-handle absolute top-0 left-0 right-0 h-7 bg-secondary/40 flex items-center justify-center cursor-grab z-10">
+        <div className="widget-drag-handle absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-secondary/60 to-transparent flex items-center justify-center cursor-grab z-10">
           <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
       )}
       {editMode && (
         <button
           onClick={() => onRemove(widget.id)}
-          className="absolute top-1 right-1 z-20 p-1 rounded-full bg-destructive/80 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+          className="absolute top-1.5 right-1.5 z-20 p-1.5 rounded-lg bg-destructive/90 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
           aria-label="Remove widget"
         >
           <X className="h-3 w-3" />
         </button>
       )}
-      <div className={editMode ? "pt-7 h-full" : "h-full"}>
+      <div className={editMode ? "pt-8 h-full" : "h-full"}>
         {Component ? (
           <Component config={widget.config_json as any} />
         ) : (
