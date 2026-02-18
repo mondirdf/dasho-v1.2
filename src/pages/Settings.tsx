@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User, Shield, Trash2 } from "lucide-react";
+import { ArrowLeft, User, Shield, Trash2, LogOut } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -154,6 +154,17 @@ const Settings = () => {
               {changingPw ? "Changing…" : "Change Password"}
             </Button>
           </div>
+        </section>
+
+        {/* Sign Out */}
+        <section className="glass-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <LogOut className="h-5 w-5 text-muted-foreground" />
+            <h2 className="text-base font-semibold text-foreground">Session</h2>
+          </div>
+          <Button onClick={signOut} variant="outline" size="sm" className="gap-1.5">
+            <LogOut className="h-4 w-4" /> Sign Out
+          </Button>
         </section>
 
         <Separator />

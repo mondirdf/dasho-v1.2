@@ -1,10 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import AddWidgetSheet from "@/components/AddWidgetSheet";
-import { LayoutGrid, Bell, Settings, LogOut, Plus } from "lucide-react";
+import { LayoutGrid, Bell, Settings } from "lucide-react";
 
 const MobileBottomNav = () => {
-  const { signOut } = useAuth();
   const location = useLocation();
 
   const navItems = [
@@ -32,18 +30,9 @@ const MobileBottomNav = () => {
             </Link>
           );
         })}
-        {/* Add widget shortcut */}
         <div className="flex flex-col items-center gap-0.5">
           <AddWidgetSheet variant="mobile" />
         </div>
-        <button
-          onClick={signOut}
-          className="flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-muted-foreground transition-colors"
-          aria-label="Sign out"
-        >
-          <LogOut className="h-5 w-5" />
-          <span className="text-[10px] font-medium">Exit</span>
-        </button>
       </div>
     </div>
   );
