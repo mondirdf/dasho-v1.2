@@ -1,7 +1,8 @@
-import { useEffect, useState, memo, useMemo } from "react";
+import { useEffect, useState, memo, useMemo, useCallback } from "react";
 import { fetchCryptoData, type CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, ArrowUpDown } from "lucide-react";
+import { TrendingUp, TrendingDown, ArrowUpDown, AlertCircle } from "lucide-react";
+import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
 
 interface Props {
   config: { symbols?: string[] };
@@ -10,23 +11,47 @@ interface Props {
 const MultiTrackerWidget = memo(({ config }: Props) => {
   const [coins, setCoins] = useState<CryptoData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [sortByChange, setSortByChange] = useState(false);
 
-  useEffect(() => {
-    fetchCryptoData().then((data) => {
-      const symbols = config.symbols || ["BTC", "ETH", "SOL", "ADA", "DOGE"];
-      const filtered = data.filter((c) => symbols.includes(c.symbol));
-      setCoins(filtered.length > 0 ? filtered : data.slice(0, 5));
-      setLoading(false);
-    });
+  const loadData = useCallback(() => {
+    fetchCryptoData()
+      .then((data) => {
+        const symbols = config.symbols || ["BTC", "ETH", "SOL", "ADA", "DOGE"];
+        const filtered = data.filter((c) => symbols.includes(c.symbol));
+        setCoins(filtered.length > 0 ? filtered : data.slice(0, 5));
+        setError(false);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, [config.symbols]);
+
+  useEffect(() => { loadData(); }, [loadData]);
+  useRealtimeCrypto(loadData);
 
   const sorted = useMemo(() => {
     if (!sortByChange) return coins;
     return [...coins].sort((a, b) => Math.abs(b.change_24h ?? 0) - Math.abs(a.change_24h ?? 0));
   }, [coins, sortByChange]);
 
-  if (loading) return <Skeleton className="h-full w-full rounded-lg" />;
+  if (loading) {
+    return (
+      <div className="h-full p-4 space-y-3">
+        <Skeleton className="h-5 w-32" />
+        {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-4 text-center gap-2">
+        <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
+        <p className="text-muted-foreground text-sm">Failed to load data</p>
+        <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full overflow-auto p-4">
@@ -44,10 +69,7 @@ const MultiTrackerWidget = memo(({ config }: Props) => {
         {sorted.map((coin) => {
           const positive = (coin.change_24h ?? 0) >= 0;
           return (
-            <div
-              key={coin.symbol}
-              className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-secondary/30 transition-colors"
-            >
+            <div key={coin.symbol} className="flex items-center justify-between py-2.5 px-2 rounded-lg hover:bg-secondary/30 transition-colors">
               <div className="flex items-center gap-2.5">
                 <div className={`w-7 h-7 rounded-md flex items-center justify-center text-[10px] font-bold ${
                   positive ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"

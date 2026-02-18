@@ -17,64 +17,121 @@ import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Bell, Plus, Trash2, ArrowLeft, History, AlertTriangle } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { useRealtimeTriggeredAlerts } from "@/hooks/useRealtimeData";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 
 const Alerts = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { maxAlerts, isPro } = usePlanLimits();
   const [alerts, setAlerts] = useState<Alert[]>([]);
   const [triggered, setTriggered] = useState<any[]>([]);
   const [coins, setCoins] = useState<CryptoData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [creating, setCreating] = useState(false);
 
   const [symbol, setSymbol] = useState("BTC");
   const [price, setPrice] = useState("");
   const [condition, setCondition] = useState<"above" | "below">("above");
 
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
-    const [a, t, c] = await Promise.all([
-      fetchAlerts(user.id),
-      fetchTriggeredAlerts(user.id),
-      fetchCryptoData(),
-    ]);
-    setAlerts(a);
-    setTriggered(t);
-    setCoins(c);
-    setLoading(false);
-  }, [user]);
+    try {
+      const [a, t, c] = await Promise.all([
+        fetchAlerts(user.id),
+        fetchTriggeredAlerts(user.id),
+        fetchCryptoData(),
+      ]);
+      setAlerts(a);
+      setTriggered(t);
+      setCoins(c);
+    } catch {
+      toast({ title: "Error loading alerts", variant: "destructive" });
+    } finally {
+      setLoading(false);
+    }
+  }, [user, toast]);
 
   useEffect(() => { load(); }, [load]);
+
+  // Realtime triggered alerts
+  useRealtimeTriggeredAlerts(user?.id, useCallback((newAlert: any) => {
+    setTriggered((prev) => [newAlert, ...prev]);
+    toast({ title: `🔔 Alert triggered: ${newAlert.coin_symbol} at $${Number(newAlert.triggered_price).toLocaleString()}` });
+    // Reload to refresh active/inactive states
+    load();
+  }, [toast, load]));
 
   const handleCreate = async () => {
     if (!user || !price) return;
     const p = parseFloat(price);
-    if (isNaN(p) || p <= 0) {
-      toast({ title: "Invalid price", variant: "destructive" });
+    if (isNaN(p) || p <= 0 || p > 1e12) {
+      toast({ title: "Invalid price. Enter a positive number.", variant: "destructive" });
       return;
     }
+
+    // Check for duplicate
+    const duplicate = alerts.find(
+      (a) => a.coin_symbol === symbol && a.condition_type === condition && Number(a.target_price) === p
+    );
+    if (duplicate) {
+      toast({ title: "Duplicate alert", description: `You already have a ${condition} $${p.toLocaleString()} alert for ${symbol}.`, variant: "destructive" });
+      return;
+    }
+
+    // Check plan limit
+    if (!isPro && alerts.length >= maxAlerts) {
+      toast({ title: "Plan limit reached", description: `Free plan allows ${maxAlerts} alerts. Upgrade to Pro for unlimited.`, variant: "destructive" });
+      return;
+    }
+
+    setCreating(true);
     try {
       await createAlert(user.id, symbol, p, condition);
       setPrice("");
       toast({ title: "Alert created" });
       load();
-    } catch {
-      toast({ title: "Error creating alert", variant: "destructive" });
+    } catch (e: any) {
+      const msg = e?.message || "";
+      if (msg.includes("Free plan")) {
+        toast({ title: "Plan limit reached", description: msg, variant: "destructive" });
+      } else {
+        toast({ title: "Error creating alert", variant: "destructive" });
+      }
+    } finally {
+      setCreating(false);
     }
   };
 
   const handleToggle = async (id: string, active: boolean) => {
     setAlerts((prev) => prev.map((a) => a.id === id ? { ...a, is_active: active } : a));
-    await toggleAlert(id, active);
+    try {
+      await toggleAlert(id, active);
+    } catch {
+      toast({ title: "Error toggling alert", variant: "destructive" });
+      load();
+    }
   };
 
-  const handleDelete = async (id: string) => {
-    setAlerts((prev) => prev.filter((a) => a.id !== id));
-    await deleteAlert(id);
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setAlerts((prev) => prev.filter((a) => a.id !== deleteTarget));
+    setDeleteTarget(null);
+    try {
+      await deleteAlert(deleteTarget);
+      toast({ title: "Alert deleted" });
+    } catch {
+      toast({ title: "Error deleting alert", variant: "destructive" });
+      load();
+    }
   };
 
   const activeAlerts = alerts.filter((a) => a.is_active);
@@ -83,6 +140,7 @@ const Alerts = () => {
   if (loading) {
     return (
       <div className="min-h-screen p-6 space-y-4">
+        <Skeleton className="h-12 w-48" />
         {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
       </div>
     );
@@ -90,7 +148,7 @@ const Alerts = () => {
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-sm px-6 py-3 flex items-center gap-3">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-sm px-4 sm:px-6 py-3 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} aria-label="Back to dashboard">
           <ArrowLeft className="h-4 w-4" />
         </Button>
@@ -101,13 +159,18 @@ const Alerts = () => {
         )}
       </header>
 
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <div className="max-w-2xl mx-auto p-4 sm:p-6 space-y-6">
         {/* Create Alert */}
-        <div className="glass-card p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-foreground">New Alert</h2>
-          <div className="flex flex-wrap gap-3">
+        <div className="glass-card p-4 sm:p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-foreground">New Alert</h2>
+            {!isPro && (
+              <span className="text-[11px] text-muted-foreground">{alerts.length}/{maxAlerts} alerts</span>
+            )}
+          </div>
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3">
             <Select value={symbol} onValueChange={setSymbol}>
-              <SelectTrigger className="w-28" aria-label="Select coin">
+              <SelectTrigger className="w-full sm:w-28" aria-label="Select coin">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -118,7 +181,7 @@ const Alerts = () => {
               </SelectContent>
             </Select>
             <Select value={condition} onValueChange={(v) => setCondition(v as "above" | "below")}>
-              <SelectTrigger className="w-28" aria-label="Condition">
+              <SelectTrigger className="w-full sm:w-28" aria-label="Condition">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -131,13 +194,14 @@ const Alerts = () => {
               placeholder="Target price"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
-              className="w-36"
+              className="w-full sm:w-36"
               aria-label="Target price"
               min="0"
               step="any"
+              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
             />
-            <Button onClick={handleCreate} className="gap-1.5">
-              <Plus className="h-4 w-4" /> Create
+            <Button onClick={handleCreate} className="gap-1.5 w-full sm:w-auto" disabled={creating}>
+              <Plus className="h-4 w-4" /> {creating ? "Creating…" : "Create"}
             </Button>
           </div>
         </div>
@@ -166,7 +230,7 @@ const Alerts = () => {
                     </div>
                     <div className="flex items-center gap-3">
                       <Switch checked={a.is_active} onCheckedChange={(v) => handleToggle(a.id, v)} aria-label="Toggle alert" />
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)} aria-label="Delete alert">
+                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(a.id)} aria-label="Delete alert">
                         <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
@@ -188,7 +252,7 @@ const Alerts = () => {
                         </div>
                         <div className="flex items-center gap-3">
                           <Switch checked={a.is_active} onCheckedChange={(v) => handleToggle(a.id, v)} aria-label="Toggle alert" />
-                          <Button variant="ghost" size="icon" onClick={() => handleDelete(a.id)} aria-label="Delete alert">
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(a.id)} aria-label="Delete alert">
                             <Trash2 className="h-4 w-4 text-destructive" />
                           </Button>
                         </div>
@@ -224,6 +288,16 @@ const Alerts = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title="Delete alert?"
+        description="This alert will be permanently removed."
+        onConfirm={handleDelete}
+        confirmLabel="Delete"
+        destructive
+      />
     </div>
   );
 };

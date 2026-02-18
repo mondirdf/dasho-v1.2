@@ -7,9 +7,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, User, Shield, Trash2, LogOut } from "lucide-react";
+import { ArrowLeft, User, Shield, Trash2, LogOut, Crown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,7 +32,6 @@ const Settings = () => {
   const [displayName, setDisplayName] = useState("");
   const [saving, setSaving] = useState(false);
 
-  // Password
   const [newPassword, setNewPassword] = useState("");
   const [changingPw, setChangingPw] = useState(false);
 
@@ -46,9 +46,10 @@ const Settings = () => {
 
   const handleSaveProfile = async () => {
     if (!user) return;
+    const trimmed = displayName.trim().slice(0, 100);
     setSaving(true);
     try {
-      await updateProfile(user.id, { display_name: displayName.trim() || null });
+      await updateProfile(user.id, { display_name: trimmed || null });
       toast({ title: "Profile updated" });
     } catch {
       toast({ title: "Error saving profile", variant: "destructive" });
@@ -76,7 +77,6 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = async () => {
-    // Sign out and inform user
     await signOut();
     toast({ title: "Account deletion requested", description: "Please contact support to complete account deletion." });
     navigate("/");
@@ -87,20 +87,43 @@ const Settings = () => {
       <div className="min-h-screen p-6 space-y-4">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-40 rounded-lg" />
+        <Skeleton className="h-40 rounded-lg" />
       </div>
     );
   }
 
+  const isPro = profile?.plan === "pro";
+
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-sm px-6 py-3 flex items-center gap-3">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-sm px-4 sm:px-6 py-3 flex items-center gap-3">
         <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")} aria-label="Back to dashboard">
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <h1 className="text-lg font-bold text-foreground">Settings</h1>
       </header>
 
-      <div className="max-w-lg mx-auto p-6 space-y-8">
+      <div className="max-w-lg mx-auto p-4 sm:p-6 space-y-6">
+        {/* Plan */}
+        <section className="glass-card p-6 space-y-4">
+          <div className="flex items-center gap-2">
+            <Crown className="h-5 w-5 text-warning" />
+            <h2 className="text-base font-semibold text-foreground">Plan</h2>
+            <Badge variant={isPro ? "default" : "secondary"} className="ml-auto capitalize">
+              {profile?.plan || "free"}
+            </Badge>
+          </div>
+          {!isPro && (
+            <div className="text-sm text-muted-foreground space-y-1">
+              <p>Free plan: 1 dashboard · 5 widgets · 10 alerts</p>
+              <p className="text-xs">Upgrade to Pro for unlimited access.</p>
+            </div>
+          )}
+          {isPro && (
+            <p className="text-sm text-muted-foreground">Unlimited dashboards, widgets, and alerts.</p>
+          )}
+        </section>
+
         {/* Profile */}
         <section className="glass-card p-6 space-y-4">
           <div className="flex items-center gap-2">
@@ -121,10 +144,6 @@ const Settings = () => {
                 placeholder="Your name"
                 maxLength={100}
               />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Plan</Label>
-              <Input value={profile?.plan || "free"} disabled className="opacity-60 capitalize" />
             </div>
             <Button onClick={handleSaveProfile} disabled={saving} size="sm">
               {saving ? "Saving…" : "Save Profile"}

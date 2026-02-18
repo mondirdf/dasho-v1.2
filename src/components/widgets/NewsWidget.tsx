@@ -1,7 +1,7 @@
-import { useEffect, useState, memo } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 import { fetchNews, type NewsData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ExternalLink, Newspaper } from "lucide-react";
+import { ExternalLink, Newspaper, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -12,16 +12,42 @@ import {
 const NewsWidget = memo(() => {
   const [news, setNews] = useState<NewsData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [selected, setSelected] = useState<NewsData | null>(null);
 
-  useEffect(() => {
-    fetchNews().then((data) => {
-      setNews(data.slice(0, 20));
-      setLoading(false);
-    });
+  const loadData = useCallback(() => {
+    fetchNews()
+      .then((data) => { setNews(data.slice(0, 20)); setError(false); })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Skeleton className="h-full w-full rounded-lg" />;
+  useEffect(() => { loadData(); }, [loadData]);
+
+  if (loading) {
+    return (
+      <div className="h-full p-4 space-y-3">
+        <Skeleton className="h-5 w-24" />
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="space-y-1.5">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-3 w-32" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-4 text-center gap-2">
+        <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
+        <p className="text-muted-foreground text-sm">Failed to load news</p>
+        <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
+      </div>
+    );
+  }
+
   if (news.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-4 text-center">
@@ -40,7 +66,7 @@ const NewsWidget = memo(() => {
           Crypto News
         </h3>
         <div className="space-y-1">
-          {news.map((item, i) => (
+          {news.map((item) => (
             <button
               key={item.id}
               onClick={() => setSelected(item)}

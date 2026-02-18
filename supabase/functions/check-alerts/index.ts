@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 async function logEvent(supabase: any, type: string, status: string, message: string, metadata: any = {}) {
@@ -41,7 +41,16 @@ Deno.serve(async (req) => {
       );
     }
 
-    const symbols = [...new Set(alerts.map((a) => a.coin_symbol))];
+    // Validate alert data
+    const validAlerts = alerts.filter((a) => {
+      if (!a.coin_symbol || typeof a.coin_symbol !== "string") return false;
+      if (a.coin_symbol.length > 20) return false;
+      if (typeof a.target_price !== "number" || a.target_price <= 0) return false;
+      if (!["above", "below"].includes(a.condition_type)) return false;
+      return true;
+    });
+
+    const symbols = [...new Set(validAlerts.map((a) => a.coin_symbol))];
     const { data: prices, error: pricesErr } = await supabase
       .from("cache_crypto_data")
       .select("symbol, price")
@@ -52,7 +61,7 @@ Deno.serve(async (req) => {
     const priceMap = new Map((prices || []).map((p) => [p.symbol, p.price]));
     let triggered = 0;
 
-    for (const alert of alerts) {
+    for (const alert of validAlerts) {
       const currentPrice = priceMap.get(alert.coin_symbol);
       if (currentPrice == null) continue;
 
@@ -76,7 +85,7 @@ Deno.serve(async (req) => {
     }
 
     const durationMs = Date.now() - startMs;
-    await logEvent(supabase, "check-alerts", "success", `Completed in ${durationMs}ms`, { triggered, checked: alerts.length, durationMs });
+    await logEvent(supabase, "check-alerts", "success", `Completed in ${durationMs}ms`, { triggered, checked: validAlerts.length, durationMs });
 
     return new Response(
       JSON.stringify({ ok: true, triggered }),
