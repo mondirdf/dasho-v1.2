@@ -58,7 +58,7 @@ const DashboardGrid = () => {
         draggableHandle=".widget-drag-handle"
         margin={isMobile ? [8, 8] : [12, 12]}
         resizeHandles={["n", "s", "e", "w"]}
-        compactType="vertical"
+        compactType={null}
       >
         {widgets.map((w) => (
           <div key={w.id} data-grid={{ minW: 2, minH: 2, maxW: 12, maxH: 8 }}>
