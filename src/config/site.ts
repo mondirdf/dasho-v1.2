@@ -282,7 +282,7 @@ export const PRICING = {
       "Share & export",
       "All widget categories",
     ],
-    cta: "Start Free Trial",
+    cta: "Upgrade to Pro",
     highlighted: true,
   },
 } as const;
