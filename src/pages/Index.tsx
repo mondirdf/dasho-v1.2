@@ -47,7 +47,7 @@ const Index = () => {
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <img src={logoDasho} alt={BRAND.name} className="h-10" />
+            <img src={logoDasho} alt={BRAND.name} className="h-[60px]" />
           </Link>
           <div className="flex items-center gap-3">
             {loading ? null : user ? (
