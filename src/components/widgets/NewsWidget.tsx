@@ -1,6 +1,6 @@
 /**
  * NewsWidget — CONTENT ONLY.
- * All container styling is handled by WidgetContainer.
+ * Supports compact / standard / expanded responsive modes.
  */
 import { useEffect, useState, memo, useCallback } from "react";
 import { fetchNews, type NewsData } from "@/services/dataService";
@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useWidgetSize } from "@/hooks/useWidgetSize";
 
 interface Props {
   config: {
@@ -22,6 +23,7 @@ interface Props {
 }
 
 const NewsWidget = memo(({ config }: Props) => {
+  const [sizeRef, { mode }] = useWidgetSize();
   const [news, setNews] = useState<NewsData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -46,11 +48,13 @@ const NewsWidget = memo(({ config }: Props) => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
+  const isCompact = mode === "compact";
+
   if (loading) {
     return (
-      <div className="h-full space-y-3">
+      <div ref={sizeRef} className="h-full space-y-3">
         <Skeleton className="h-5 w-24" />
-        {[1, 2, 3, 4].map((i) => (
+        {[1, 2, 3].map((i) => (
           <div key={i} className="space-y-1.5">
             <Skeleton className="h-4 w-full" />
             <Skeleton className="h-3 w-32" />
@@ -62,7 +66,7 @@ const NewsWidget = memo(({ config }: Props) => {
 
   if (error) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center gap-2">
+      <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center gap-2">
         <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
         <p className="text-muted-foreground text-sm">Failed to load news</p>
         <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
@@ -72,7 +76,7 @@ const NewsWidget = memo(({ config }: Props) => {
 
   if (news.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center">
+      <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center">
         <Newspaper className="h-8 w-8 text-muted-foreground/40 mb-2" />
         <p className="text-muted-foreground text-sm">No news yet.</p>
         <p className="text-muted-foreground/60 text-xs">Refreshes every 5 minutes</p>
@@ -82,24 +86,26 @@ const NewsWidget = memo(({ config }: Props) => {
 
   return (
     <>
-      <div className="h-full overflow-auto">
-        <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Newspaper className="h-4 w-4 text-warning" />
+      <div ref={sizeRef} className="h-full overflow-auto">
+        <h3 className={`${isCompact ? "text-xs mb-2" : "text-sm mb-3"} font-semibold text-foreground flex items-center gap-2`}>
+          <Newspaper className={`${isCompact ? "h-3.5 w-3.5" : "h-4 w-4"} text-warning`} />
           Crypto News
         </h3>
-        <div className="space-y-1">
+        <div className="space-y-0.5">
           {news.map((item) => (
             <button
               key={item.id}
               onClick={() => setSelected(item)}
-              className="w-full text-left group block py-2.5 px-2 rounded-lg hover:bg-secondary/30 transition-colors"
+              className={`w-full text-left group block ${isCompact ? "py-1.5 px-1" : "py-2.5 px-2"} rounded-lg hover:bg-secondary/30 transition-colors`}
             >
-              <p className="text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 leading-snug">
+              <p className={`${isCompact ? "text-xs line-clamp-1" : "text-sm line-clamp-2"} text-foreground group-hover:text-primary transition-colors leading-snug`}>
                 {item.title}
               </p>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                {item.source ?? "Unknown"} · {item.published_at ? new Date(item.published_at).toLocaleDateString() : ""}
-              </p>
+              {!isCompact && (
+                <p className="text-[11px] text-muted-foreground mt-1">
+                  {item.source ?? "Unknown"} · {item.published_at ? new Date(item.published_at).toLocaleDateString() : ""}
+                </p>
+              )}
             </button>
           ))}
         </div>

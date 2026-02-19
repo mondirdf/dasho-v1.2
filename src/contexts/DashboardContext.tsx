@@ -12,6 +12,7 @@ import {
   ReactNode,
 } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { getWidgetDef } from "@/components/widgets/widgetRegistry";
 import {
   fetchDashboards,
   createDashboard,
@@ -207,31 +208,45 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     toast({ title: "Layout reset" });
   }, [widgets, dashboard, toast]);
 
+  /** Validate layout: guard against NaN, negative, oversized values */
+  const validateLayout = useCallback((items: LayoutItem[]): LayoutItem[] => {
+    return items.map((item) => ({
+      ...item,
+      x: Number.isFinite(item.x) && item.x >= 0 ? item.x : 0,
+      y: Number.isFinite(item.y) && item.y >= 0 ? item.y : 0,
+      w: Number.isFinite(item.w) && item.w >= 1 ? Math.min(item.w, 12) : 4,
+      h: Number.isFinite(item.h) && item.h >= 1 ? Math.min(item.h, 12) : 3,
+    }));
+  }, []);
+
   const onLayoutChange = useCallback(
     (newLayout: LayoutItem[]) => {
-      setLayout(newLayout);
+      const validated = validateLayout(newLayout);
+      setLayout(validated);
       if (!dashboard) return;
       if (saveTimer.current) clearTimeout(saveTimer.current);
       saveTimer.current = setTimeout(async () => {
         try {
-          await updateDashboardLayout(dashboard.id, newLayout);
+          await updateDashboardLayout(dashboard.id, validated);
         } catch (e) {
           console.error("Layout save error:", e);
         }
       }, 500);
     },
-    [dashboard]
+    [dashboard, validateLayout]
   );
 
   const addWidget = useCallback(
     async (type: string, config: any = {}) => {
       if (!dashboard) return;
       try {
+        const def = getWidgetDef(type);
+        const size = def?.defaultSize ?? { w: 4, h: 3 };
         const w = await createWidget(dashboard.id, type, config);
         setWidgets((prev) => [...prev, w]);
         setLayout((prev: LayoutItem[]) => [
           ...prev,
-          { i: w.id, x: 0, y: Infinity, w: 4, h: 3 },
+          { i: w.id, x: 0, y: Infinity, w: size.w, h: size.h },
         ]);
         toast({ title: "Widget added" });
       } catch (e: any) {

@@ -86,6 +86,14 @@ export interface ConfigField {
   placeholder?: string;
 }
 
+/** Grid size constraints for a widget */
+export interface WidgetConstraints {
+  minW: number;
+  minH: number;
+  maxW?: number;
+  maxH?: number;
+}
+
 export interface WidgetRegistryEntry {
   /** Unique widget type key (e.g., "crypto_price") */
   type: string;
@@ -105,6 +113,8 @@ export interface WidgetRegistryEntry {
   visual: WidgetVisual;
   /** Default grid dimensions { w, h } */
   defaultSize: { w: number; h: number };
+  /** Grid size constraints — enforced by the grid layout */
+  constraints: WidgetConstraints;
   /** Per-widget config fields for settings modal */
   configFields: ConfigField[];
 }
@@ -131,6 +141,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
       hoverLift: true,
     },
     defaultSize: { w: 4, h: 3 },
+    constraints: { minW: 3, minH: 2, maxW: 8, maxH: 6 },
     configFields: [
       { key: "symbol", label: "Coin Symbol", type: "text", defaultValue: "BTC", placeholder: "e.g. BTC, ETH, SOL" },
       { key: "currency", label: "Currency", type: "select", defaultValue: "USD", options: [
@@ -156,6 +167,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
       hoverLift: true,
     },
     defaultSize: { w: 4, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 12, maxH: 8 },
     configFields: [
       { key: "symbolsText", label: "Symbols (comma-separated)", type: "text", defaultValue: "BTC,ETH,SOL,ADA,DOGE", placeholder: "BTC,ETH,SOL" },
       { key: "maxItems", label: "Max Items", type: "number", defaultValue: 10 },
@@ -179,6 +191,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
       hoverLift: true,
     },
     defaultSize: { w: 3, h: 3 },
+    constraints: { minW: 2, minH: 2, maxW: 6, maxH: 5 },
     configFields: [
       { key: "showAlert", label: "Visual Alert on Extremes", type: "toggle", defaultValue: true },
       { key: "indicatorType", label: "Indicator Style", type: "select", defaultValue: "gauge", options: [
@@ -202,6 +215,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
       hoverLift: true,
     },
     defaultSize: { w: 4, h: 3 },
+    constraints: { minW: 3, minH: 2, maxW: 8, maxH: 5 },
     configFields: [
       { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: true },
       { key: "showDominance", label: "Show BTC Dominance", type: "toggle", defaultValue: true },
@@ -224,6 +238,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
       hoverLift: true,
     },
     defaultSize: { w: 4, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 12, maxH: 10 },
     configFields: [
       { key: "maxArticles", label: "Max Articles", type: "number", defaultValue: 20 },
       { key: "keyword", label: "Filter Keyword", type: "text", placeholder: "Optional keyword filter" },
@@ -235,49 +250,49 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     type: "forex_rates", category: "finance", label: "Forex Rates", desc: "Live currency exchange rates",
     icon: BarChart3, iconColor: "text-accent", available: false,
     visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 4, h: 3 }, configFields: [],
+    defaultSize: { w: 4, h: 3 }, constraints: { minW: 3, minH: 2 }, configFields: [],
   },
   {
     type: "portfolio", category: "finance", label: "Portfolio", desc: "Track your investment portfolio",
     icon: TrendingUp, iconColor: "text-success", available: false,
     visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 4, h: 3 }, configFields: [],
+    defaultSize: { w: 4, h: 3 }, constraints: { minW: 3, minH: 3 }, configFields: [],
   },
   {
     type: "weather_current", category: "weather", label: "Current Weather", desc: "Live weather for your city",
     icon: Cloud, iconColor: "text-accent", available: false,
     visual: { bg: "gradient", shadow: "md", layout: "default", animation: "fadeIn", decorative: true, hoverLift: true },
-    defaultSize: { w: 3, h: 3 }, configFields: [],
+    defaultSize: { w: 3, h: 3 }, constraints: { minW: 2, minH: 2 }, configFields: [],
   },
   {
     type: "weather_forecast", category: "weather", label: "Forecast", desc: "5-day weather forecast",
     icon: Cloud, iconColor: "text-primary", available: false,
     visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 6, h: 3 }, configFields: [],
+    defaultSize: { w: 6, h: 3 }, constraints: { minW: 4, minH: 2 }, configFields: [],
   },
   {
     type: "stock_price", category: "stocks", label: "Stock Price", desc: "Real-time stock quotes",
     icon: TrendingUp, iconColor: "text-success", available: false,
     visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 4, h: 3 }, configFields: [],
+    defaultSize: { w: 4, h: 3 }, constraints: { minW: 3, minH: 2 }, configFields: [],
   },
   {
     type: "stock_chart", category: "stocks", label: "Stock Chart", desc: "Interactive stock charts",
     icon: LineChart, iconColor: "text-primary", available: false,
     visual: { bg: "glass", shadow: "lg", layout: "default", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 6, h: 4 }, configFields: [],
+    defaultSize: { w: 6, h: 4 }, constraints: { minW: 4, minH: 3 }, configFields: [],
   },
   {
     type: "live_scores", category: "sports", label: "Live Scores", desc: "Live sports scores",
     icon: Gamepad2, iconColor: "text-warning", available: false,
     visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 4, h: 3 }, configFields: [],
+    defaultSize: { w: 4, h: 3 }, constraints: { minW: 3, minH: 2 }, configFields: [],
   },
   {
     type: "clock_widget", category: "productivity", label: "World Clock", desc: "Multiple timezone clocks",
     icon: Clock, iconColor: "text-muted-foreground", available: false,
     visual: { bg: "subtle", shadow: "sm", layout: "compact", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 3, h: 2 }, configFields: [],
+    defaultSize: { w: 3, h: 2 }, constraints: { minW: 2, minH: 2 }, configFields: [],
   },
 ];
 
@@ -291,6 +306,12 @@ export function getWidgetDef(type: string): WidgetRegistryEntry | undefined {
 /** Get all available (non-coming-soon) widget types */
 export function getAvailableWidgets(): WidgetRegistryEntry[] {
   return WIDGET_REGISTRY.filter((e) => e.available);
+}
+
+/** Get grid constraints for a widget type (falls back to safe defaults) */
+export function getWidgetConstraints(type: string): WidgetConstraints {
+  const def = getWidgetDef(type);
+  return def?.constraints ?? { minW: 2, minH: 2 };
 }
 
 /** Category list for filter UI */
