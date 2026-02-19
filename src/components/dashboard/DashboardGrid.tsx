@@ -33,7 +33,6 @@ const DashboardGrid = () => {
   }
 
   if (isMobile && !editMode) {
-    // Mobile: stacked card layout
     return (
       <div className="p-3 space-y-3 animate-fade-in">
         {widgets.map((w) => (
@@ -46,7 +45,7 @@ const DashboardGrid = () => {
   }
 
   return (
-    <div className="p-3 sm:p-4 animate-fade-in">
+    <div className={`p-3 sm:p-4 animate-fade-in ${editMode ? "dashboard-edit-mode" : ""}`}>
       <ResponsiveGrid
         className="layout"
         layouts={{ lg: layout }}
@@ -58,9 +57,11 @@ const DashboardGrid = () => {
         onLayoutChange={(l) => onLayoutChange([...l])}
         draggableHandle=".widget-drag-handle"
         margin={isMobile ? [8, 8] : [12, 12]}
+        resizeHandles={["se", "sw", "ne", "nw"]}
+        compactType="vertical"
       >
         {widgets.map((w) => (
-          <div key={w.id}>
+          <div key={w.id} data-grid={{ minW: 2, minH: 2, maxW: 12, maxH: 8 }}>
             <WidgetRenderer widget={w} editMode={editMode} onRemove={removeWidget} />
           </div>
         ))}

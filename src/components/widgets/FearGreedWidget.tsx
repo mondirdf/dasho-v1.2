@@ -3,7 +3,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 
-const FearGreedWidget = memo(() => {
+interface Props {
+  config: {
+    showAlert?: boolean;
+    indicatorType?: string;
+  };
+}
+
+const FearGreedWidget = memo(({ config }: Props) => {
   const [value, setValue] = useState<number | null>(null);
   const [label, setLabel] = useState("");
   const [loading, setLoading] = useState(true);

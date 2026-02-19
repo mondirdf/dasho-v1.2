@@ -5,7 +5,12 @@ import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
 
 interface Props {
-  config: { symbol?: string };
+  config: {
+    symbol?: string;
+    currency?: string;
+    showChart?: boolean;
+    showMarketCap?: boolean;
+  };
 }
 
 const CryptoPriceWidget = memo(({ config }: Props) => {
@@ -53,6 +58,9 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
   const positive = (coin.change_24h ?? 0) >= 0;
   const changeAbs = Math.abs(coin.change_24h ?? 0);
 
+  const showChart = config.showChart ?? true;
+  const showMarketCap = config.showMarketCap ?? true;
+
   const sparkline = allCoins.slice(0, 8).map((c, i) => ({
     x: (i / 7) * 100,
     y: 50 - ((c.change_24h ?? 0) * 2.5),
@@ -84,20 +92,29 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
           ${(coin.price ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
         </div>
       </div>
-      <svg viewBox="0 0 100 60" className="w-full h-10 relative z-10" preserveAspectRatio="none">
-        <defs>
-          <linearGradient id={`grad-${coin.symbol}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} stopOpacity="0.3" />
-            <stop offset="100%" stopColor={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} stopOpacity="0" />
-          </linearGradient>
-        </defs>
-        <path d={fillPath} fill={`url(#grad-${coin.symbol})`} />
-        <path d={sparkPath} fill="none" stroke={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} strokeWidth="2" vectorEffect="non-scaling-stroke" />
-      </svg>
-      <div className="flex items-center justify-between text-xs text-muted-foreground relative z-10 pt-1">
-        <span>MCap: ${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B</span>
-        <span className="animate-pulse-glow text-[10px]">● Live</span>
-      </div>
+      {showChart && (
+        <svg viewBox="0 0 100 60" className="w-full h-10 relative z-10" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id={`grad-${coin.symbol}-${coin.last_updated}`} x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} stopOpacity="0.3" />
+              <stop offset="100%" stopColor={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={fillPath} fill={`url(#grad-${coin.symbol}-${coin.last_updated})`} />
+          <path d={sparkPath} fill="none" stroke={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        </svg>
+      )}
+      {showMarketCap && (
+        <div className="flex items-center justify-between text-xs text-muted-foreground relative z-10 pt-1">
+          <span>MCap: ${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B</span>
+          <span className="animate-pulse-glow text-[10px]">● Live</span>
+        </div>
+      )}
+      {!showMarketCap && (
+        <div className="flex items-center justify-end text-xs text-muted-foreground relative z-10 pt-1">
+          <span className="animate-pulse-glow text-[10px]">● Live</span>
+        </div>
+      )}
     </div>
   );
 });

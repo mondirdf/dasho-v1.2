@@ -71,6 +71,7 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
 
+  // Use index-based keys to support multiple instances of the same type
   const toggleSelect = useCallback((type: string) => {
     setSelected((prev) => {
       const next = new Set(prev);

@@ -9,18 +9,36 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const NewsWidget = memo(() => {
+interface Props {
+  config: {
+    maxArticles?: number;
+    keyword?: string;
+    source?: string;
+  };
+}
+
+const NewsWidget = memo(({ config }: Props) => {
   const [news, setNews] = useState<NewsData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selected, setSelected] = useState<NewsData | null>(null);
 
+  const maxArticles = config?.maxArticles || 20;
+  const keyword = config?.keyword?.toLowerCase() || "";
+  const sourceFilter = config?.source?.toLowerCase() || "";
+
   const loadData = useCallback(() => {
     fetchNews()
-      .then((data) => { setNews(data.slice(0, 20)); setError(false); })
+      .then((data) => {
+        let filtered = data;
+        if (keyword) filtered = filtered.filter((n) => n.title.toLowerCase().includes(keyword) || n.summary?.toLowerCase().includes(keyword));
+        if (sourceFilter) filtered = filtered.filter((n) => n.source?.toLowerCase().includes(sourceFilter));
+        setNews(filtered.slice(0, maxArticles));
+        setError(false);
+      })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, []);
+  }, [maxArticles, keyword, sourceFilter]);
 
   useEffect(() => { loadData(); }, [loadData]);
 

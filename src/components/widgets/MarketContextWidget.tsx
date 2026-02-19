@@ -4,7 +4,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Globe, AlertCircle } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
 
-const MarketContextWidget = memo(() => {
+interface Props {
+  config: {
+    showVolume?: boolean;
+    showDominance?: boolean;
+  };
+}
+
+const MarketContextWidget = memo(({ config }: Props) => {
   const [data, setData] = useState<CryptoData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -45,10 +52,13 @@ const MarketContextWidget = memo(() => {
   const btc = data.find((c) => c.symbol === "BTC");
   const btcDom = btc && totalMcap > 0 ? ((btc.market_cap ?? 0) / totalMcap) * 100 : 0;
 
+  const showVolume = config?.showVolume ?? true;
+  const showDominance = config?.showDominance ?? true;
+
   const stats = [
     { label: "Total Market Cap", value: `$${(totalMcap / 1e12).toFixed(2)}T`, accent: true },
-    { label: "24h Volume", value: `$${(totalVol / 1e9).toFixed(1)}B`, accent: false },
-    { label: "BTC Dominance", value: `${btcDom.toFixed(1)}%`, accent: false },
+    ...(showVolume ? [{ label: "24h Volume", value: `$${(totalVol / 1e9).toFixed(1)}B`, accent: false }] : []),
+    ...(showDominance ? [{ label: "BTC Dominance", value: `${btcDom.toFixed(1)}%`, accent: false }] : []),
     { label: "Tracked Coins", value: `${data.length}`, accent: false },
   ];
 
