@@ -50,18 +50,6 @@ const DashboardGrid = () => {
     );
   }
 
-  if (isMobile && !editMode) {
-    return (
-      <div className="p-3 space-y-3 animate-fade-in">
-        {widgets.map((w) => (
-          <div key={w.id} className="min-h-[200px]">
-            <WidgetRenderer widget={w} editMode={editMode} onRemove={removeWidget} />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className={`p-3 sm:p-4 animate-fade-in ${editMode ? "dashboard-edit-mode" : ""}`}>
       <ResponsiveGrid
@@ -75,9 +63,9 @@ const DashboardGrid = () => {
         onLayoutChange={(l) => onLayoutChange([...l])}
         draggableHandle=".widget-drag-handle"
         margin={isMobile ? [8, 8] : [12, 12]}
-        resizeHandles={["n", "s", "e", "w"]}
+        resizeHandles={isMobile ? ["s", "e"] : ["n", "s", "e", "w"]}
         compactType="vertical"
-        preventCollision={true}
+        preventCollision={false}
       >
         {widgets.map((w) => {
           const c = getWidgetConstraints(w.type);
