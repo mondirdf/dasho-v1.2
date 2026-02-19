@@ -57,6 +57,11 @@ const Index = () => {
             <img src={logoDasho} alt={BRAND.name} className="h-[90px]" />
           </Link>
           <div className="flex items-center gap-3">
+            <Link to="/templates" className="hidden sm:inline-flex">
+              <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground">
+                <Layout className="h-3.5 w-3.5" /> Templates
+              </Button>
+            </Link>
             {loading ? null : user ? (
               <Link to="/dashboard"><Button size="sm" className="gap-1.5 glow-button">Dashboard <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
             ) : (
@@ -161,6 +166,27 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">{s.desc}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* Templates CTA Section */}
+        <section className="max-w-4xl mx-auto px-4 py-16">
+          <div className="glass-card-enhanced p-8 sm:p-10 relative overflow-hidden text-center">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsla(152,69%,45%,0.08),transparent_70%)]" />
+            <div className="relative z-10 space-y-4">
+              <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20">
+                <Zap className="h-7 w-7 text-primary" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Browse Templates</h2>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                Skip the setup. Clone a ready-made dashboard from the community in one click and customize it to your needs.
+              </p>
+              <Link to="/templates">
+                <Button size="lg" className="gap-2 text-base px-8 glow-button mt-2">
+                  Explore Templates <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
 

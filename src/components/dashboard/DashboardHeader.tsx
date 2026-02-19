@@ -122,6 +122,12 @@ const DashboardHeader = () => {
           </Button>
           {!isMobile && (
             <>
+              <Link to="/templates">
+                <Button size="sm" variant="outline" className="gap-1.5 h-8" aria-label="Templates">
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  <span className="hidden lg:inline text-xs">Templates</span>
+                </Button>
+              </Link>
               <Button size="sm" variant="outline" onClick={handleShare} disabled={sharing} className="gap-1.5 h-8" aria-label="Share">
                 <Share2 className="h-3.5 w-3.5" />
                 <span className="hidden lg:inline text-xs">{sharing ? "Sharing…" : "Share"}</span>

@@ -1,12 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import AddWidgetSheet from "@/components/AddWidgetSheet";
-import { LayoutGrid, Bell, Settings } from "lucide-react";
+import { LayoutGrid, Bell, Settings, Layers } from "lucide-react";
 
 const MobileBottomNav = () => {
   const location = useLocation();
 
   const navItems = [
     { icon: LayoutGrid, label: "Board", to: "/dashboard" },
+    { icon: Layers, label: "Templates", to: "/templates" },
     { icon: Bell, label: "Alerts", to: "/alerts" },
     { icon: Settings, label: "Settings", to: "/settings" },
   ];
