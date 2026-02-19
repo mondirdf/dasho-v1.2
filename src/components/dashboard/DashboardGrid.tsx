@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import AddWidgetSheet from "@/components/AddWidgetSheet";
 import WidgetRenderer from "@/components/widgets/WidgetRenderer";
@@ -6,12 +7,28 @@ import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getWidgetConstraints } from "@/components/widgets/widgetRegistry";
 
 const ResponsiveGrid = WidthProvider(Responsive);
 
 const DashboardGrid = () => {
   const { widgets, layout, editMode, removeWidget, onLayoutChange } = useDashboard();
   const isMobile = useIsMobile();
+
+  /** Build layout items with per-widget constraints from registry */
+  const constrainedLayout = useMemo(() => {
+    return layout.map((item) => {
+      const widget = widgets.find((w) => w.id === item.i);
+      const c = getWidgetConstraints(widget?.type ?? "");
+      return {
+        ...item,
+        minW: c.minW,
+        minH: c.minH,
+        ...(c.maxW ? { maxW: c.maxW } : {}),
+        ...(c.maxH ? { maxH: c.maxH } : {}),
+      };
+    });
+  }, [layout, widgets]);
 
   if (widgets.length === 0) {
     return (
@@ -48,7 +65,7 @@ const DashboardGrid = () => {
     <div className={`p-3 sm:p-4 animate-fade-in ${editMode ? "dashboard-edit-mode" : ""}`}>
       <ResponsiveGrid
         className="layout"
-        layouts={{ lg: layout }}
+        layouts={{ lg: constrainedLayout }}
         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
         cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
         rowHeight={isMobile ? 70 : 80}
@@ -61,11 +78,22 @@ const DashboardGrid = () => {
         compactType="vertical"
         preventCollision={true}
       >
-        {widgets.map((w) => (
-          <div key={w.id} data-grid={{ minW: 2, minH: 2, maxW: 12, maxH: 8 }}>
-            <WidgetRenderer widget={w} editMode={editMode} onRemove={removeWidget} />
-          </div>
-        ))}
+        {widgets.map((w) => {
+          const c = getWidgetConstraints(w.type);
+          return (
+            <div
+              key={w.id}
+              data-grid={{
+                minW: c.minW,
+                minH: c.minH,
+                ...(c.maxW ? { maxW: c.maxW } : {}),
+                ...(c.maxH ? { maxH: c.maxH } : {}),
+              }}
+            >
+              <WidgetRenderer widget={w} editMode={editMode} onRemove={removeWidget} />
+            </div>
+          );
+        })}
       </ResponsiveGrid>
     </div>
   );
