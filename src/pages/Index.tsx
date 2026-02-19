@@ -18,7 +18,7 @@ const MOCK_WIDGETS = [
 
 /* ── FAQ data ── */
 const FAQ_DATA = [
-  { q: "Is PulseBoard free to use?", a: "Yes! The free plan includes 1 dashboard with up to 5 widgets, real-time data, and alerts. Upgrade to Pro for unlimited dashboards and advanced features." },
+  { q: "Is Dashooo free to use?", a: "Yes! The free plan includes 1 dashboard with up to 5 widgets, real-time data, and alerts. Upgrade to Pro for unlimited dashboards and advanced features." },
   { q: "What kind of data can I track?", a: "Currently we support crypto market data, news feeds, and sentiment indexes. Finance, weather, stocks, sports, and productivity widgets are coming soon." },
   { q: "Can I share my dashboard?", a: "Absolutely. Save any dashboard as a template and share it with a public link. Others can clone it into their own account with one click." },
   { q: "How fast is the data?", a: "Market data refreshes every 60 seconds and news every 5 minutes. All data is cached server-side for instant loading." },
@@ -58,7 +58,7 @@ const Index = () => {
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="text-lg font-bold text-foreground tracking-tight">
-            Pulse<span className="text-primary">Board</span>
+            Dash<span className="text-primary">ooo</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/login">
@@ -281,7 +281,7 @@ const Index = () => {
       <footer className="border-t border-border/50 bg-background">
         <div className="max-w-6xl mx-auto px-4 py-10 grid sm:grid-cols-3 gap-8">
           <div>
-            <p className="text-lg font-bold text-foreground">Pulse<span className="text-primary">Board</span></p>
+            <p className="text-lg font-bold text-foreground">Dash<span className="text-primary">ooo</span></p>
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
               Your data. Your layout. Your control. Build customizable dashboards for everything.
             </p>
@@ -303,7 +303,7 @@ const Index = () => {
           </div>
         </div>
         <div className="border-t border-border/50 py-4">
-          <p className="text-center text-xs text-muted-foreground">&copy; {new Date().getFullYear()} PulseBoard. All rights reserved.</p>
+          <p className="text-center text-xs text-muted-foreground">&copy; {new Date().getFullYear()} Dashooo. All rights reserved.</p>
         </div>
       </footer>
     </div>
