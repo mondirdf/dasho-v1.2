@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import {
   BarChart3, Bell, Layout, Zap, Shield, Globe,
   ArrowRight, Check, ChevronDown, TrendingUp, TrendingDown,
@@ -55,6 +55,9 @@ const FaqItem = ({ q, a }: { q: string; a: string }) => {
 const Index = () => {
   const { user, loading } = useAuth();
 
+  if (!loading && user) {
+    return <Navigate to="/dashboard" replace />;
+  }
   return (
     <div className="min-h-screen">
       {/* Nav */}
