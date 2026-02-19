@@ -62,7 +62,7 @@ const DashboardHeader = () => {
         <div className="flex items-center gap-2 min-w-0">
           {!isMobile && (
             <Link to="/" className="text-sm font-bold text-foreground tracking-tight mr-1">
-              Pulse<span className="gradient-text">Board</span>
+              Dash<span className="gradient-text">ooo</span>
             </Link>
           )}
 

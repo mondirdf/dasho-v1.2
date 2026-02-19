@@ -35,7 +35,7 @@ const Login = () => {
             Welcome back
           </h1>
           <p className="text-sm text-muted-foreground">
-            Sign in to your PulseBoard account
+            Sign in to your Dashooo account
           </p>
         </div>
 
