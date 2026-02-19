@@ -57,7 +57,7 @@ const DashboardGrid = () => {
         onLayoutChange={(l) => onLayoutChange([...l])}
         draggableHandle=".widget-drag-handle"
         margin={isMobile ? [8, 8] : [12, 12]}
-        resizeHandles={["se", "sw", "ne", "nw"]}
+        resizeHandles={["se"]}
         compactType="vertical"
       >
         {widgets.map((w) => (
