@@ -24,6 +24,21 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { useRealtimeTriggeredAlerts } from "@/hooks/useRealtimeData";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 
+/** Source type definitions — add new data sources here */
+const SOURCE_TYPES = [
+  { id: "crypto", label: "Crypto" },
+  { id: "stock", label: "Stocks" },
+  { id: "weather", label: "Weather" },
+  { id: "custom", label: "Custom" },
+] as const;
+
+const CONDITION_TYPES = [
+  { value: "above", label: "Above" },
+  { value: "below", label: "Below" },
+  { value: "equals", label: "Equals" },
+  { value: "contains", label: "Contains" },
+] as const;
+
 const Alerts = () => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -35,9 +50,11 @@ const Alerts = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
+  const [sourceType, setSourceType] = useState("crypto");
   const [symbol, setSymbol] = useState("BTC");
+  const [customLabel, setCustomLabel] = useState("");
   const [price, setPrice] = useState("");
-  const [condition, setCondition] = useState<"above" | "below">("above");
+  const [condition, setCondition] = useState("above");
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
@@ -62,11 +79,9 @@ const Alerts = () => {
 
   useEffect(() => { load(); }, [load]);
 
-  // Realtime triggered alerts
   useRealtimeTriggeredAlerts(user?.id, useCallback((newAlert: any) => {
     setTriggered((prev) => [newAlert, ...prev]);
     toast({ title: `🔔 Alert triggered: ${newAlert.coin_symbol} at $${Number(newAlert.triggered_price).toLocaleString()}` });
-    // Reload to refresh active/inactive states
     load();
   }, [toast, load]));
 
@@ -74,16 +89,22 @@ const Alerts = () => {
     if (!user || !price) return;
     const p = parseFloat(price);
     if (isNaN(p) || p <= 0 || p > 1e12) {
-      toast({ title: "Invalid price. Enter a positive number.", variant: "destructive" });
+      toast({ title: "Invalid value. Enter a positive number.", variant: "destructive" });
+      return;
+    }
+
+    const alertSymbol = sourceType === "crypto" ? symbol : customLabel.trim().toUpperCase();
+    if (!alertSymbol) {
+      toast({ title: "Please enter a data source identifier.", variant: "destructive" });
       return;
     }
 
     // Check for duplicate
     const duplicate = alerts.find(
-      (a) => a.coin_symbol === symbol && a.condition_type === condition && Number(a.target_price) === p
+      (a) => a.coin_symbol === alertSymbol && a.condition_type === condition && Number(a.target_price) === p
     );
     if (duplicate) {
-      toast({ title: "Duplicate alert", description: `You already have a ${condition} $${p.toLocaleString()} alert for ${symbol}.`, variant: "destructive" });
+      toast({ title: "Duplicate alert", description: `You already have a ${condition} ${p.toLocaleString()} alert for ${alertSymbol}.`, variant: "destructive" });
       return;
     }
 
@@ -95,8 +116,9 @@ const Alerts = () => {
 
     setCreating(true);
     try {
-      await createAlert(user.id, symbol, p, condition);
+      await createAlert(user.id, alertSymbol, p, condition as "above" | "below", sourceType, sourceType !== "crypto" ? customLabel.trim() : undefined);
       setPrice("");
+      setCustomLabel("");
       toast({ title: "Alert created" });
       load();
     } catch (e: any) {
@@ -137,6 +159,13 @@ const Alerts = () => {
   const activeAlerts = alerts.filter((a) => a.is_active);
   const inactiveAlerts = alerts.filter((a) => !a.is_active);
 
+  const getAlertLabel = (a: Alert) => {
+    const src = (a as any).source_type || "crypto";
+    const label = (a as any).source_label || a.coin_symbol;
+    const srcBadge = SOURCE_TYPES.find((s) => s.id === src);
+    return { symbol: a.coin_symbol, label, srcLabel: srcBadge?.label || src };
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen p-6 space-y-4">
@@ -153,7 +182,7 @@ const Alerts = () => {
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <Bell className="h-5 w-5 text-primary" />
-        <h1 className="text-lg font-bold text-foreground">Price Alerts</h1>
+        <h1 className="text-lg font-bold text-foreground">Alerts</h1>
         {triggered.length > 0 && (
           <Badge variant="secondary" className="ml-auto">{triggered.length} triggered</Badge>
         )}
@@ -168,34 +197,64 @@ const Alerts = () => {
               <span className="text-[11px] text-muted-foreground">{alerts.length}/{maxAlerts} alerts</span>
             )}
           </div>
+
+          {/* Source type selector */}
+          <div className="flex gap-1.5 overflow-x-auto scrollbar-none">
+            {SOURCE_TYPES.map((src) => (
+              <button
+                key={src.id}
+                onClick={() => setSourceType(src.id)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  sourceType === src.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                }`}
+              >
+                {src.label}
+              </button>
+            ))}
+          </div>
+
           <div className="flex flex-col sm:flex-row flex-wrap gap-3">
-            <Select value={symbol} onValueChange={setSymbol}>
-              <SelectTrigger className="w-full sm:w-28" aria-label="Select coin">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {coins.map((c) => (
-                  <SelectItem key={c.symbol} value={c.symbol}>{c.symbol}</SelectItem>
-                ))}
-                {coins.length === 0 && <SelectItem value="BTC">BTC</SelectItem>}
-              </SelectContent>
-            </Select>
-            <Select value={condition} onValueChange={(v) => setCondition(v as "above" | "below")}>
+            {sourceType === "crypto" ? (
+              <Select value={symbol} onValueChange={setSymbol}>
+                <SelectTrigger className="w-full sm:w-28" aria-label="Select source">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {coins.map((c) => (
+                    <SelectItem key={c.symbol} value={c.symbol}>{c.symbol}</SelectItem>
+                  ))}
+                  {coins.length === 0 && <SelectItem value="BTC">BTC</SelectItem>}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Input
+                placeholder={sourceType === "stock" ? "e.g. AAPL" : sourceType === "weather" ? "e.g. NYC" : "Identifier"}
+                value={customLabel}
+                onChange={(e) => setCustomLabel(e.target.value)}
+                className="w-full sm:w-36"
+                aria-label="Data source identifier"
+                maxLength={20}
+              />
+            )}
+            <Select value={condition} onValueChange={setCondition}>
               <SelectTrigger className="w-full sm:w-28" aria-label="Condition">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="above">Above</SelectItem>
-                <SelectItem value="below">Below</SelectItem>
+                {CONDITION_TYPES.map((c) => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <Input
               type="number"
-              placeholder="Target price"
+              placeholder="Target value"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               className="w-full sm:w-36"
-              aria-label="Target price"
+              aria-label="Target value"
               min="0"
               step="any"
               onKeyDown={(e) => e.key === "Enter" && handleCreate()}
@@ -220,44 +279,56 @@ const Alerts = () => {
               </div>
             ) : (
               <>
-                {activeAlerts.map((a) => (
-                  <div key={a.id} className="glass-card p-4 flex items-center justify-between">
-                    <div>
-                      <span className="text-sm font-medium text-foreground">{a.coin_symbol}</span>
-                      <span className="text-xs text-muted-foreground ml-2">
-                        {a.condition_type} ${Number(a.target_price).toLocaleString()}
-                      </span>
+                {activeAlerts.map((a) => {
+                  const info = getAlertLabel(a);
+                  return (
+                    <div key={a.id} className="glass-card p-4 flex items-center justify-between">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Badge variant="outline" className="text-[10px] shrink-0">{info.srcLabel}</Badge>
+                        <div className="min-w-0">
+                          <span className="text-sm font-medium text-foreground">{info.symbol}</span>
+                          <span className="text-xs text-muted-foreground ml-2">
+                            {a.condition_type} {Number(a.target_price).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <Switch checked={a.is_active} onCheckedChange={(v) => handleToggle(a.id, v)} aria-label="Toggle alert" />
+                        <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(a.id)} aria-label="Delete alert">
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <Switch checked={a.is_active} onCheckedChange={(v) => handleToggle(a.id, v)} aria-label="Toggle alert" />
-                      <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(a.id)} aria-label="Delete alert">
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 {inactiveAlerts.length > 0 && (
                   <div className="space-y-2 mt-4">
                     <p className="text-xs text-muted-foreground font-medium">Inactive</p>
-                    {inactiveAlerts.map((a) => (
-                      <div key={a.id} className="glass-card p-4 flex items-center justify-between opacity-60">
-                        <div>
-                          <span className="text-sm font-medium text-foreground">{a.coin_symbol}</span>
-                          <span className="text-xs text-muted-foreground ml-2">
-                            {a.condition_type} ${Number(a.target_price).toLocaleString()}
-                          </span>
-                          {a.triggered_at && (
-                            <Badge variant="secondary" className="ml-2 text-xs">Triggered</Badge>
-                          )}
+                    {inactiveAlerts.map((a) => {
+                      const info = getAlertLabel(a);
+                      return (
+                        <div key={a.id} className="glass-card p-4 flex items-center justify-between opacity-60">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <Badge variant="outline" className="text-[10px] shrink-0">{info.srcLabel}</Badge>
+                            <div className="min-w-0">
+                              <span className="text-sm font-medium text-foreground">{info.symbol}</span>
+                              <span className="text-xs text-muted-foreground ml-2">
+                                {a.condition_type} {Number(a.target_price).toLocaleString()}
+                              </span>
+                              {a.triggered_at && (
+                                <Badge variant="secondary" className="ml-2 text-xs">Triggered</Badge>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <Switch checked={a.is_active} onCheckedChange={(v) => handleToggle(a.id, v)} aria-label="Toggle alert" />
+                            <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(a.id)} aria-label="Delete alert">
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <Switch checked={a.is_active} onCheckedChange={(v) => handleToggle(a.id, v)} aria-label="Toggle alert" />
-                          <Button variant="ghost" size="icon" onClick={() => setDeleteTarget(a.id)} aria-label="Delete alert">
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </>
@@ -276,7 +347,7 @@ const Alerts = () => {
                   <div>
                     <span className="text-sm font-medium text-foreground">{t.coin_symbol}</span>
                     <span className="text-xs text-muted-foreground ml-2">
-                      at ${Number(t.triggered_price).toLocaleString()}
+                      at {Number(t.triggered_price).toLocaleString()}
                     </span>
                   </div>
                   <span className="text-xs text-muted-foreground">

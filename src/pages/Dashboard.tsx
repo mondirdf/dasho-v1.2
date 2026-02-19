@@ -4,11 +4,12 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardGrid from "@/components/dashboard/DashboardGrid";
 import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import RenameDialog from "@/components/dashboard/RenameDialog";
+import Onboarding from "@/pages/Onboarding";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const DashboardContent = () => {
-  const { loading } = useDashboard();
+  const { loading, isNewUser } = useDashboard();
   const isMobile = useIsMobile();
 
   if (loading) {
@@ -22,6 +23,10 @@ const DashboardContent = () => {
         </div>
       </div>
     );
+  }
+
+  if (isNewUser) {
+    return <Onboarding />;
   }
 
   return (

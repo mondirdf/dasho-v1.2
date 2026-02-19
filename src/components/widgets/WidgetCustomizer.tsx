@@ -1,8 +1,8 @@
 /**
- * WidgetCustomizer — per-widget style customization panel.
+ * WidgetCustomizer — per-widget style + size customization panel.
  * Stores customization in widget.config_json.style
  */
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Paintbrush, X } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
@@ -16,9 +16,17 @@ export interface WidgetStyle {
   animationsEnabled?: boolean;
 }
 
+export interface WidgetSize {
+  w: number;
+  h: number;
+  preset?: string;
+}
+
 interface Props {
   style: WidgetStyle;
+  size?: WidgetSize;
   onChange: (style: WidgetStyle) => void;
+  onSizeChange?: (size: WidgetSize) => void;
 }
 
 const COLOR_PRESETS = [
@@ -39,8 +47,28 @@ const ACCENT_PRESETS = [
   { label: "Pink", value: "330 70% 55%" },
 ];
 
-const WidgetCustomizer = ({ style, onChange }: Props) => {
+const SIZE_PRESETS = [
+  { label: "Small", w: 3, h: 2, id: "small" },
+  { label: "Medium", w: 4, h: 3, id: "medium" },
+  { label: "Large", w: 6, h: 4, id: "large" },
+];
+
+const WidgetCustomizer = ({ style, size, onChange, onSizeChange }: Props) => {
   const [open, setOpen] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const debouncedChange = useCallback((newStyle: WidgetStyle) => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      onChange(newStyle);
+    }, 300);
+  }, [onChange]);
+
+  const handleStyleChange = useCallback((newStyle: WidgetStyle) => {
+    debouncedChange(newStyle);
+  }, [debouncedChange]);
+
+  const currentPreset = size ? SIZE_PRESETS.find((p) => p.w === size.w && p.h === size.h)?.id || "custom" : "medium";
 
   if (!open) {
     return (
@@ -65,6 +93,51 @@ const WidgetCustomizer = ({ style, onChange }: Props) => {
         </button>
       </div>
 
+      {/* Size presets */}
+      {onSizeChange && (
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Size</Label>
+          <div className="flex gap-1.5">
+            {SIZE_PRESETS.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => onSizeChange({ w: p.w, h: p.h, preset: p.id })}
+                className={`flex-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  currentPreset === p.id
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-secondary/60 text-muted-foreground hover:bg-secondary"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
+          {/* Custom size sliders */}
+          <div className="grid grid-cols-2 gap-3 mt-2">
+            <div>
+              <Label className="text-[10px] text-muted-foreground">Columns: {size?.w ?? 4}</Label>
+              <Slider
+                value={[size?.w ?? 4]}
+                min={2}
+                max={12}
+                step={1}
+                onValueChange={([v]) => onSizeChange?.({ w: v, h: size?.h ?? 3 })}
+              />
+            </div>
+            <div>
+              <Label className="text-[10px] text-muted-foreground">Rows: {size?.h ?? 3}</Label>
+              <Slider
+                value={[size?.h ?? 3]}
+                min={2}
+                max={8}
+                step={1}
+                onValueChange={([v]) => onSizeChange?.({ w: size?.w ?? 4, h: v })}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Background Color */}
       <div className="space-y-2">
         <Label className="text-xs text-muted-foreground">Background</Label>
@@ -72,7 +145,7 @@ const WidgetCustomizer = ({ style, onChange }: Props) => {
           {COLOR_PRESETS.map((c) => (
             <button
               key={c.label}
-              onClick={() => onChange({ ...style, bgColor: c.value })}
+              onClick={() => handleStyleChange({ ...style, bgColor: c.value })}
               className={`w-7 h-7 rounded-lg border-2 transition-all ${
                 (style.bgColor || "") === c.value
                   ? "border-primary scale-110"
@@ -92,7 +165,7 @@ const WidgetCustomizer = ({ style, onChange }: Props) => {
           {ACCENT_PRESETS.map((c) => (
             <button
               key={c.label}
-              onClick={() => onChange({ ...style, accentColor: c.value })}
+              onClick={() => handleStyleChange({ ...style, accentColor: c.value })}
               className={`w-7 h-7 rounded-lg border-2 transition-all ${
                 (style.accentColor || "") === c.value
                   ? "border-primary scale-110"
@@ -113,7 +186,7 @@ const WidgetCustomizer = ({ style, onChange }: Props) => {
           min={0}
           max={28}
           step={2}
-          onValueChange={([v]) => onChange({ ...style, borderRadius: v })}
+          onValueChange={([v]) => handleStyleChange({ ...style, borderRadius: v })}
         />
       </div>
 
@@ -125,7 +198,7 @@ const WidgetCustomizer = ({ style, onChange }: Props) => {
           min={0}
           max={100}
           step={10}
-          onValueChange={([v]) => onChange({ ...style, shadowIntensity: v })}
+          onValueChange={([v]) => handleStyleChange({ ...style, shadowIntensity: v })}
         />
       </div>
 

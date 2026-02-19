@@ -1,19 +1,19 @@
 /**
  * WidgetRenderer — dynamically renders the correct widget component
- * based on widget.type. Supports per-widget style customization.
- * Architecture is category-agnostic: new widget types are registered in WIDGET_MAP.
+ * based on widget.type. Supports per-widget style and size customization.
  */
 import { memo, useState, useCallback, useMemo, CSSProperties } from "react";
 import { X, GripVertical } from "lucide-react";
 import type { Widget } from "@/services/dataService";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import WidgetCustomizer, { type WidgetStyle } from "./WidgetCustomizer";
+import WidgetCustomizer, { type WidgetStyle, type WidgetSize } from "./WidgetCustomizer";
 import CryptoPriceWidget from "./CryptoPriceWidget";
 import MultiTrackerWidget from "./MultiTrackerWidget";
 import NewsWidget from "./NewsWidget";
 import FearGreedWidget from "./FearGreedWidget";
 import MarketContextWidget from "./MarketContextWidget";
 import { supabase } from "@/integrations/supabase/client";
+import { useDashboard } from "@/contexts/DashboardContext";
 
 interface Props {
   widget: Widget;
@@ -23,7 +23,7 @@ interface Props {
 
 /**
  * Widget registry — add new widget components here.
- * No crypto-specific logic; each type maps to a component.
+ * Category-agnostic: each type maps to a component.
  */
 const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   crypto_price: CryptoPriceWidget,
@@ -31,7 +31,6 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   news: NewsWidget,
   fear_greed: FearGreedWidget,
   market_context: MarketContextWidget,
-  // Future: weather_current, stock_price, forex_rates, etc.
 };
 
 const WIDGET_LABELS: Record<string, string> = {
@@ -64,10 +63,17 @@ function getWidgetCustomStyle(style?: WidgetStyle): CSSProperties {
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
   const Component = WIDGET_MAP[widget.type];
   const [confirmRemove, setConfirmRemove] = useState(false);
+  const { layout, onLayoutChange } = useDashboard();
 
   const configJson = widget.config_json as any;
   const widgetStyle: WidgetStyle = configJson?.style || {};
   const animationsOn = widgetStyle.animationsEnabled ?? true;
+
+  const currentLayoutItem = layout.find((l) => l.i === widget.id);
+  const currentSize: WidgetSize = {
+    w: currentLayoutItem?.w ?? widget.width,
+    h: currentLayoutItem?.h ?? widget.height,
+  };
 
   const handleStyleChange = useCallback(async (newStyle: WidgetStyle) => {
     const updated = { ...(configJson || {}), style: newStyle };
@@ -75,9 +81,15 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
       .from("widgets")
       .update({ config_json: updated })
       .eq("id", widget.id);
-    // Optimistic: mutate in-place for instant feedback
     (widget as any).config_json = updated;
   }, [widget, configJson]);
+
+  const handleSizeChange = useCallback((newSize: WidgetSize) => {
+    const newLayout = layout.map((l) =>
+      l.i === widget.id ? { ...l, w: newSize.w, h: newSize.h } : l
+    );
+    onLayoutChange(newLayout);
+  }, [widget.id, layout, onLayoutChange]);
 
   const customStyle = useMemo(() => getWidgetCustomStyle(widgetStyle), [widgetStyle]);
 
@@ -104,7 +116,12 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
           </button>
         )}
         {editMode && (
-          <WidgetCustomizer style={widgetStyle} onChange={handleStyleChange} />
+          <WidgetCustomizer
+            style={widgetStyle}
+            size={currentSize}
+            onChange={handleStyleChange}
+            onSizeChange={handleSizeChange}
+          />
         )}
         <div className={editMode ? "pt-8 h-full" : "h-full"}>
           {Component ? (

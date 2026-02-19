@@ -119,7 +119,9 @@ export async function createAlert(
   userId: string,
   coinSymbol: string,
   targetPrice: number,
-  conditionType: "above" | "below" = "above"
+  conditionType: "above" | "below" = "above",
+  sourceType = "crypto",
+  sourceLabel?: string,
 ) {
   const { data, error } = await supabase
     .from("alerts")
@@ -128,7 +130,9 @@ export async function createAlert(
       coin_symbol: coinSymbol,
       target_price: targetPrice,
       condition_type: conditionType,
-    })
+      source_type: sourceType,
+      source_label: sourceLabel,
+    } as any)
     .select()
     .single();
   if (error) throw error;

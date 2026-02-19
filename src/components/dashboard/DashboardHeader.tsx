@@ -37,13 +37,16 @@ const DashboardHeader = () => {
     if (!dashboard || !user) return;
     setSharing(true);
     try {
-      await shareTemplate(
+      const tmpl = await shareTemplate(
         user.id,
         dashboard.name + " Template",
         layout,
         widgets.map((w) => ({ type: w.type, config_json: w.config_json }))
       );
-      toast({ title: "Template shared!", description: "Others can now find and use your dashboard layout." });
+      // Get the public_share_id from the created template
+      const shareUrl = `${window.location.origin}/template/${tmpl.public_share_id}`;
+      navigator.clipboard.writeText(shareUrl);
+      toast({ title: "Template shared!", description: "Share link copied to clipboard." });
     } catch {
       toast({ title: "Error", description: "Failed to share template.", variant: "destructive" });
     } finally {
