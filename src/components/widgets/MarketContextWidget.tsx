@@ -1,3 +1,7 @@
+/**
+ * MarketContextWidget — CONTENT ONLY.
+ * All container styling is handled by WidgetContainer.
+ */
 import { useEffect, useState, memo, useCallback } from "react";
 import { fetchCryptoData, type CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,7 +32,7 @@ const MarketContextWidget = memo(({ config }: Props) => {
 
   if (loading) {
     return (
-      <div className="h-full p-4 space-y-3">
+      <div className="h-full space-y-3">
         <Skeleton className="h-5 w-32" />
         <div className="grid grid-cols-2 gap-3">
           {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-16 rounded-lg" />)}
@@ -39,7 +43,7 @@ const MarketContextWidget = memo(({ config }: Props) => {
 
   if (error) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 text-center gap-2">
+      <div className="h-full flex flex-col items-center justify-center text-center gap-2">
         <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
         <p className="text-muted-foreground text-sm">Failed to load data</p>
         <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
@@ -63,7 +67,7 @@ const MarketContextWidget = memo(({ config }: Props) => {
   ];
 
   return (
-    <div className="h-full p-4 relative overflow-hidden">
+    <div className="h-full">
       <div className="flex items-center gap-2 mb-4">
         <Globe className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-semibold text-foreground">Market Context</h3>

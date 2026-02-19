@@ -1,65 +1,17 @@
+/**
+ * AddWidgetSheet — uses WIDGET_REGISTRY as the single source of truth.
+ */
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import {
-  Plus, BarChart3, Newspaper, Gauge, Globe, LineChart,
-  Cloud, TrendingUp, Gamepad2, Clock, Lock, Check
-} from "lucide-react";
+import { Plus, Lock, Check } from "lucide-react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { useState, useCallback } from "react";
-
-export interface WidgetDefinition {
-  category: string;
-  type: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  desc: string;
-  color: string;
-  available: boolean;
-}
-
-export const WIDGET_CATALOG: WidgetDefinition[] = [
-  // Crypto
-  { category: "crypto", type: "crypto_price", label: "Price Tracker", icon: LineChart, desc: "Single coin price tracker with sparkline", color: "text-primary", available: true },
-  { category: "crypto", type: "multi_tracker", label: "Multi Tracker", icon: BarChart3, desc: "Track multiple coins at once", color: "text-accent", available: true },
-  { category: "crypto", type: "fear_greed", label: "Fear & Greed", icon: Gauge, desc: "Market sentiment index gauge", color: "text-success", available: true },
-  { category: "crypto", type: "market_context", label: "Market Context", icon: Globe, desc: "Overall market statistics", color: "text-primary", available: true },
-  // News
-  { category: "news", type: "news", label: "News Feed", icon: Newspaper, desc: "Latest news articles", color: "text-warning", available: true },
-  // Finance (coming soon)
-  { category: "finance", type: "forex_rates", label: "Forex Rates", icon: BarChart3, desc: "Live currency exchange rates", color: "text-accent", available: false },
-  { category: "finance", type: "portfolio", label: "Portfolio", icon: TrendingUp, desc: "Track your investment portfolio", color: "text-success", available: false },
-  // Weather (coming soon)
-  { category: "weather", type: "weather_current", label: "Current Weather", icon: Cloud, desc: "Live weather for your city", color: "text-accent", available: false },
-  { category: "weather", type: "weather_forecast", label: "Forecast", icon: Cloud, desc: "5-day weather forecast", color: "text-primary", available: false },
-  // Stocks (coming soon)
-  { category: "stocks", type: "stock_price", label: "Stock Price", icon: TrendingUp, desc: "Real-time stock quotes", color: "text-success", available: false },
-  { category: "stocks", type: "stock_chart", label: "Stock Chart", icon: LineChart, desc: "Interactive stock charts", color: "text-primary", available: false },
-  // Sports (coming soon)
-  { category: "sports", type: "live_scores", label: "Live Scores", icon: Gamepad2, desc: "Live sports scores", color: "text-warning", available: false },
-  // Productivity (coming soon)
-  { category: "productivity", type: "clock_widget", label: "World Clock", icon: Clock, desc: "Multiple timezone clocks", color: "text-muted-foreground", available: false },
-];
-
-const CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "crypto", label: "Crypto" },
-  { id: "news", label: "News" },
-  { id: "finance", label: "Finance" },
-  { id: "weather", label: "Weather" },
-  { id: "stocks", label: "Stocks" },
-  { id: "sports", label: "Sports" },
-  { id: "productivity", label: "Productivity" },
-];
+import { WIDGET_REGISTRY, WIDGET_CATEGORIES } from "@/components/widgets/widgetRegistry";
 
 interface AddWidgetSheetProps {
   variant?: "default" | "mobile";
-  /** If true, uses onboarding mode — no sheet wrapper, renders inline */
   inline?: boolean;
   onDone?: () => void;
 }
@@ -71,7 +23,6 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
 
-  // Use index-based keys to support multiple instances of the same type
   const toggleSelect = useCallback((type: string) => {
     setSelected((prev) => {
       const next = new Set(prev);
@@ -97,14 +48,14 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
   }, [selected, addWidget, onDone]);
 
   const filtered = activeCategory === "all"
-    ? WIDGET_CATALOG
-    : WIDGET_CATALOG.filter((w) => w.category === activeCategory);
+    ? WIDGET_REGISTRY
+    : WIDGET_REGISTRY.filter((w) => w.category === activeCategory);
 
   const content = (
     <>
       {/* Category tabs */}
       <div className="flex gap-1 overflow-x-auto py-3 -mx-1 px-1 scrollbar-none">
-        {CATEGORIES.map((cat) => (
+        {WIDGET_CATEGORIES.map((cat) => (
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
@@ -123,6 +74,7 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
         {filtered.map((w) => {
           const isSelected = selected.has(w.type);
+          const Icon = w.icon;
           return (
             <button
               key={w.type}
@@ -139,7 +91,7 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
               <div className={`p-2.5 rounded-xl transition-colors ${
                 isSelected ? "bg-primary/20" : w.available ? "bg-secondary/80 group-hover:bg-primary/10" : "bg-secondary/40"
               }`}>
-                <w.icon className={`h-5 w-5 ${isSelected ? "text-primary" : w.available ? w.color : "text-muted-foreground"}`} />
+                <Icon className={`h-5 w-5 ${isSelected ? "text-primary" : w.available ? w.iconColor : "text-muted-foreground"}`} />
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
@@ -178,7 +130,6 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
     </>
   );
 
-  // Inline mode for onboarding
   if (inline) {
     return <div className="flex flex-col h-full">{content}</div>;
   }

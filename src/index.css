@@ -120,14 +120,57 @@
       inset 0 1px 0 hsla(0, 0%, 100%, 0.04);
   }
 
-  /* Widget styling */
+  /* ── Widget Container: Background Presets ── */
+  .widget-bg-glass {
+    @apply glass-card;
+  }
+  .widget-bg-solid {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+  }
+  .widget-bg-gradient {
+    background: var(--gradient-surface);
+    border: 1px solid hsla(var(--glass-border) / 0.4);
+    border-radius: var(--radius);
+    backdrop-filter: blur(20px);
+  }
+  .widget-bg-subtle {
+    background: hsla(var(--glass-bg) / 0.35);
+    border: 1px solid hsla(var(--glass-border) / 0.2);
+    border-radius: var(--radius);
+  }
+
+  /* ── Widget Container: Shadow Presets ── */
+  .widget-shadow-sm {
+    box-shadow: 0 2px 8px -2px hsla(228, 40%, 4%, 0.3);
+  }
+  .widget-shadow-md {
+    box-shadow:
+      0 0 0 1px hsla(var(--glass-border) / 0.1),
+      0 4px 24px -4px hsla(228, 40%, 4%, 0.5),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.03);
+  }
+  .widget-shadow-lg {
+    box-shadow:
+      0 0 0 1px hsla(var(--glass-border) / 0.1),
+      0 8px 40px -8px hsla(228, 40%, 4%, 0.6),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.04);
+  }
+  .widget-shadow-glow {
+    box-shadow:
+      0 0 20px -8px hsla(var(--glass-glow) / 0.15),
+      0 4px 24px -4px hsla(228, 40%, 4%, 0.5),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.04);
+  }
+
+  /* ── Widget Container: Base ── */
   .widget-container {
-    @apply glass-card relative;
+    @apply relative;
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.3s ease, border-color 0.2s ease;
   }
 
-  /* Allow overflow for resize handles + glow in edit mode */
   .widget-container.editing {
     overflow: visible;
     border-color: hsla(var(--glass-glow) / 0.35);
@@ -136,12 +179,21 @@
       0 4px 24px -4px hsla(228, 40%, 4%, 0.5);
   }
 
-  /* Widget hover glow animation */
-  .widget-animate:hover {
+  /* ── Widget Hover Lift ── */
+  .widget-hover-lift:hover {
     transform: translateY(-1px);
     box-shadow:
       0 0 20px -6px hsla(var(--glass-glow) / 0.18),
       0 8px 32px -6px hsla(228, 40%, 4%, 0.4);
+  }
+
+  /* ── Slide-up animation ── */
+  @keyframes slide-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out;
   }
 
   /* Gradient text */

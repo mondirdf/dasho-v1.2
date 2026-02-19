@@ -1,25 +1,15 @@
 /**
  * Onboarding page — shown when user has no dashboards/widgets.
- * Lets user pick widgets and creates first dashboard automatically.
+ * Uses WIDGET_REGISTRY from widgetRegistry as single source of truth.
  */
 import { useState, useCallback } from "react";
-import { LayoutGrid, Sparkles } from "lucide-react";
+import { LayoutGrid, Sparkles, Check, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { createDashboard, createWidget } from "@/services/dataService";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { WIDGET_CATALOG } from "@/components/AddWidgetSheet";
+import { WIDGET_REGISTRY, WIDGET_CATEGORIES } from "@/components/widgets/widgetRegistry";
 import { Button } from "@/components/ui/button";
-import { Check, Plus, Lock } from "lucide-react";
-
-const CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "crypto", label: "Crypto" },
-  { id: "news", label: "News" },
-  { id: "finance", label: "Finance" },
-  { id: "weather", label: "Weather" },
-  { id: "stocks", label: "Stocks" },
-];
 
 const Onboarding = () => {
   const { user } = useAuth();
@@ -47,7 +37,6 @@ const Onboarding = () => {
         await createWidget(dash.id, type);
       }
       toast({ title: "Dashboard created!" });
-      // Force reload to pick up the new dashboard
       window.location.href = "/dashboard";
     } catch (e: any) {
       toast({ title: "Error", description: e?.message || "Failed to create dashboard.", variant: "destructive" });
@@ -57,13 +46,12 @@ const Onboarding = () => {
   }, [user, selected, toast]);
 
   const filtered = activeCategory === "all"
-    ? WIDGET_CATALOG
-    : WIDGET_CATALOG.filter((w) => w.category === activeCategory);
+    ? WIDGET_REGISTRY
+    : WIDGET_REGISTRY.filter((w) => w.category === activeCategory);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8">
       <div className="glass-card-glow p-6 sm:p-10 max-w-2xl w-full space-y-6 animate-fade-in">
-        {/* Header */}
         <div className="text-center space-y-3">
           <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
             <Sparkles className="h-8 w-8 text-primary" />
@@ -74,9 +62,8 @@ const Onboarding = () => {
           </p>
         </div>
 
-        {/* Category tabs */}
         <div className="flex gap-1.5 overflow-x-auto scrollbar-none justify-center">
-          {CATEGORIES.map((cat) => (
+          {WIDGET_CATEGORIES.map((cat) => (
             <button
               key={cat.id}
               onClick={() => setActiveCategory(cat.id)}
@@ -91,10 +78,10 @@ const Onboarding = () => {
           ))}
         </div>
 
-        {/* Widget grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[400px] overflow-y-auto pr-1">
           {filtered.map((w) => {
             const isSelected = selected.has(w.type);
+            const Icon = w.icon;
             return (
               <button
                 key={w.type}
@@ -109,7 +96,7 @@ const Onboarding = () => {
                 }`}
               >
                 <div className={`p-2 rounded-xl ${isSelected ? "bg-primary/20" : "bg-secondary/80"}`}>
-                  <w.icon className={`h-5 w-5 ${isSelected ? "text-primary" : w.available ? w.color : "text-muted-foreground"}`} />
+                  <Icon className={`h-5 w-5 ${isSelected ? "text-primary" : w.available ? w.iconColor : "text-muted-foreground"}`} />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -134,7 +121,6 @@ const Onboarding = () => {
           })}
         </div>
 
-        {/* Create button */}
         <Button
           onClick={handleCreate}
           disabled={selected.size === 0 || creating}

@@ -1,3 +1,7 @@
+/**
+ * MultiTrackerWidget — CONTENT ONLY.
+ * All container styling is handled by WidgetContainer.
+ */
 import { useEffect, useState, memo, useMemo, useCallback } from "react";
 import { fetchCryptoData, type CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,7 +40,7 @@ const MultiTrackerWidget = memo(({ config }: Props) => {
 
   if (loading) {
     return (
-      <div className="h-full p-4 space-y-3">
+      <div className="h-full space-y-3">
         <Skeleton className="h-5 w-32" />
         {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-10 w-full" />)}
       </div>
@@ -45,7 +49,7 @@ const MultiTrackerWidget = memo(({ config }: Props) => {
 
   if (error) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 text-center gap-2">
+      <div className="h-full flex flex-col items-center justify-center text-center gap-2">
         <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
         <p className="text-muted-foreground text-sm">Failed to load data</p>
         <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
@@ -54,7 +58,7 @@ const MultiTrackerWidget = memo(({ config }: Props) => {
   }
 
   return (
-    <div className="h-full overflow-auto p-4">
+    <div className="h-full overflow-auto">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-foreground">Market Overview</h3>
         <button

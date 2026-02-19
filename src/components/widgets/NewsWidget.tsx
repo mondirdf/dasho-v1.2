@@ -1,3 +1,7 @@
+/**
+ * NewsWidget — CONTENT ONLY.
+ * All container styling is handled by WidgetContainer.
+ */
 import { useEffect, useState, memo, useCallback } from "react";
 import { fetchNews, type NewsData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,7 +48,7 @@ const NewsWidget = memo(({ config }: Props) => {
 
   if (loading) {
     return (
-      <div className="h-full p-4 space-y-3">
+      <div className="h-full space-y-3">
         <Skeleton className="h-5 w-24" />
         {[1, 2, 3, 4].map((i) => (
           <div key={i} className="space-y-1.5">
@@ -58,7 +62,7 @@ const NewsWidget = memo(({ config }: Props) => {
 
   if (error) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 text-center gap-2">
+      <div className="h-full flex flex-col items-center justify-center text-center gap-2">
         <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
         <p className="text-muted-foreground text-sm">Failed to load news</p>
         <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
@@ -68,7 +72,7 @@ const NewsWidget = memo(({ config }: Props) => {
 
   if (news.length === 0) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 text-center">
+      <div className="h-full flex flex-col items-center justify-center text-center">
         <Newspaper className="h-8 w-8 text-muted-foreground/40 mb-2" />
         <p className="text-muted-foreground text-sm">No news yet.</p>
         <p className="text-muted-foreground/60 text-xs">Refreshes every 5 minutes</p>
@@ -78,7 +82,7 @@ const NewsWidget = memo(({ config }: Props) => {
 
   return (
     <>
-      <div className="h-full overflow-auto p-4">
+      <div className="h-full overflow-auto">
         <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
           <Newspaper className="h-4 w-4 text-warning" />
           Crypto News

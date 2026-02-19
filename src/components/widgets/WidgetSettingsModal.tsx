@@ -1,22 +1,18 @@
 /**
- * WidgetSettingsModal — standalone modal for per-widget configuration.
- * Contains general style settings + type-specific API/display settings.
+ * WidgetSettingsModal — uses widgetRegistry for config fields.
  */
 import { useState, useCallback, useRef, useEffect } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import type { Widget } from "@/services/dataService";
+import { getWidgetDef } from "./widgetRegistry";
 
 export interface WidgetStyle {
   bgColor?: string;
@@ -44,47 +40,6 @@ const ACCENT_PRESETS = [
   { label: "Pink", value: "330 70% 55%" },
 ];
 
-/** Per-widget-type config definitions */
-interface ConfigField {
-  key: string;
-  label: string;
-  type: "text" | "number" | "toggle" | "select";
-  options?: { label: string; value: string }[];
-  defaultValue?: any;
-  placeholder?: string;
-}
-
-const WIDGET_CONFIG_FIELDS: Record<string, ConfigField[]> = {
-  crypto_price: [
-    { key: "symbol", label: "Coin Symbol", type: "text", defaultValue: "BTC", placeholder: "e.g. BTC, ETH, SOL" },
-    { key: "currency", label: "Currency", type: "select", defaultValue: "USD", options: [
-      { label: "USD", value: "USD" }, { label: "EUR", value: "EUR" }, { label: "GBP", value: "GBP" },
-    ]},
-    { key: "showChart", label: "Show Sparkline Chart", type: "toggle", defaultValue: true },
-    { key: "showMarketCap", label: "Show Market Cap", type: "toggle", defaultValue: true },
-  ],
-  multi_tracker: [
-    { key: "symbolsText", label: "Symbols (comma-separated)", type: "text", defaultValue: "BTC,ETH,SOL,ADA,DOGE", placeholder: "BTC,ETH,SOL" },
-    { key: "maxItems", label: "Max Items", type: "number", defaultValue: 10 },
-    { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: false },
-  ],
-  news: [
-    { key: "maxArticles", label: "Max Articles", type: "number", defaultValue: 20 },
-    { key: "keyword", label: "Filter Keyword", type: "text", placeholder: "Optional keyword filter" },
-    { key: "source", label: "Source Filter", type: "text", placeholder: "Optional source name" },
-  ],
-  fear_greed: [
-    { key: "showAlert", label: "Visual Alert on Extremes", type: "toggle", defaultValue: true },
-    { key: "indicatorType", label: "Indicator Style", type: "select", defaultValue: "gauge", options: [
-      { label: "Gauge", value: "gauge" }, { label: "Simple", value: "simple" },
-    ]},
-  ],
-  market_context: [
-    { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: true },
-    { key: "showDominance", label: "Show BTC Dominance", type: "toggle", defaultValue: true },
-  ],
-};
-
 interface Props {
   widget: Widget;
   open: boolean;
@@ -100,15 +55,11 @@ const WidgetSettingsModal = ({ widget, open, onOpenChange }: Props) => {
   });
   const saveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Auto-save with debounce
   const save = useCallback((newStyle: WidgetStyle, newConfig: Record<string, any>) => {
     if (saveRef.current) clearTimeout(saveRef.current);
     saveRef.current = setTimeout(async () => {
       const updated = { ...newConfig, style: newStyle } as Record<string, unknown>;
-      await supabase
-        .from("widgets")
-        .update({ config_json: updated as any })
-        .eq("id", widget.id);
+      await supabase.from("widgets").update({ config_json: updated as any }).eq("id", widget.id);
       (widget as any).config_json = updated;
     }, 400);
   }, [widget]);
@@ -133,16 +84,16 @@ const WidgetSettingsModal = ({ widget, open, onOpenChange }: Props) => {
     return () => { if (saveRef.current) clearTimeout(saveRef.current); };
   }, []);
 
-  const typeFields = WIDGET_CONFIG_FIELDS[widget.type] || [];
-  const widgetLabel = widget.type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  // Get config fields from registry
+  const def = getWidgetDef(widget.type);
+  const typeFields = def?.configFields || [];
+  const widgetLabel = def?.label || widget.type.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[85vh] overflow-auto bg-card/95 backdrop-blur-xl border-border/60">
         <DialogHeader>
-          <DialogTitle className="text-base text-foreground">
-            {widgetLabel} Settings
-          </DialogTitle>
+          <DialogTitle className="text-base text-foreground">{widgetLabel} Settings</DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue={typeFields.length > 0 ? "config" : "style"} className="mt-2">
@@ -153,7 +104,6 @@ const WidgetSettingsModal = ({ widget, open, onOpenChange }: Props) => {
             <TabsTrigger value="style" className="flex-1 text-xs">Appearance</TabsTrigger>
           </TabsList>
 
-          {/* ── Data & Display Config ── */}
           {typeFields.length > 0 && (
             <TabsContent value="config" className="space-y-4 mt-4">
               {typeFields.map((field) => (
@@ -203,9 +153,7 @@ const WidgetSettingsModal = ({ widget, open, onOpenChange }: Props) => {
             </TabsContent>
           )}
 
-          {/* ── Appearance ── */}
           <TabsContent value="style" className="space-y-4 mt-4">
-            {/* Background Color */}
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Background</Label>
               <div className="flex flex-wrap gap-1.5">
@@ -214,9 +162,7 @@ const WidgetSettingsModal = ({ widget, open, onOpenChange }: Props) => {
                     key={c.label}
                     onClick={() => updateStyle({ bgColor: c.value })}
                     className={`w-7 h-7 rounded-lg border-2 transition-all ${
-                      (style.bgColor || "") === c.value
-                        ? "border-primary scale-110"
-                        : "border-border/50 hover:border-border"
+                      (style.bgColor || "") === c.value ? "border-primary scale-110" : "border-border/50 hover:border-border"
                     }`}
                     style={{ background: c.value ? `hsl(${c.value})` : "hsl(var(--glass-bg))" }}
                     title={c.label}
@@ -225,7 +171,6 @@ const WidgetSettingsModal = ({ widget, open, onOpenChange }: Props) => {
               </div>
             </div>
 
-            {/* Accent Color */}
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Accent</Label>
               <div className="flex flex-wrap gap-1.5">
@@ -234,9 +179,7 @@ const WidgetSettingsModal = ({ widget, open, onOpenChange }: Props) => {
                     key={c.label}
                     onClick={() => updateStyle({ accentColor: c.value })}
                     className={`w-7 h-7 rounded-lg border-2 transition-all ${
-                      (style.accentColor || "") === c.value
-                        ? "border-primary scale-110"
-                        : "border-border/50 hover:border-border"
+                      (style.accentColor || "") === c.value ? "border-primary scale-110" : "border-border/50 hover:border-border"
                     }`}
                     style={{ background: c.value ? `hsl(${c.value})` : "hsl(var(--primary))" }}
                     title={c.label}
@@ -245,33 +188,19 @@ const WidgetSettingsModal = ({ widget, open, onOpenChange }: Props) => {
               </div>
             </div>
 
-            {/* Border Radius */}
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Border Radius: {style.borderRadius ?? 14}px</Label>
-              <Slider
-                value={[style.borderRadius ?? 14]}
-                min={0} max={28} step={2}
-                onValueChange={([v]) => updateStyle({ borderRadius: v })}
-              />
+              <Slider value={[style.borderRadius ?? 14]} min={0} max={28} step={2} onValueChange={([v]) => updateStyle({ borderRadius: v })} />
             </div>
 
-            {/* Shadow Intensity */}
             <div className="space-y-2">
               <Label className="text-xs text-muted-foreground">Shadow: {style.shadowIntensity ?? 50}%</Label>
-              <Slider
-                value={[style.shadowIntensity ?? 50]}
-                min={0} max={100} step={10}
-                onValueChange={([v]) => updateStyle({ shadowIntensity: v })}
-              />
+              <Slider value={[style.shadowIntensity ?? 50]} min={0} max={100} step={10} onValueChange={([v]) => updateStyle({ shadowIntensity: v })} />
             </div>
 
-            {/* Animations toggle */}
             <div className="flex items-center justify-between">
               <Label className="text-xs text-muted-foreground">Animations</Label>
-              <Switch
-                checked={style.animationsEnabled ?? true}
-                onCheckedChange={(v) => updateStyle({ animationsEnabled: v })}
-              />
+              <Switch checked={style.animationsEnabled ?? true} onCheckedChange={(v) => updateStyle({ animationsEnabled: v })} />
             </div>
           </TabsContent>
         </Tabs>
