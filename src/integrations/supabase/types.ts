@@ -182,6 +182,7 @@ export type Database = {
           email: string | null
           id: string
           plan: string
+          trial_ends_at: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -190,6 +191,7 @@ export type Database = {
           email?: string | null
           id: string
           plan?: string
+          trial_ends_at?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -198,6 +200,7 @@ export type Database = {
           email?: string | null
           id?: string
           plan?: string
+          trial_ends_at?: string | null
         }
         Relationships: []
       }
