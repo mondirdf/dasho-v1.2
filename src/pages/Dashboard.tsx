@@ -4,6 +4,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardGrid from "@/components/dashboard/DashboardGrid";
 import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import RenameDialog from "@/components/dashboard/RenameDialog";
+import TrialBanner from "@/components/TrialBanner";
 import Onboarding from "@/pages/Onboarding";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -31,6 +32,7 @@ const DashboardContent = () => {
 
   return (
     <div className={`min-h-screen ${isMobile ? "pb-20" : ""}`}>
+      <TrialBanner />
       <DashboardHeader />
       <DashboardGrid />
       {isMobile && <MobileBottomNav />}
