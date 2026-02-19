@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 /* ── Mock data for demo preview ── */
 const MOCK_WIDGETS = [
@@ -52,6 +53,8 @@ const FaqItem = ({ q, a }: { q: string; a: string }) => {
 };
 
 const Index = () => {
+  const { user, loading } = useAuth();
+
   return (
     <div className="min-h-screen">
       {/* Nav */}
@@ -61,12 +64,20 @@ const Index = () => {
             Dash<span className="text-primary">ooo</span>
           </Link>
           <div className="flex items-center gap-3">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">Sign In</Button>
-            </Link>
-            <Link to="/signup">
-              <Button size="sm" className="gap-1.5">Start Free <ArrowRight className="h-3.5 w-3.5" /></Button>
-            </Link>
+            {loading ? null : user ? (
+              <Link to="/dashboard">
+                <Button size="sm" className="gap-1.5">Dashboard <ArrowRight className="h-3.5 w-3.5" /></Button>
+              </Link>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">Sign In</Button>
+                </Link>
+                <Link to="/signup">
+                  <Button size="sm" className="gap-1.5">Start Free <ArrowRight className="h-3.5 w-3.5" /></Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>
