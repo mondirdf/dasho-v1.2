@@ -42,37 +42,45 @@ const Index = () => {
   const categories = WIDGET_CATEGORIES.filter((c) => c.id !== "all");
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen relative">
+      {/* Animated background */}
+      <div className="animated-bg">
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
+      </div>
+
       {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
+      <nav className="sticky top-0 z-50 glass-nav">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
             <img src={logoDasho} alt={BRAND.name} className="h-[90px]" />
           </Link>
           <div className="flex items-center gap-3">
             {loading ? null : user ? (
-              <Link to="/dashboard"><Button size="sm" className="gap-1.5">Dashboard <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
+              <Link to="/dashboard"><Button size="sm" className="gap-1.5 glow-button">Dashboard <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
             ) : (
               <>
                 <Link to="/login"><Button variant="ghost" size="sm">Sign In</Button></Link>
-                <Link to="/signup"><Button size="sm" className="gap-1.5">{HERO.ctaPrimary} <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
+                <Link to="/signup"><Button size="sm" className="gap-1.5 glow-button">{HERO.ctaPrimary} <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
               </>
             )}
           </div>
         </div>
       </nav>
 
-      <main>
+      <main className="relative z-10">
         {/* Hero */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsla(263,70%,66%,0.12),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsla(263,70%,66%,0.15),transparent_55%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsla(220,70%,55%,0.08),transparent_50%)]" />
           <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1] max-w-3xl mx-auto">
               {HERO.heading}{" "}<span className="text-primary">{HERO.headingHighlight}</span>
             </h1>
             <p className="mt-5 text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">{HERO.subheading}</p>
             <div className="mt-8 flex items-center justify-center gap-3">
-              <Link to="/signup"><Button size="lg" className="gap-2 text-base px-8">{HERO.ctaPrimary} <ArrowRight className="h-4 w-4" /></Button></Link>
+              <Link to="/signup"><Button size="lg" className="gap-2 text-base px-8 glow-button">{HERO.ctaPrimary} <ArrowRight className="h-4 w-4" /></Button></Link>
               <a href="#features"><Button variant="outline" size="lg" className="text-base px-8">{HERO.ctaSecondary}</Button></a>
             </div>
             {/* Category chips */}
@@ -93,10 +101,10 @@ const Index = () => {
 
         {/* Demo Preview */}
         <section className="max-w-5xl mx-auto px-4 pb-20" aria-label="Dashboard preview">
-          <div className="glass-card p-4 sm:p-6">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="glass-card-enhanced p-4 sm:p-6">
+            <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
               {MOCK_WIDGETS.map((w) => (
-                <div key={w.label} className="rounded-lg bg-secondary/40 p-3 space-y-1">
+                <div key={w.label} className="rounded-lg bg-secondary/40 p-3 space-y-1 border border-border/20">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-muted-foreground">{w.label}</span>
                     <span className={`flex items-center gap-0.5 text-xs font-semibold ${w.positive ? "text-success" : "text-destructive"}`}>
@@ -107,13 +115,13 @@ const Index = () => {
                 </div>
               ))}
             </div>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="rounded-lg bg-secondary/40 p-4">
+            <div className="relative z-10 mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="rounded-lg bg-secondary/40 p-4 border border-border/20">
                 <p className="text-xs text-muted-foreground mb-1">Market Sentiment</p>
                 <p className="text-3xl font-bold text-success">72</p>
                 <p className="text-xs text-success font-medium">Greed</p>
               </div>
-              <div className="rounded-lg bg-secondary/40 p-4 space-y-2">
+              <div className="rounded-lg bg-secondary/40 p-4 space-y-2 border border-border/20">
                 <p className="text-xs text-muted-foreground">Latest News</p>
                 <p className="text-sm text-foreground line-clamp-1">Bitcoin breaks $97K as institutional buying surges</p>
                 <p className="text-sm text-foreground line-clamp-1">Global markets rally on positive economic data</p>
@@ -130,10 +138,10 @@ const Index = () => {
             {FEATURES.map((f) => {
               const FIcon = ICON_MAP[f.icon] || Globe;
               return (
-                <div key={f.title} className="glass-card p-6 space-y-3 hover:border-primary/30 transition-colors">
-                  <div className="p-2.5 rounded-lg bg-primary/10 w-fit"><FIcon className="h-5 w-5 text-primary" /></div>
-                  <h3 className="text-base font-semibold text-foreground">{f.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                <div key={f.title} className="glass-card-enhanced p-6 space-y-3">
+                  <div className="relative z-10 p-2.5 rounded-lg bg-primary/10 w-fit"><FIcon className="h-5 w-5 text-primary" /></div>
+                  <h3 className="relative z-10 text-base font-semibold text-foreground">{f.title}</h3>
+                  <p className="relative z-10 text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
                 </div>
               );
             })}
@@ -146,7 +154,7 @@ const Index = () => {
           <div className="mt-12 grid sm:grid-cols-3 gap-8">
             {HOW_IT_WORKS.map((s) => (
               <div key={s.step} className="text-center space-y-3">
-                <div className="mx-auto w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                <div className="mx-auto w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
                   <span className="text-primary font-bold text-lg">{s.step}</span>
                 </div>
                 <h3 className="text-base font-semibold text-foreground">{s.title}</h3>
@@ -161,9 +169,9 @@ const Index = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">Built For</h2>
           <div className="mt-10 grid sm:grid-cols-3 gap-6">
             {USE_CASES.map((u) => (
-              <div key={u.title} className="glass-card p-6 space-y-2">
-                <h3 className="text-base font-semibold text-foreground">{u.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{u.desc}</p>
+              <div key={u.title} className="glass-card-enhanced p-6 space-y-2">
+                <h3 className="relative z-10 text-base font-semibold text-foreground">{u.title}</h3>
+                <p className="relative z-10 text-sm text-muted-foreground leading-relaxed">{u.desc}</p>
               </div>
             ))}
           </div>
@@ -175,21 +183,21 @@ const Index = () => {
           <p className="mt-3 text-muted-foreground text-center">Start free, upgrade when you need more.</p>
           <div className="mt-10 grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
             {Object.values(PRICING).map((plan) => (
-              <div key={plan.name} className={`glass-card p-6 space-y-5 relative ${plan.highlighted ? "border-primary/40" : ""}`}>
+              <div key={plan.name} className={`glass-card-enhanced p-6 space-y-5 relative ${plan.highlighted ? "border-primary/40" : ""}`}>
                 {plan.highlighted && "badge" in plan && (
-                  <div className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">{plan.badge}</div>
+                  <div className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium z-10">{plan.badge}</div>
                 )}
-                <div>
+                <div className="relative z-10">
                   <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
                   <p className="text-3xl font-bold text-foreground mt-1">{plan.price}<span className="text-sm font-normal text-muted-foreground">{plan.period}</span></p>
                 </div>
-                <ul className="space-y-2">
+                <ul className="relative z-10 space-y-2">
                   {plan.features.map((f) => (
                     <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground"><Check className="h-4 w-4 text-success shrink-0" /> {f}</li>
                   ))}
                 </ul>
-                <Link to="/signup" className="block">
-                  <Button className="w-full" variant={plan.highlighted ? "default" : "outline"}>{plan.cta}</Button>
+                <Link to="/signup" className="block relative z-10">
+                  <Button className={`w-full ${plan.highlighted ? "glow-button" : ""}`} variant={plan.highlighted ? "default" : "outline"}>{plan.cta}</Button>
                 </Link>
               </div>
             ))}
@@ -204,13 +212,13 @@ const Index = () => {
 
         {/* CTA */}
         <section className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <div className="glass-card p-10 sm:p-14 relative overflow-hidden">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsla(263,70%,66%,0.08),transparent_70%)]" />
-            <div className="relative">
+          <div className="glass-card-enhanced p-10 sm:p-14 relative overflow-hidden">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsla(263,70%,66%,0.12),transparent_70%)]" />
+            <div className="relative z-10">
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{CTA.heading}</h2>
               <p className="mt-3 text-muted-foreground">{CTA.subheading}</p>
               <Link to="/signup" className="inline-block mt-6">
-                <Button size="lg" className="gap-2 text-base px-10">{CTA.button} <ArrowRight className="h-4 w-4" /></Button>
+                <Button size="lg" className="gap-2 text-base px-10 glow-button">{CTA.button} <ArrowRight className="h-4 w-4" /></Button>
               </Link>
             </div>
           </div>
@@ -218,7 +226,7 @@ const Index = () => {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 bg-background">
+      <footer className="relative z-10 border-t border-border/50 bg-background/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 py-10 grid sm:grid-cols-3 gap-8">
           <div>
             <img src={logoDasho} alt={BRAND.name} className="h-[96px]" />
