@@ -5,12 +5,19 @@
 import { useEffect, useState, memo, useMemo, useCallback } from "react";
 import { fetchCryptoData, type CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, ArrowUpDown, AlertCircle } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
 
 interface Props {
-  config: { symbols?: string[] };
+  config: {
+    symbols?: string[];
+    symbolsText?: string;
+    maxItems?: number;
+    showVolume?: boolean;
+    showMarketCap?: boolean;
+    sortBy?: "market_cap" | "price" | "change" | "volume";
+  };
 }
 
 const MultiTrackerWidget = memo(({ config }: Props) => {
@@ -18,29 +25,48 @@ const MultiTrackerWidget = memo(({ config }: Props) => {
   const [coins, setCoins] = useState<CryptoData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [sortByChange, setSortByChange] = useState(false);
+
+  // Parse symbols from symbolsText (comma-separated string) or symbols array
+  const targetSymbols = useMemo(() => {
+    if (config.symbolsText) {
+      return config.symbolsText.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
+    }
+    return config.symbols || ["BTC", "ETH", "SOL", "ADA", "DOGE"];
+  }, [config.symbolsText, config.symbols]);
+
+  const maxItems = config.maxItems || 10;
 
   const loadData = useCallback(() => {
     fetchCryptoData()
       .then((data) => {
-        const symbols = config.symbols || ["BTC", "ETH", "SOL", "ADA", "DOGE"];
-        const filtered = data.filter((c) => symbols.includes(c.symbol));
-        setCoins(filtered.length > 0 ? filtered : data.slice(0, 5));
+        const filtered = data.filter((c) => targetSymbols.includes(c.symbol));
+        const result = filtered.length > 0 ? filtered : data.slice(0, 5);
+        setCoins(result.slice(0, maxItems));
         setError(false);
       })
       .catch(() => setError(true))
       .finally(() => setLoading(false));
-  }, [config.symbols]);
+  }, [targetSymbols, maxItems]);
 
   useEffect(() => { loadData(); }, [loadData]);
   useRealtimeCrypto(loadData);
 
   const sorted = useMemo(() => {
-    if (!sortByChange) return coins;
-    return [...coins].sort((a, b) => Math.abs(b.change_24h ?? 0) - Math.abs(a.change_24h ?? 0));
-  }, [coins, sortByChange]);
+    const sortBy = config.sortBy || "market_cap";
+    return [...coins].sort((a, b) => {
+      switch (sortBy) {
+        case "price": return (b.price ?? 0) - (a.price ?? 0);
+        case "change": return Math.abs(b.change_24h ?? 0) - Math.abs(a.change_24h ?? 0);
+        case "volume": return (b.volume ?? 0) - (a.volume ?? 0);
+        case "market_cap":
+        default: return (b.market_cap ?? 0) - (a.market_cap ?? 0);
+      }
+    });
+  }, [coins, config.sortBy]);
 
   const isCompact = mode === "compact";
+  const showVolume = config.showVolume ?? false;
+  const showMarketCap = (config.showMarketCap ?? false) && !isCompact;
 
   if (loading) {
     return (
@@ -65,13 +91,7 @@ const MultiTrackerWidget = memo(({ config }: Props) => {
     <div ref={sizeRef} className="h-full overflow-auto">
       <div className="flex items-center justify-between mb-2">
         <h3 className={`${isCompact ? "text-xs" : "text-sm"} font-semibold text-foreground`}>Market Overview</h3>
-        <button
-          onClick={() => setSortByChange(!sortByChange)}
-          className={`p-1.5 rounded-lg transition-colors ${sortByChange ? "bg-primary/10 text-primary" : "hover:bg-secondary/60 text-muted-foreground"}`}
-          aria-label="Sort by change"
-        >
-          <ArrowUpDown className={isCompact ? "h-3 w-3" : "h-3.5 w-3.5"} />
-        </button>
+        <span className="text-[10px] text-muted-foreground">{sorted.length} coins</span>
       </div>
       <div className="space-y-0.5">
         {sorted.map((coin) => {
@@ -89,6 +109,16 @@ const MultiTrackerWidget = memo(({ config }: Props) => {
                 <span className={`${isCompact ? "text-xs" : "text-sm"} font-medium text-foreground`}>{coin.symbol}</span>
               </div>
               <div className="flex items-center gap-2">
+                {showMarketCap && (
+                  <span className="text-[10px] text-muted-foreground tabular-nums hidden sm:inline">
+                    ${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B
+                  </span>
+                )}
+                {showVolume && !isCompact && (
+                  <span className="text-[10px] text-muted-foreground tabular-nums">
+                    ${((coin.volume ?? 0) / 1e9).toFixed(1)}B
+                  </span>
+                )}
                 <span className={`${isCompact ? "text-xs" : "text-sm"} text-foreground tabular-nums font-medium`}>
                   ${(coin.price ?? 0).toLocaleString(undefined, { maximumFractionDigits: isCompact ? 0 : 2 })}
                 </span>

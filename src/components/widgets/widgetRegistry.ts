@@ -61,19 +61,12 @@ export type LayoutPreset = keyof typeof LAYOUT_PRESETS;
 /* ──────────────────────────── Types ──────────────────────────── */
 
 export interface WidgetVisual {
-  /** Background style — applied as CSS class by WidgetContainer */
   bg: BgPreset;
-  /** Shadow depth */
   shadow: ShadowPreset;
-  /** Content padding layout */
   layout: LayoutPreset;
-  /** Entry animation */
   animation: AnimationPreset;
-  /** Accent color (HSL string without hsl()) for border/glow accents */
   accentHsl?: string;
-  /** Whether to show a subtle decorative background element */
   decorative?: boolean;
-  /** Hover effect enabled */
   hoverLift?: boolean;
 }
 
@@ -86,7 +79,6 @@ export interface ConfigField {
   placeholder?: string;
 }
 
-/** Grid size constraints for a widget */
 export interface WidgetConstraints {
   minW: number;
   minH: number;
@@ -95,34 +87,38 @@ export interface WidgetConstraints {
 }
 
 export interface WidgetRegistryEntry {
-  /** Unique widget type key (e.g., "crypto_price") */
   type: string;
-  /** Category for grouping in the add-widget sheet */
   category: string;
-  /** Display label */
   label: string;
-  /** Short description */
   desc: string;
-  /** Lucide icon component */
   icon: LucideIcon;
-  /** Icon color class */
   iconColor: string;
-  /** Whether the widget is available or coming soon */
   available: boolean;
-  /** Visual definition — WidgetContainer uses this, NOT the widget component */
   visual: WidgetVisual;
-  /** Default grid dimensions { w, h } */
   defaultSize: { w: number; h: number };
-  /** Grid size constraints — enforced by the grid layout */
   constraints: WidgetConstraints;
-  /** Per-widget config fields for settings modal */
   configFields: ConfigField[];
 }
+
+/* ──────────────────────────── Supported coins ──────────────────────────── */
+
+const COIN_OPTIONS = [
+  { label: "BTC", value: "BTC" },
+  { label: "ETH", value: "ETH" },
+  { label: "SOL", value: "SOL" },
+  { label: "ADA", value: "ADA" },
+  { label: "DOGE", value: "DOGE" },
+  { label: "XRP", value: "XRP" },
+  { label: "DOT", value: "DOT" },
+  { label: "AVAX", value: "AVAX" },
+  { label: "LINK", value: "LINK" },
+  { label: "MATIC", value: "MATIC" },
+];
 
 /* ──────────────────────────── Registry ──────────────────────────── */
 
 export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
-  // ── Crypto ──
+  // ── Crypto Price ──
   {
     type: "crypto_price",
     category: "crypto",
@@ -143,14 +139,14 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     defaultSize: { w: 4, h: 3 },
     constraints: { minW: 3, minH: 2, maxW: 8, maxH: 6 },
     configFields: [
-      { key: "symbol", label: "Coin Symbol", type: "text", defaultValue: "BTC", placeholder: "e.g. BTC, ETH, SOL" },
-      { key: "currency", label: "Currency", type: "select", defaultValue: "USD", options: [
-        { label: "USD", value: "USD" }, { label: "EUR", value: "EUR" }, { label: "GBP", value: "GBP" },
-      ]},
+      { key: "symbol", label: "Coin", type: "select", defaultValue: "BTC", options: COIN_OPTIONS },
       { key: "showChart", label: "Show Sparkline Chart", type: "toggle", defaultValue: true },
       { key: "showMarketCap", label: "Show Market Cap", type: "toggle", defaultValue: true },
+      { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: false },
+      { key: "showLastUpdate", label: "Show Last Update", type: "toggle", defaultValue: false },
     ],
   },
+  // ── Multi Tracker ──
   {
     type: "multi_tracker",
     category: "crypto",
@@ -172,8 +168,16 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
       { key: "symbolsText", label: "Symbols (comma-separated)", type: "text", defaultValue: "BTC,ETH,SOL,ADA,DOGE", placeholder: "BTC,ETH,SOL" },
       { key: "maxItems", label: "Max Items", type: "number", defaultValue: 10 },
       { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: false },
+      { key: "showMarketCap", label: "Show Market Cap", type: "toggle", defaultValue: false },
+      { key: "sortBy", label: "Sort By", type: "select", defaultValue: "market_cap", options: [
+        { label: "Market Cap", value: "market_cap" },
+        { label: "Price", value: "price" },
+        { label: "24h Change", value: "change" },
+        { label: "Volume", value: "volume" },
+      ]},
     ],
   },
+  // ── Fear & Greed ──
   {
     type: "fear_greed",
     category: "crypto",
@@ -193,12 +197,14 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     defaultSize: { w: 3, h: 3 },
     constraints: { minW: 2, minH: 2, maxW: 6, maxH: 5 },
     configFields: [
-      { key: "showAlert", label: "Visual Alert on Extremes", type: "toggle", defaultValue: true },
       { key: "indicatorType", label: "Indicator Style", type: "select", defaultValue: "gauge", options: [
         { label: "Gauge", value: "gauge" }, { label: "Simple", value: "simple" },
       ]},
+      { key: "showAlert", label: "Alert on Extremes", type: "toggle", defaultValue: true },
+      { key: "showTimestamp", label: "Show Last Update", type: "toggle", defaultValue: false },
     ],
   },
+  // ── Market Context ──
   {
     type: "market_context",
     category: "crypto",
@@ -219,6 +225,8 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     configFields: [
       { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: true },
       { key: "showDominance", label: "Show BTC Dominance", type: "toggle", defaultValue: true },
+      { key: "showTopMover", label: "Show Top Mover", type: "toggle", defaultValue: false },
+      { key: "showGainersLosers", label: "Show Gainers vs Losers", type: "toggle", defaultValue: false },
     ],
   },
   // ── News ──
@@ -243,6 +251,10 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
       { key: "maxArticles", label: "Max Articles", type: "number", defaultValue: 20 },
       { key: "keyword", label: "Filter Keyword", type: "text", placeholder: "Optional keyword filter" },
       { key: "source", label: "Source Filter", type: "text", placeholder: "Optional source name" },
+      { key: "showSummary", label: "Show Summary in List", type: "toggle", defaultValue: false },
+      { key: "layout", label: "Layout", type: "select", defaultValue: "list", options: [
+        { label: "List", value: "list" }, { label: "Cards", value: "cards" },
+      ]},
     ],
   },
   // ── Coming Soon ──
@@ -298,23 +310,19 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
 
 /* ──────────────────────────── Helpers ──────────────────────────── */
 
-/** Lookup a registry entry by widget type */
 export function getWidgetDef(type: string): WidgetRegistryEntry | undefined {
   return WIDGET_REGISTRY.find((e) => e.type === type);
 }
 
-/** Get all available (non-coming-soon) widget types */
 export function getAvailableWidgets(): WidgetRegistryEntry[] {
   return WIDGET_REGISTRY.filter((e) => e.available);
 }
 
-/** Get grid constraints for a widget type (falls back to safe defaults) */
 export function getWidgetConstraints(type: string): WidgetConstraints {
   const def = getWidgetDef(type);
   return def?.constraints ?? { minW: 2, minH: 2 };
 }
 
-/** Category list for filter UI */
 export const WIDGET_CATEGORIES = [
   { id: "all", label: "All" },
   { id: "crypto", label: "Crypto" },
