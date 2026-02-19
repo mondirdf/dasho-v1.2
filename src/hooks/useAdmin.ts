@@ -72,9 +72,10 @@ export function useAdminAuth() {
 }
 
 // ── Stats Hook ──
-export function useAdminStats() {
+export function useAdminStats(enabled = true) {
   return useQuery<AdminStats>({
     queryKey: ["admin-stats"],
+    enabled,
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("admin-stats", {
         method: "GET",
