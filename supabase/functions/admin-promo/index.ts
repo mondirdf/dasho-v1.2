@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 async function verifyAdmin(req: Request) {
@@ -126,14 +126,14 @@ Deno.serve(async (req) => {
 
     // PATCH: Update promo code
     if (req.method === "PATCH") {
-      if (!promoId) {
+      const body = await req.json();
+      const patchId = body.id || promoId;
+      if (!patchId) {
         return new Response(
-          JSON.stringify({ error: "Promo ID required in URL" }),
+          JSON.stringify({ error: "Promo ID required" }),
           { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
-
-      const body = await req.json();
       const allowedFields = [
         "is_active", "max_uses", "first_time_only", "expires_at",
         "discount_type", "discount_value",
@@ -146,7 +146,7 @@ Deno.serve(async (req) => {
       const { data, error } = await supabaseAdmin
         .from("promo_codes")
         .update(updates)
-        .eq("id", promoId)
+        .eq("id", patchId)
         .select()
         .single();
 

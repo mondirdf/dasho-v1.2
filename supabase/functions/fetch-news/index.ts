@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 async function logEvent(supabase: any, type: string, status: string, message: string, metadata: any = {}) {
@@ -31,7 +31,9 @@ Deno.serve(async (req) => {
     );
     if (!res.ok) throw new Error(`News API ${res.status}`);
     const json = await res.json();
-    const articles = (json.Data || []).slice(0, 50).map((a: any) => ({
+    const rawData = json.Data;
+    const dataArray = Array.isArray(rawData) ? rawData : [];
+    const articles = dataArray.slice(0, 50).map((a: any) => ({
       title: a.title || "Untitled",
       summary: a.body ? a.body.substring(0, 300) : null,
       source: a.source || null,

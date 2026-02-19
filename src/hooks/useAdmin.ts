@@ -126,9 +126,9 @@ export function useAdminPromos() {
 
   const updatePromo = useMutation({
     mutationFn: async ({ id, ...updates }: { id: string } & Record<string, unknown>) => {
-      const { data, error } = await supabase.functions.invoke(`admin-promo/${id}`, {
+      const { data, error } = await supabase.functions.invoke("admin-promo", {
         method: "PATCH",
-        body: updates,
+        body: { id, ...updates },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
