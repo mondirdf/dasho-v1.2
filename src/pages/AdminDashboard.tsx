@@ -306,7 +306,7 @@ const PromoSection = () => {
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, isLoading: adminLoading, login, loginLoading, loginError } = useAdminAuth();
-  const stats = useAdminStats();
+  const stats = useAdminStats(isAdmin);
 
   if (authLoading || adminLoading) {
     return (
