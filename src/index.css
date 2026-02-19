@@ -258,114 +258,34 @@
   z-index: 50;
 }
 
-
-/* ── Resize handles — bright colored triangles at corners ── */
+/* ── Resize handle — clean SE-only grip dots ── */
 .react-grid-item > .react-resizable-handle {
   background: none !important;
-  width: 32px !important;
-  height: 32px !important;
+  width: 20px !important;
+  height: 20px !important;
   z-index: 30 !important;
-  opacity: 1 !important;
 }
 
 .react-grid-item > .react-resizable-handle::after {
   content: "" !important;
   position: absolute !important;
-  width: 0 !important;
-  height: 0 !important;
-  border-style: solid !important;
-  border-width: 0 0 20px 20px !important;
-  border-color: transparent transparent hsl(var(--primary)) transparent !important;
-  right: 0 !important;
-  bottom: 0 !important;
-  opacity: 0.9 !important;
-  filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.5)) !important;
-  transition: filter 0.15s ease, opacity 0.15s ease !important;
-  border-radius: 0 !important;
-  background: none !important;
+  right: 4px !important;
+  bottom: 4px !important;
+  width: 12px !important;
+  height: 12px !important;
+  border: none !important;
+  background:
+    radial-gradient(circle, hsl(var(--primary)) 1.5px, transparent 1.5px) !important;
+  background-size: 5px 5px !important;
+  background-position: right bottom !important;
+  opacity: 0.7 !important;
+  filter: drop-shadow(0 0 3px hsla(var(--primary) / 0.4)) !important;
+  transition: opacity 0.15s ease, filter 0.15s ease !important;
 }
 
-/* Grip dots */
-.react-grid-item > .react-resizable-handle::before {
-  content: "⋮⋮" !important;
-  position: absolute !important;
-  right: 1px !important;
-  bottom: 0px !important;
-  font-size: 9px !important;
-  line-height: 1 !important;
-  color: hsl(0 0% 100%) !important;
-  opacity: 0.8 !important;
-  pointer-events: none !important;
-  z-index: 1 !important;
-  transform: rotate(-45deg) !important;
-}
-
-/* Hover glow */
 .react-grid-item > .react-resizable-handle:hover::after {
   opacity: 1 !important;
-  filter: drop-shadow(0 0 12px hsla(var(--primary) / 0.8)) !important;
-}
-
-/* ── Corner-specific triangle directions ── */
-
-/* SE (default - bottom-right) — already correct */
-
-/* SW - bottom-left */
-.react-grid-item > .react-resizable-handle-sw {
-  left: 0 !important;
-  right: auto !important;
-}
-.react-grid-item > .react-resizable-handle-sw::after {
-  right: auto !important;
-  left: 0 !important;
-  border-width: 0 20px 20px 0 !important;
-  border-color: transparent hsl(var(--primary)) transparent transparent !important;
-  transform: rotate(90deg) !important;
-}
-.react-grid-item > .react-resizable-handle-sw::before {
-  right: auto !important;
-  left: 2px !important;
-  transform: rotate(45deg) !important;
-}
-
-/* NE - top-right */
-.react-grid-item > .react-resizable-handle-ne {
-  top: 0 !important;
-  bottom: auto !important;
-}
-.react-grid-item > .react-resizable-handle-ne::after {
-  bottom: auto !important;
-  top: 0 !important;
-  border-width: 20px 0 0 20px !important;
-  border-color: hsl(var(--primary)) transparent transparent transparent !important;
-}
-.react-grid-item > .react-resizable-handle-ne::before {
-  bottom: auto !important;
-  top: 1px !important;
-  transform: rotate(45deg) !important;
-}
-
-/* NW - top-left */
-.react-grid-item > .react-resizable-handle-nw {
-  left: 0 !important;
-  right: auto !important;
-  top: 0 !important;
-  bottom: auto !important;
-}
-.react-grid-item > .react-resizable-handle-nw::after {
-  right: auto !important;
-  left: 0 !important;
-  bottom: auto !important;
-  top: 0 !important;
-  border-width: 20px 20px 0 0 !important;
-  border-color: hsl(var(--primary)) transparent transparent transparent !important;
-}
-.react-grid-item > .react-resizable-handle-nw::before {
-  right: auto !important;
-  left: 2px !important;
-  bottom: auto !important;
-  top: 1px !important;
-  transform: rotate(-45deg) !important;
+  filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.7)) !important;
 }
 
 /* Placeholder during drag/resize */
