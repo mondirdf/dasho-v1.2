@@ -1,11 +1,18 @@
 /**
- * WidgetRenderer — plug-and-play widget component registry.
- * Each widget is an independent instance identified by its unique ID.
- * Renders based on widget.type, passes widget.config_json to component.
+ * WidgetRenderer — resolves widget type → component, wraps in WidgetContainer.
+ *
+ * This component:
+ *  1. Looks up the widget component from WIDGET_MAP
+ *  2. Wraps it in WidgetContainer (which applies all visual styling from registry)
+ *  3. Renders edit-mode controls (drag handle, remove, settings)
+ *
+ * Widget components receive ONLY { config } and render pure content.
  */
-import { memo, useState, useMemo, CSSProperties } from "react";
+import { memo, useState } from "react";
 import { X, GripVertical, Settings2 } from "lucide-react";
 import type { Widget } from "@/services/dataService";
+import { getWidgetDef } from "./widgetRegistry";
+import WidgetContainer from "./WidgetContainer";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import WidgetSettingsModal, { type WidgetStyle } from "./WidgetSettingsModal";
 import CryptoPriceWidget from "./CryptoPriceWidget";
@@ -21,8 +28,8 @@ interface Props {
 }
 
 /**
- * Widget registry — add new widget components here.
- * Each type maps to a component that receives { config }.
+ * Component map — register new widget components here.
+ * The component must accept { config: any } and render content only.
  */
 const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   crypto_price: CryptoPriceWidget,
@@ -32,33 +39,6 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   market_context: MarketContextWidget,
 };
 
-const WIDGET_LABELS: Record<string, string> = {
-  crypto_price: "Price",
-  multi_tracker: "Tracker",
-  news: "News",
-  fear_greed: "Sentiment",
-  market_context: "Market",
-};
-
-function getWidgetCustomStyle(style?: WidgetStyle): CSSProperties {
-  if (!style) return {};
-  const s: CSSProperties = {};
-  if (style.bgColor) {
-    s.background = `hsla(${style.bgColor} / 0.65)`;
-  }
-  if (style.borderRadius !== undefined) {
-    s.borderRadius = `${style.borderRadius}px`;
-  }
-  if (style.shadowIntensity !== undefined) {
-    const intensity = style.shadowIntensity / 100;
-    s.boxShadow = `0 0 0 1px hsla(var(--glass-border) / 0.1), 0 4px ${Math.round(24 * intensity)}px -4px hsla(228, 40%, 4%, ${0.5 * intensity})`;
-  }
-  if (style.accentColor) {
-    s.borderColor = `hsla(${style.accentColor} / 0.3)`;
-  }
-  return s;
-}
-
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
   const Component = WIDGET_MAP[widget.type];
   const [confirmRemove, setConfirmRemove] = useState(false);
@@ -66,17 +46,14 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
 
   const configJson = widget.config_json as any;
   const widgetStyle: WidgetStyle = configJson?.style || {};
-  const animationsOn = widgetStyle.animationsEnabled ?? true;
-
-  const customStyle = useMemo(() => getWidgetCustomStyle(widgetStyle), [widgetStyle]);
+  const def = getWidgetDef(widget.type);
 
   return (
     <>
-      <div
-        className={`widget-container h-full group ${editMode ? "editing" : ""} ${animationsOn ? "widget-animate" : ""}`}
-        style={customStyle}
-        role="region"
-        aria-label={WIDGET_LABELS[widget.type] || widget.type}
+      <WidgetContainer
+        type={widget.type}
+        editMode={editMode}
+        userStyle={widgetStyle}
       >
         {/* Drag handle */}
         {editMode && (
@@ -85,7 +62,7 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
           </div>
         )}
 
-        {/* Edit mode controls */}
+        {/* Edit controls */}
         {editMode && (
           <>
             <button
@@ -105,19 +82,18 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
           </>
         )}
 
-        {/* Widget content */}
+        {/* Content — widget renders pure content, no styling */}
         <div className={editMode ? "pt-8 h-full pointer-events-none" : "h-full"}>
           {Component ? (
             <Component config={configJson} />
           ) : (
-            <div className="p-4 text-muted-foreground text-sm">
+            <div className="text-muted-foreground text-sm">
               Unknown widget type: {widget.type}
             </div>
           )}
         </div>
-      </div>
+      </WidgetContainer>
 
-      {/* Settings modal */}
       <WidgetSettingsModal
         widget={widget}
         open={settingsOpen}

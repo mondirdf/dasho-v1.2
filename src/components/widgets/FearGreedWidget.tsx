@@ -1,3 +1,7 @@
+/**
+ * FearGreedWidget — CONTENT ONLY.
+ * All container styling is handled by WidgetContainer.
+ */
 import { useEffect, useState, memo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,7 +43,7 @@ const FearGreedWidget = memo(({ config }: Props) => {
 
   if (loading) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 gap-3">
+      <div className="h-full flex flex-col items-center justify-center gap-3">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-20 w-32 rounded-lg" />
         <Skeleton className="h-8 w-16" />
@@ -50,7 +54,7 @@ const FearGreedWidget = memo(({ config }: Props) => {
 
   if (error) {
     return (
-      <div className="h-full flex flex-col items-center justify-center p-4 text-center gap-2">
+      <div className="h-full flex flex-col items-center justify-center text-center gap-2">
         <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
         <p className="text-muted-foreground text-sm">Failed to load data</p>
         <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
@@ -80,10 +84,9 @@ const FearGreedWidget = memo(({ config }: Props) => {
   const needleY = 50 + 28 * Math.sin(needleRad);
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-4 text-center relative overflow-hidden">
-      <div className={`absolute inset-0 opacity-5 ${color.bg}`} />
-      <p className="text-xs font-medium text-muted-foreground mb-3 relative z-10">Fear & Greed Index</p>
-      <svg viewBox="0 0 100 58" className="w-32 h-20 mx-auto relative z-10">
+    <div className="h-full flex flex-col items-center justify-center text-center">
+      <p className="text-xs font-medium text-muted-foreground mb-3">Fear & Greed Index</p>
+      <svg viewBox="0 0 100 58" className="w-32 h-20 mx-auto">
         <path d="M 15 50 A 35 35 0 0 1 85 50" fill="none" stroke="hsl(var(--secondary))" strokeWidth="7" strokeLinecap="round" />
         <path d="M 15 50 A 35 35 0 0 1 26.7 26.7" fill="none" stroke="hsl(var(--destructive))" strokeWidth="7" strokeLinecap="round" opacity="0.3" />
         <path d="M 73.3 26.7 A 35 35 0 0 1 85 50" fill="none" stroke="hsl(var(--success))" strokeWidth="7" strokeLinecap="round" opacity="0.3" />
@@ -91,8 +94,8 @@ const FearGreedWidget = memo(({ config }: Props) => {
         <circle cx={needleX} cy={needleY} r="3" fill={`hsl(${color.hsl})`} />
         <circle cx={needleX} cy={needleY} r="1.5" fill="hsl(var(--background))" />
       </svg>
-      <div className={`text-4xl font-bold ${color.cls} -mt-1 relative z-10 tabular-nums`}>{v}</div>
-      <div className={`mt-1 px-3 py-1 rounded-full text-xs font-semibold ${color.cls} ${color.bg} relative z-10`}>
+      <div className={`text-4xl font-bold ${color.cls} -mt-1 tabular-nums`}>{v}</div>
+      <div className={`mt-1 px-3 py-1 rounded-full text-xs font-semibold ${color.cls} ${color.bg}`}>
         {label || color.lbl}
       </div>
     </div>
