@@ -1,80 +1,88 @@
-# PulseBoard — Architecture Overview
+# PulseBoard — Architecture
+
+> **Your Data. Your Layout. Your Control.**
+> Universal customizable dashboard platform.
+
+---
+
+## Directory Structure
 
 ```
 src/
-├── pages/                    # Route-level page components
-│   ├── Index.tsx             # Landing page (public)
-│   ├── Login.tsx             # Auth: sign in
-│   ├── Signup.tsx            # Auth: sign up
-│   ├── Dashboard.tsx         # Main dashboard (protected)
-│   ├── Alerts.tsx            # Price alerts management (protected)
-│   ├── Templates.tsx         # Public template gallery (protected)
-│   ├── Settings.tsx          # User settings & profile (protected)
-│   └── NotFound.tsx          # 404 page
-│
+├── pages/
+│   ├── Index.tsx          Landing page
+│   ├── Login.tsx          Auth — login
+│   ├── Signup.tsx         Auth — signup
+│   ├── Dashboard.tsx      Main dashboard (wraps DashboardProvider)
+│   ├── Onboarding.tsx     New user widget selection
+│   ├── Alerts.tsx         Category-agnostic alert management
+│   ├── Templates.tsx      Public template gallery
+│   ├── SharedTemplate.tsx Public template preview (/template/:shareId)
+│   ├── Settings.tsx       User profile & preferences
+│   └── NotFound.tsx       404
 ├── components/
-│   ├── ui/                   # shadcn/ui primitives (button, input, dialog, etc.)
-│   ├── dashboard/            # Dashboard-specific UI
-│   │   ├── DashboardHeader.tsx    # Top bar: logo, dashboard selector, edit/share
-│   │   ├── DashboardGrid.tsx      # react-grid-layout wrapper
-│   │   ├── MobileBottomNav.tsx    # Mobile navigation bar
-│   │   └── RenameDialog.tsx       # Dashboard rename modal
-│   ├── widgets/              # Widget components
-│   │   ├── WidgetRenderer.tsx     # Dynamic widget loader + customizer
-│   │   ├── WidgetCustomizer.tsx   # Per-widget style panel (colors, radius, shadow)
-│   │   ├── WidgetSkeleton.tsx     # Loading skeleton for widgets
-│   │   ├── CryptoPriceWidget.tsx  # Single coin price + sparkline
-│   │   ├── MultiTrackerWidget.tsx # Multi-coin table
-│   │   ├── NewsWidget.tsx         # News feed
-│   │   ├── FearGreedWidget.tsx    # Sentiment gauge
-│   │   └── MarketContextWidget.tsx# Market overview stats
-│   ├── AddWidgetSheet.tsx    # Widget catalog with category tabs
-│   ├── ConfirmDialog.tsx     # Reusable confirm/delete modal
-│   ├── ErrorBoundary.tsx     # React error boundary
-│   ├── NavLink.tsx           # Navigation link helper
-│   └── ProtectedRoute.tsx    # Auth guard wrapper
-│
+│   ├── AddWidgetSheet.tsx    Multi-select widget picker with categories
+│   ├── ConfirmDialog.tsx     Reusable destructive action confirmation
+│   ├── ErrorBoundary.tsx     Global error boundary
+│   ├── ProtectedRoute.tsx    Auth guard
+│   ├── dashboard/
+│   │   ├── DashboardGrid.tsx    react-grid-layout wrapper
+│   │   ├── DashboardHeader.tsx  Navbar + dashboard selector + share
+│   │   ├── MobileBottomNav.tsx  Mobile navigation
+│   │   └── RenameDialog.tsx     Dashboard rename modal
+│   └── widgets/
+│       ├── WidgetRenderer.tsx     Dynamic widget registry
+│       ├── WidgetCustomizer.tsx   Style + size customization panel
+│       ├── WidgetSkeleton.tsx     Loading placeholder
+│       ├── CryptoPriceWidget.tsx  Single coin tracker
+│       ├── MultiTrackerWidget.tsx Multi-coin table
+│       ├── NewsWidget.tsx         News feed
+│       ├── FearGreedWidget.tsx    Sentiment gauge
+│       └── MarketContextWidget.tsx Market stats
 ├── contexts/
-│   ├── AuthContext.tsx        # Auth state (user, signIn, signOut)
-│   └── DashboardContext.tsx   # Dashboard state (widgets, layout, CRUD)
-│
+│   ├── AuthContext.tsx       Supabase auth state
+│   └── DashboardContext.tsx  Dashboard/widget/layout state + onboarding
 ├── hooks/
-│   ├── use-mobile.tsx         # Responsive breakpoint hook
-│   ├── use-toast.ts           # Toast notification hook
-│   ├── usePlanLimits.ts       # Free/Pro plan limit checks
-│   └── useRealtimeData.ts     # Supabase realtime subscriptions
-│
+│   ├── use-mobile.tsx        Responsive breakpoint
+│   ├── usePlanLimits.ts      Free/Pro plan enforcement
+│   └── useRealtimeData.ts    Supabase realtime subscriptions
 ├── services/
-│   └── dataService.ts         # All Supabase queries (crypto, news, dashboards, alerts, templates, profiles)
-│
-├── integrations/supabase/
-│   ├── client.ts              # Supabase client instance
-│   └── types.ts               # Auto-generated DB types (read-only)
-│
-├── lib/
-│   └── utils.ts               # Utility functions (cn, etc.)
-│
-├── index.css                  # Design system tokens + glass card styles + animations
-├── main.tsx                   # App entry point
-└── App.tsx                    # Router + providers
+│   └── dataService.ts        All Supabase queries
+└── integrations/supabase/
+    ├── client.ts             Supabase SDK client
+    └── types.ts              Auto-generated DB types
 
-supabase/
-├── config.toml                # Supabase project config
-└── functions/                 # Edge Functions (Deno)
-    ├── fetch-crypto-data/     # Fetches crypto prices → cache_crypto_data
-    ├── fetch-news/            # Fetches news → cache_news
-    ├── check-alerts/          # Checks alerts against prices → triggered_alerts
-    └── scheduler/             # Cron-like scheduler for periodic tasks
-
-Database Tables:
-├── profiles                   # User profiles (id, email, display_name, plan)
-├── dashboards                 # User dashboards (name, layout_json)
-├── widgets                    # Dashboard widgets (type, config_json, position)
-├── alerts                     # Price alerts (coin, target, condition)
-├── triggered_alerts           # Alert trigger history
-├── cache_crypto_data          # Cached crypto prices
-├── cache_news                 # Cached news articles
-├── cache_fear_greed           # Cached sentiment index
-├── public_templates           # Shared dashboard templates
-└── system_logs                # Edge function logs
+supabase/functions/
+├── fetch-crypto-data/     Fetches crypto prices → cache_crypto_data
+├── fetch-news/            Fetches news → cache_news
+├── check-alerts/          Evaluates alerts → triggered_alerts
+└── scheduler/             Cron orchestrator
 ```
+
+## Database Schema
+
+| Table | Purpose |
+|-------|---------|
+| profiles | User data (plan, display_name, avatar) |
+| dashboards | User dashboards with layout_json |
+| widgets | Widgets with type, config_json, position |
+| alerts | Category-agnostic alerts (source_type, condition_type, source_label) |
+| triggered_alerts | Alert trigger history |
+| public_templates | Shared templates (public_share_id, clone_count, is_public) |
+| cache_crypto_data | Cached crypto prices |
+| cache_news | Cached news articles |
+| cache_fear_greed | Cached fear & greed index |
+| system_logs | Edge function execution logs |
+
+## Routes
+
+| Path | Component | Auth |
+|------|-----------|------|
+| / | Landing | No |
+| /login | Login | No |
+| /signup | Signup | No |
+| /dashboard | Dashboard/Onboarding | Yes |
+| /alerts | Alerts | Yes |
+| /templates | Templates | Yes |
+| /settings | Settings | Yes |
+| /template/:shareId | SharedTemplate | No |

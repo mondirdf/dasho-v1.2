@@ -21,6 +21,8 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          source_label: string | null
+          source_type: string
           target_price: number
           triggered_at: string | null
           user_id: string
@@ -31,6 +33,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          source_label?: string | null
+          source_type?: string
           target_price: number
           triggered_at?: string | null
           user_id: string
@@ -41,6 +45,8 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          source_label?: string | null
+          source_type?: string
           target_price?: number
           triggered_at?: string | null
           user_id?: string
@@ -197,29 +203,38 @@ export type Database = {
       }
       public_templates: {
         Row: {
+          clone_count: number
           created_at: string
           created_by: string
           id: string
+          is_public: boolean
           layout_json: Json
           name: string
+          public_share_id: string | null
           use_count: number
           widgets_json: Json
         }
         Insert: {
+          clone_count?: number
           created_at?: string
           created_by: string
           id?: string
+          is_public?: boolean
           layout_json?: Json
           name: string
+          public_share_id?: string | null
           use_count?: number
           widgets_json?: Json
         }
         Update: {
+          clone_count?: number
           created_at?: string
           created_by?: string
           id?: string
+          is_public?: boolean
           layout_json?: Json
           name?: string
+          public_share_id?: string | null
           use_count?: number
           widgets_json?: Json
         }

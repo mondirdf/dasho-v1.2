@@ -42,6 +42,7 @@ interface DashboardState {
   layout: LayoutItem[];
   loading: boolean;
   editMode: boolean;
+  isNewUser: boolean;
   setEditMode: (v: boolean) => void;
   addWidget: (type: string, config?: any) => Promise<void>;
   removeWidget: (id: string) => Promise<void>;
@@ -70,6 +71,7 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   const [layout, setLayout] = useState<LayoutItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [editMode, setEditMode] = useState(false);
+  const [isNewUser, setIsNewUser] = useState(false);
   const [renameOpen, setRenameOpen] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -96,11 +98,18 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     if (!user) return;
     setLoading(true);
     try {
-      let dashes = await fetchDashboards(user.id);
+      const dashes = await fetchDashboards(user.id);
       if (dashes.length === 0) {
-        const newDash = await createDashboard(user.id);
-        dashes = [newDash];
+        // New user — don't auto-create, show onboarding
+        setIsNewUser(true);
+        setDashboards([]);
+        setDashboard(null);
+        setWidgets([]);
+        setLayout([]);
+        setLoading(false);
+        return;
       }
+      setIsNewUser(false);
       setDashboards(dashes);
       const active = dashes[0];
       setDashboard(active);
@@ -250,7 +259,7 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
   return (
     <DashboardContext.Provider
       value={{
-        dashboards, dashboard, widgets, layout, loading, editMode,
+        dashboards, dashboard, widgets, layout, loading, editMode, isNewUser,
         setEditMode, addWidget, removeWidget, onLayoutChange,
         refresh: load, switchDashboard, createNewDashboard,
         deleteDashboard: deleteDashboardFn, renameDashboard: renameDashboardFn,
