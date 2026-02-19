@@ -221,7 +221,7 @@ const Index = () => {
       <footer className="border-t border-border/50 bg-background">
         <div className="max-w-6xl mx-auto px-4 py-10 grid sm:grid-cols-3 gap-8">
           <div>
-            <img src={logoDasho} alt={BRAND.name} className="h-8" />
+            <img src={logoDasho} alt={BRAND.name} className="h-[96px]" />
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{FOOTER.tagline}</p>
           </div>
           <div>
