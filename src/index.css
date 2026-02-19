@@ -499,7 +499,8 @@
   transition: opacity 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease !important;
   border: none !important;
 }
-.react-grid-item > .react-resizable-handle:hover::after {
+.react-grid-item > .react-resizable-handle:hover::after,
+.react-grid-item > .react-resizable-handle:active::after {
   opacity: 1 !important;
   box-shadow: 0 0 8px 2px hsla(var(--primary) / 0.5) !important;
   transform: scale(1.2) !important;
@@ -567,6 +568,42 @@
   height: 32px !important;
   left: 3px !important;
   top: 4px !important;
+}
+
+/* ── Mobile: larger touch-friendly resize handles ── */
+@media (max-width: 767px) {
+  .react-grid-item > .react-resizable-handle-s {
+    width: 64px !important;
+    height: 20px !important;
+    bottom: -6px !important;
+  }
+  .react-grid-item > .react-resizable-handle-s::after {
+    width: 48px !important;
+    height: 6px !important;
+    bottom: 7px !important;
+    left: 8px !important;
+    border-radius: 6px !important;
+    opacity: 0.7 !important;
+  }
+
+  .react-grid-item > .react-resizable-handle-e {
+    width: 20px !important;
+    height: 64px !important;
+    right: -6px !important;
+  }
+  .react-grid-item > .react-resizable-handle-e::after {
+    width: 6px !important;
+    height: 48px !important;
+    right: 7px !important;
+    top: 8px !important;
+    border-radius: 6px !important;
+    opacity: 0.7 !important;
+  }
+
+  /* Always show handles in edit mode on mobile (no hover) */
+  .dashboard-edit-mode .react-grid-item > .react-resizable-handle::after {
+    opacity: 0.7 !important;
+  }
 }
 
 /* Placeholder during drag/resize */
