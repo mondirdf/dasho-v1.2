@@ -122,11 +122,14 @@
 
   /* Widget styling */
   .widget-container {
-    @apply glass-card overflow-hidden relative;
+    @apply glass-card relative;
+    overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.3s ease, border-color 0.2s ease;
   }
 
+  /* Allow overflow for resize handles + glow in edit mode */
   .widget-container.editing {
+    overflow: visible;
     border-color: hsla(var(--glass-glow) / 0.35);
     box-shadow:
       0 0 24px -8px hsla(var(--glass-glow) / 0.2),
@@ -234,119 +237,141 @@
     border-radius: var(--radius);
   }
 
-  /* Smooth resize transitions for react-grid-layout */
-  .react-grid-item {
-    transition: all 200ms ease !important;
-  }
-  .react-grid-item.cssTransforms {
-    transition: transform 200ms ease !important;
-  }
-  .react-grid-item.react-draggable-dragging {
-    transition: none !important;
-    z-index: 50;
-    opacity: 0.9;
-  }
-  .react-grid-item.resizing {
-    transition: none !important;
-    z-index: 50;
-  }
+}
 
-  /* ── Resize handles — big, bright, unmissable ── */
-  .react-grid-item > .react-resizable-handle {
-    background: none !important;
-    width: 36px !important;
-    height: 36px !important;
-    z-index: 30 !important;
-  }
+/* ── OUTSIDE @layer for max specificity over react-grid-layout defaults ── */
 
-  /* Bright filled corner triangle */
-  .react-grid-item > .react-resizable-handle::after {
-    content: "" !important;
-    position: absolute !important;
-    width: 18px !important;
-    height: 18px !important;
-    background: linear-gradient(135deg, transparent 40%, hsl(var(--primary)) 40%) !important;
-    border-radius: 0 0 5px 0 !important;
-    right: 0 !important;
-    bottom: 0 !important;
-    opacity: 0.85 !important;
-    box-shadow:
-      0 0 10px 2px hsla(var(--primary) / 0.4),
-      inset 0 0 4px hsla(0, 0%, 100%, 0.15) !important;
-    transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease !important;
-  }
+/* Smooth resize transitions */
+.react-grid-item {
+  transition: all 200ms ease !important;
+}
+.react-grid-item.cssTransforms {
+  transition: transform 200ms ease !important;
+}
+.react-grid-item.react-draggable-dragging {
+  transition: none !important;
+  z-index: 50;
+  opacity: 0.9;
+}
+.react-grid-item.resizing {
+  transition: none !important;
+  z-index: 50;
+}
 
-  /* Three diagonal dots pattern for grip feel */
-  .react-grid-item > .react-resizable-handle::before {
-    content: "" !important;
-    position: absolute !important;
-    width: 12px !important;
-    height: 12px !important;
-    right: 3px !important;
-    bottom: 3px !important;
-    background-image:
-      radial-gradient(circle, hsl(0 0% 100%) 1.5px, transparent 1.5px) !important;
-    background-size: 5px 5px !important;
-    background-position: 0 0, 5px 5px !important;
-    opacity: 0.7 !important;
-    pointer-events: none !important;
-    z-index: 1 !important;
-    transition: opacity 0.15s ease !important;
-  }
 
-  /* Hover — glow up */
-  .react-grid-item > .react-resizable-handle:hover::after {
-    opacity: 1 !important;
-    transform: scale(1.15) !important;
-    box-shadow:
-      0 0 16px 4px hsla(var(--primary) / 0.6),
-      inset 0 0 6px hsla(0, 0%, 100%, 0.2) !important;
-  }
-  .react-grid-item > .react-resizable-handle:hover::before {
-    opacity: 1 !important;
-  }
+/* ── Resize handles — bright colored triangles at corners ── */
+.react-grid-item > .react-resizable-handle {
+  background: none !important;
+  width: 32px !important;
+  height: 32px !important;
+  z-index: 30 !important;
+  opacity: 1 !important;
+}
 
-  /* Rotate handle direction for each corner */
-  .react-grid-item > .react-resizable-handle-sw::after {
-    right: auto !important;
-    left: 0 !important;
-    background: linear-gradient(-135deg, transparent 40%, hsl(var(--primary)) 40%) !important;
-    border-radius: 0 0 0 5px !important;
-  }
-  .react-grid-item > .react-resizable-handle-sw::before {
-    right: auto !important;
-    left: 3px !important;
-  }
-  .react-grid-item > .react-resizable-handle-ne::after {
-    bottom: auto !important;
-    top: 0 !important;
-    background: linear-gradient(-45deg, transparent 40%, hsl(var(--primary)) 40%) !important;
-    border-radius: 0 5px 0 0 !important;
-  }
-  .react-grid-item > .react-resizable-handle-ne::before {
-    bottom: auto !important;
-    top: 3px !important;
-  }
-  .react-grid-item > .react-resizable-handle-nw::after {
-    right: auto !important;
-    left: 0 !important;
-    bottom: auto !important;
-    top: 0 !important;
-    background: linear-gradient(45deg, transparent 40%, hsl(var(--primary)) 40%) !important;
-    border-radius: 5px 0 0 0 !important;
-  }
-  .react-grid-item > .react-resizable-handle-nw::before {
-    right: auto !important;
-    left: 3px !important;
-    bottom: auto !important;
-    top: 3px !important;
-  }
+.react-grid-item > .react-resizable-handle::after {
+  content: "" !important;
+  position: absolute !important;
+  width: 0 !important;
+  height: 0 !important;
+  border-style: solid !important;
+  border-width: 0 0 20px 20px !important;
+  border-color: transparent transparent hsl(var(--primary)) transparent !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  opacity: 0.9 !important;
+  filter: drop-shadow(0 0 6px hsla(var(--primary) / 0.5)) !important;
+  transition: filter 0.15s ease, opacity 0.15s ease !important;
+  border-radius: 0 !important;
+  background: none !important;
+}
 
-  /* Placeholder during drag/resize */
-  .react-grid-item.react-grid-placeholder {
-    background: hsla(var(--glass-glow) / 0.1) !important;
-    border: 2px dashed hsla(var(--glass-glow) / 0.3) !important;
-    border-radius: var(--radius) !important;
-    opacity: 1 !important;
-  }
+/* Grip dots */
+.react-grid-item > .react-resizable-handle::before {
+  content: "⋮⋮" !important;
+  position: absolute !important;
+  right: 1px !important;
+  bottom: 0px !important;
+  font-size: 9px !important;
+  line-height: 1 !important;
+  color: hsl(0 0% 100%) !important;
+  opacity: 0.8 !important;
+  pointer-events: none !important;
+  z-index: 1 !important;
+  transform: rotate(-45deg) !important;
+}
+
+/* Hover glow */
+.react-grid-item > .react-resizable-handle:hover::after {
+  opacity: 1 !important;
+  filter: drop-shadow(0 0 12px hsla(var(--primary) / 0.8)) !important;
+}
+
+/* ── Corner-specific triangle directions ── */
+
+/* SE (default - bottom-right) — already correct */
+
+/* SW - bottom-left */
+.react-grid-item > .react-resizable-handle-sw {
+  left: 0 !important;
+  right: auto !important;
+}
+.react-grid-item > .react-resizable-handle-sw::after {
+  right: auto !important;
+  left: 0 !important;
+  border-width: 0 20px 20px 0 !important;
+  border-color: transparent hsl(var(--primary)) transparent transparent !important;
+  transform: rotate(90deg) !important;
+}
+.react-grid-item > .react-resizable-handle-sw::before {
+  right: auto !important;
+  left: 2px !important;
+  transform: rotate(45deg) !important;
+}
+
+/* NE - top-right */
+.react-grid-item > .react-resizable-handle-ne {
+  top: 0 !important;
+  bottom: auto !important;
+}
+.react-grid-item > .react-resizable-handle-ne::after {
+  bottom: auto !important;
+  top: 0 !important;
+  border-width: 20px 0 0 20px !important;
+  border-color: hsl(var(--primary)) transparent transparent transparent !important;
+}
+.react-grid-item > .react-resizable-handle-ne::before {
+  bottom: auto !important;
+  top: 1px !important;
+  transform: rotate(45deg) !important;
+}
+
+/* NW - top-left */
+.react-grid-item > .react-resizable-handle-nw {
+  left: 0 !important;
+  right: auto !important;
+  top: 0 !important;
+  bottom: auto !important;
+}
+.react-grid-item > .react-resizable-handle-nw::after {
+  right: auto !important;
+  left: 0 !important;
+  bottom: auto !important;
+  top: 0 !important;
+  border-width: 20px 20px 0 0 !important;
+  border-color: hsl(var(--primary)) transparent transparent transparent !important;
+}
+.react-grid-item > .react-resizable-handle-nw::before {
+  right: auto !important;
+  left: 2px !important;
+  bottom: auto !important;
+  top: 1px !important;
+  transform: rotate(-45deg) !important;
+}
+
+/* Placeholder during drag/resize */
+.react-grid-item.react-grid-placeholder {
+  background: hsla(var(--glass-glow) / 0.1) !important;
+  border: 2px dashed hsla(var(--glass-glow) / 0.3) !important;
+  border-radius: var(--radius) !important;
+  opacity: 1 !important;
 }
