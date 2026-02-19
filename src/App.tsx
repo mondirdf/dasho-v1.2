@@ -14,6 +14,7 @@ import Templates from "./pages/Templates";
 import Alerts from "./pages/Alerts";
 import Settings from "./pages/Settings";
 import SharedTemplate from "./pages/SharedTemplate";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -39,6 +40,7 @@ const App = () => (
               <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
               <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
               <Route path="/template/:shareId" element={<SharedTemplate />} />
+              <Route path="/admindf" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
