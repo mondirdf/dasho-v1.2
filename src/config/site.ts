@@ -135,6 +135,64 @@ export const COIN_OPTIONS = [
   { label: "MATIC", value: "MATIC" },
 ] as const;
 
+/* ═══════════════════════ WIDGET CONFIG FIELDS ════════════════════ */
+/**
+ * Controls which settings appear for each widget type.
+ * Add/remove/reorder fields here — they show in AddWidgetSheet & WidgetSettingsModal.
+ *
+ * Supported types: "text" | "number" | "toggle" | "select"
+ */
+export const WIDGET_CONFIG_FIELDS: Record<string, Array<{
+  key: string;
+  label: string;
+  type: "text" | "number" | "toggle" | "select";
+  options?: { label: string; value: string }[];
+  defaultValue?: any;
+  placeholder?: string;
+}>> = {
+  crypto_price: [
+    { key: "symbol", label: "Coin", type: "select", defaultValue: "BTC", options: [...COIN_OPTIONS] },
+    { key: "showChart", label: "Show Sparkline Chart", type: "toggle", defaultValue: true },
+    { key: "showMarketCap", label: "Show Market Cap", type: "toggle", defaultValue: true },
+    { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: false },
+    { key: "showLastUpdate", label: "Show Last Update", type: "toggle", defaultValue: false },
+  ],
+  multi_tracker: [
+    { key: "symbolsText", label: "Symbols (comma-separated)", type: "text", defaultValue: "BTC,ETH,SOL,ADA,DOGE", placeholder: "BTC,ETH,SOL" },
+    { key: "maxItems", label: "Max Items", type: "number", defaultValue: 10 },
+    { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: false },
+    { key: "showMarketCap", label: "Show Market Cap", type: "toggle", defaultValue: false },
+    { key: "sortBy", label: "Sort By", type: "select", defaultValue: "market_cap", options: [
+      { label: "Market Cap", value: "market_cap" },
+      { label: "Price", value: "price" },
+      { label: "24h Change", value: "change" },
+      { label: "Volume", value: "volume" },
+    ]},
+  ],
+  fear_greed: [
+    { key: "indicatorType", label: "Indicator Style", type: "select", defaultValue: "gauge", options: [
+      { label: "Gauge", value: "gauge" }, { label: "Simple", value: "simple" },
+    ]},
+    { key: "showAlert", label: "Alert on Extremes", type: "toggle", defaultValue: true },
+    { key: "showTimestamp", label: "Show Last Update", type: "toggle", defaultValue: false },
+  ],
+  market_context: [
+    { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: true },
+    { key: "showDominance", label: "Show BTC Dominance", type: "toggle", defaultValue: true },
+    { key: "showTopMover", label: "Show Top Mover", type: "toggle", defaultValue: false },
+    { key: "showGainersLosers", label: "Show Gainers vs Losers", type: "toggle", defaultValue: false },
+  ],
+  news: [
+    { key: "maxArticles", label: "Max Articles", type: "number", defaultValue: 20 },
+    { key: "keyword", label: "Filter Keyword", type: "text", placeholder: "Optional keyword filter" },
+    { key: "source", label: "Source Filter", type: "text", placeholder: "Optional source name" },
+    { key: "showSummary", label: "Show Summary in List", type: "toggle", defaultValue: false },
+    { key: "layout", label: "Layout", type: "select", defaultValue: "list", options: [
+      { label: "List", value: "list" }, { label: "Cards", value: "cards" },
+    ]},
+  ],
+};
+
 /* ═══════════════════════ LANDING PAGE COPY ═══════════════════════ */
 
 export const HERO = {
