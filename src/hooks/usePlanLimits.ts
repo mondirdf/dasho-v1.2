@@ -29,7 +29,6 @@ const PRO_LIMITS: Omit<PlanLimits, "plan" | "isPro"> = {
 export function usePlanLimits(): PlanLimits & { loading: boolean } {
   const { user } = useAuth();
   const [plan, setPlan] = useState("free");
-  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,14 +36,11 @@ export function usePlanLimits(): PlanLimits & { loading: boolean } {
     fetchProfile(user.id)
       .then((p) => {
         setPlan(p?.plan || "free");
-        setTrialEndsAt((p as any)?.trial_ends_at || null);
       })
       .finally(() => setLoading(false));
   }, [user]);
 
-  // Check if trial is still active
-  const isTrialActive = trialEndsAt ? new Date(trialEndsAt).getTime() > Date.now() : false;
-  const isPro = plan === "pro" || (plan === "free" && isTrialActive);
+  const isPro = plan === "pro";
   const limits = isPro ? PRO_LIMITS : FREE_LIMITS;
 
   return { plan, isPro, ...limits, loading };
