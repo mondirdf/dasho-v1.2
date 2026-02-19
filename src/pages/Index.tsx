@@ -1,27 +1,37 @@
 import { Link } from "react-router-dom";
 import {
   BarChart3, Bell, Layout, Zap, Shield, Globe,
-  ArrowRight, Check, ChevronDown, TrendingUp, TrendingDown
+  ArrowRight, Check, ChevronDown, TrendingUp, TrendingDown,
+  Cloud, Newspaper, LineChart, Gamepad2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 /* ── Mock data for demo preview ── */
-const MOCK_COINS = [
-  { symbol: "BTC", price: 97421, change: 2.34 },
-  { symbol: "ETH", price: 3842, change: -1.12 },
-  { symbol: "SOL", price: 198, change: 5.67 },
-  { symbol: "ADA", price: 0.72, change: 0.89 },
-  { symbol: "DOGE", price: 0.187, change: -3.21 },
+const MOCK_WIDGETS = [
+  { label: "BTC", value: "$97,421", change: "+2.34%", positive: true },
+  { label: "ETH", value: "$3,842", change: "-1.12%", positive: false },
+  { label: "SOL", value: "$198", change: "+5.67%", positive: true },
+  { label: "S&P 500", value: "5,421", change: "+0.45%", positive: true },
+  { label: "Weather", value: "22°C", change: "Sunny", positive: true },
 ];
 
 /* ── FAQ data ── */
 const FAQ_DATA = [
-  { q: "Is PulseBoard free to use?", a: "Yes! The free plan includes 1 dashboard with up to 5 widgets, real-time data, and price alerts. Upgrade to Pro for unlimited dashboards and advanced features." },
-  { q: "Where does the data come from?", a: "We aggregate data from multiple trusted sources including CoinGecko and CoinCap, with automatic failover for 99.9% uptime." },
+  { q: "Is PulseBoard free to use?", a: "Yes! The free plan includes 1 dashboard with up to 5 widgets, real-time data, and alerts. Upgrade to Pro for unlimited dashboards and advanced features." },
+  { q: "What kind of data can I track?", a: "Currently we support crypto market data, news feeds, and sentiment indexes. Finance, weather, stocks, sports, and productivity widgets are coming soon." },
   { q: "Can I share my dashboard?", a: "Absolutely. Save any dashboard as a template and share it with a public link. Others can clone it into their own account with one click." },
   { q: "How fast is the data?", a: "Market data refreshes every 60 seconds and news every 5 minutes. All data is cached server-side for instant loading." },
   { q: "Is my data secure?", a: "Yes. All data is protected with Row Level Security. Your dashboards, alerts, and settings are completely private to your account." },
+];
+
+const CATEGORIES = [
+  { icon: LineChart, label: "Crypto", active: true },
+  { icon: BarChart3, label: "Finance", active: false },
+  { icon: Newspaper, label: "News", active: true },
+  { icon: Cloud, label: "Weather", active: false },
+  { icon: TrendingUp, label: "Stocks", active: false },
+  { icon: Gamepad2, label: "Sports", active: false },
 ];
 
 const FaqItem = ({ q, a }: { q: string; a: string }) => {
@@ -67,11 +77,11 @@ const Index = () => {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsla(263,70%,66%,0.12),transparent_60%)]" />
           <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1] max-w-3xl mx-auto">
-              Your Crypto Portfolio,{" "}
-              <span className="text-primary">One Dashboard</span>
+              Your Data. Your Layout.{" "}
+              <span className="text-primary">Your Control.</span>
             </h1>
             <p className="mt-5 text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              Real-time prices, custom alerts, market insights — all in a drag-and-drop dashboard built for serious crypto watchers.
+              Build fully customizable dashboards with real-time widgets — crypto, finance, news, weather, and more. All in one place.
             </p>
             <div className="mt-8 flex items-center justify-center gap-3">
               <Link to="/signup">
@@ -83,6 +93,24 @@ const Index = () => {
                 <Button variant="outline" size="lg" className="text-base px-8">Learn More</Button>
               </a>
             </div>
+
+            {/* Category chips */}
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-2">
+              {CATEGORIES.map((c) => (
+                <div
+                  key={c.label}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                    c.active
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-border/50 bg-secondary/30 text-muted-foreground"
+                  }`}
+                >
+                  <c.icon className="h-3.5 w-3.5" />
+                  {c.label}
+                  {!c.active && <span className="text-[10px] opacity-60">Soon</span>}
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -90,32 +118,29 @@ const Index = () => {
         <section className="max-w-5xl mx-auto px-4 pb-20" aria-label="Dashboard preview">
           <div className="glass-card p-4 sm:p-6">
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-              {MOCK_COINS.map((c) => {
-                const pos = c.change >= 0;
-                return (
-                  <div key={c.symbol} className="rounded-lg bg-secondary/40 p-3 space-y-1">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">{c.symbol}</span>
-                      <span className={`flex items-center gap-0.5 text-xs font-semibold ${pos ? "text-success" : "text-destructive"}`}>
-                        {pos ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                        {c.change.toFixed(2)}%
-                      </span>
-                    </div>
-                    <p className="text-lg font-bold text-foreground">${c.price.toLocaleString()}</p>
+              {MOCK_WIDGETS.map((w) => (
+                <div key={w.label} className="rounded-lg bg-secondary/40 p-3 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-muted-foreground">{w.label}</span>
+                    <span className={`flex items-center gap-0.5 text-xs font-semibold ${w.positive ? "text-success" : "text-destructive"}`}>
+                      {w.positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                      {w.change}
+                    </span>
                   </div>
-                );
-              })}
+                  <p className="text-lg font-bold text-foreground">{w.value}</p>
+                </div>
+              ))}
             </div>
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="rounded-lg bg-secondary/40 p-4">
-                <p className="text-xs text-muted-foreground mb-1">Fear & Greed Index</p>
+                <p className="text-xs text-muted-foreground mb-1">Market Sentiment</p>
                 <p className="text-3xl font-bold text-success">72</p>
                 <p className="text-xs text-success font-medium">Greed</p>
               </div>
               <div className="rounded-lg bg-secondary/40 p-4 space-y-2">
                 <p className="text-xs text-muted-foreground">Latest News</p>
                 <p className="text-sm text-foreground line-clamp-1">Bitcoin breaks $97K as institutional buying surges</p>
-                <p className="text-sm text-foreground line-clamp-1">Ethereum L2 transaction volume hits all-time high</p>
+                <p className="text-sm text-foreground line-clamp-1">Global markets rally on positive economic data</p>
               </div>
             </div>
           </div>
@@ -130,10 +155,10 @@ const Index = () => {
           <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { icon: Layout, title: "Custom Dashboards", desc: "Drag-and-drop widgets. Resize, rearrange, save — your layout, your way." },
-              { icon: Bell, title: "Price Alerts", desc: "Set above/below triggers. Get notified the instant a price target is hit." },
-              { icon: BarChart3, title: "Real-Time Data", desc: "Market data refreshes every minute from multiple trusted sources." },
+              { icon: Bell, title: "Smart Alerts", desc: "Set triggers on any data point. Get notified the instant your conditions are met." },
+              { icon: BarChart3, title: "Real-Time Data", desc: "Live data from multiple sources, refreshing automatically every minute." },
               { icon: Zap, title: "Instant Templates", desc: "Clone community dashboards in one click. Share yours with the world." },
-              { icon: Globe, title: "Market Context", desc: "BTC dominance, total market cap, volume — the big picture at a glance." },
+              { icon: Globe, title: "Multi-Category Widgets", desc: "Crypto, finance, news, weather, stocks — and more coming soon." },
               { icon: Shield, title: "Secure by Default", desc: "Row-level security, encrypted auth, zero data exposure. Your data stays yours." },
             ].map((f) => (
               <div key={f.title} className="glass-card p-6 space-y-3 hover:border-primary/30 transition-colors">
@@ -153,8 +178,8 @@ const Index = () => {
           <div className="mt-12 grid sm:grid-cols-3 gap-8">
             {[
               { step: "1", title: "Sign Up Free", desc: "Create your account in seconds. No credit card required." },
-              { step: "2", title: "Build Your Board", desc: "Add widgets, drag to arrange, resize to fit. Save automatically." },
-              { step: "3", title: "Stay Informed", desc: "Set alerts, track markets, share with friends. All in real time." },
+              { step: "2", title: "Build Your Board", desc: "Add widgets from any category, drag to arrange, resize to fit." },
+              { step: "3", title: "Stay Informed", desc: "Set alerts, track data in real time, share with friends." },
             ].map((s) => (
               <div key={s.step} className="text-center space-y-3">
                 <div className="mx-auto w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
@@ -172,9 +197,9 @@ const Index = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">Built For</h2>
           <div className="mt-10 grid sm:grid-cols-3 gap-6">
             {[
-              { title: "Day Traders", desc: "Quick price snapshots, alerts on breakout levels, multi-coin tracking for fast decisions." },
-              { title: "Long-Term Investors", desc: "Market context widgets, BTC dominance tracking, portfolio overview in one glance." },
-              { title: "Crypto Enthusiasts", desc: "News feed, Fear & Greed index, shareable templates — stay plugged into the market." },
+              { title: "Traders & Investors", desc: "Quick price snapshots, alerts on breakout levels, multi-asset tracking for fast decisions." },
+              { title: "Data Enthusiasts", desc: "Combine widgets from multiple categories into one unified view. Your data, your rules." },
+              { title: "Teams & Creators", desc: "Share dashboard templates with your team or community. Collaborate visually." },
             ].map((u) => (
               <div key={u.title} className="glass-card p-6 space-y-2">
                 <h3 className="text-base font-semibold text-foreground">{u.title}</h3>
@@ -189,14 +214,13 @@ const Index = () => {
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">Simple Pricing</h2>
           <p className="mt-3 text-muted-foreground text-center">Start free, upgrade when you need more.</p>
           <div className="mt-10 grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
-            {/* Free */}
             <div className="glass-card p-6 space-y-5">
               <div>
                 <h3 className="text-lg font-bold text-foreground">Free</h3>
                 <p className="text-3xl font-bold text-foreground mt-1">$0<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
               </div>
               <ul className="space-y-2">
-                {["1 dashboard", "5 widgets", "Price alerts", "Real-time data", "Community templates"].map((f) => (
+                {["1 dashboard", "5 widgets", "Smart alerts", "Real-time data", "Community templates"].map((f) => (
                   <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Check className="h-4 w-4 text-success shrink-0" /> {f}
                   </li>
@@ -206,7 +230,6 @@ const Index = () => {
                 <Button variant="outline" className="w-full">Get Started</Button>
               </Link>
             </div>
-            {/* Pro */}
             <div className="glass-card p-6 space-y-5 border-primary/40 relative">
               <div className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium">
                 Popular
@@ -216,7 +239,7 @@ const Index = () => {
                 <p className="text-3xl font-bold text-foreground mt-1">$9<span className="text-sm font-normal text-muted-foreground">/mo</span></p>
               </div>
               <ul className="space-y-2">
-                {["Unlimited dashboards", "Unlimited widgets", "Advanced alerts", "Priority data refresh", "Share & export", "Email notifications"].map((f) => (
+                {["Unlimited dashboards", "Unlimited widgets", "Advanced alerts", "Priority data refresh", "Share & export", "All widget categories"].map((f) => (
                   <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Check className="h-4 w-4 text-success shrink-0" /> {f}
                   </li>
@@ -243,7 +266,7 @@ const Index = () => {
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsla(263,70%,66%,0.08),transparent_70%)]" />
             <div className="relative">
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground">Ready to take control?</h2>
-              <p className="mt-3 text-muted-foreground">Join thousands tracking crypto smarter with PulseBoard.</p>
+              <p className="mt-3 text-muted-foreground">Build your perfect dashboard today — free forever.</p>
               <Link to="/signup" className="inline-block mt-6">
                 <Button size="lg" className="gap-2 text-base px-10">
                   Start Free <ArrowRight className="h-4 w-4" />
@@ -260,7 +283,7 @@ const Index = () => {
           <div>
             <p className="text-lg font-bold text-foreground">Pulse<span className="text-primary">Board</span></p>
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">
-              Real-time crypto dashboards for traders, investors, and enthusiasts.
+              Your data. Your layout. Your control. Build customizable dashboards for everything.
             </p>
           </div>
           <div>

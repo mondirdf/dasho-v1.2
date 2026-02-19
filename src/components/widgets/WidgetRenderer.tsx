@@ -1,16 +1,19 @@
 /**
  * WidgetRenderer — dynamically renders the correct widget component
- * based on widget.type. Premium glass styling with edit controls.
+ * based on widget.type. Supports per-widget style customization.
+ * Architecture is category-agnostic: new widget types are registered in WIDGET_MAP.
  */
-import { memo, useState } from "react";
+import { memo, useState, useCallback, useMemo, CSSProperties } from "react";
 import { X, GripVertical } from "lucide-react";
 import type { Widget } from "@/services/dataService";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import WidgetCustomizer, { type WidgetStyle } from "./WidgetCustomizer";
 import CryptoPriceWidget from "./CryptoPriceWidget";
 import MultiTrackerWidget from "./MultiTrackerWidget";
 import NewsWidget from "./NewsWidget";
 import FearGreedWidget from "./FearGreedWidget";
 import MarketContextWidget from "./MarketContextWidget";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
   widget: Widget;
@@ -18,12 +21,17 @@ interface Props {
   onRemove: (id: string) => void;
 }
 
+/**
+ * Widget registry — add new widget components here.
+ * No crypto-specific logic; each type maps to a component.
+ */
 const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   crypto_price: CryptoPriceWidget,
   multi_tracker: MultiTrackerWidget,
   news: NewsWidget,
   fear_greed: FearGreedWidget,
   market_context: MarketContextWidget,
+  // Future: weather_current, stock_price, forex_rates, etc.
 };
 
 const WIDGET_LABELS: Record<string, string> = {
@@ -34,14 +42,50 @@ const WIDGET_LABELS: Record<string, string> = {
   market_context: "Market",
 };
 
+function getWidgetCustomStyle(style?: WidgetStyle): CSSProperties {
+  if (!style) return {};
+  const s: CSSProperties = {};
+  if (style.bgColor) {
+    s.background = `hsla(${style.bgColor} / 0.65)`;
+  }
+  if (style.borderRadius !== undefined) {
+    s.borderRadius = `${style.borderRadius}px`;
+  }
+  if (style.shadowIntensity !== undefined) {
+    const intensity = style.shadowIntensity / 100;
+    s.boxShadow = `0 0 0 1px hsla(var(--glass-border) / 0.1), 0 4px ${Math.round(24 * intensity)}px -4px hsla(228, 40%, 4%, ${0.5 * intensity})`;
+  }
+  if (style.accentColor) {
+    s.borderColor = `hsla(${style.accentColor} / 0.3)`;
+  }
+  return s;
+}
+
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
   const Component = WIDGET_MAP[widget.type];
   const [confirmRemove, setConfirmRemove] = useState(false);
 
+  const configJson = widget.config_json as any;
+  const widgetStyle: WidgetStyle = configJson?.style || {};
+  const animationsOn = widgetStyle.animationsEnabled ?? true;
+
+  const handleStyleChange = useCallback(async (newStyle: WidgetStyle) => {
+    const updated = { ...(configJson || {}), style: newStyle };
+    await supabase
+      .from("widgets")
+      .update({ config_json: updated })
+      .eq("id", widget.id);
+    // Optimistic: mutate in-place for instant feedback
+    (widget as any).config_json = updated;
+  }, [widget, configJson]);
+
+  const customStyle = useMemo(() => getWidgetCustomStyle(widgetStyle), [widgetStyle]);
+
   return (
     <>
       <div
-        className={`widget-container h-full group ${editMode ? "editing" : ""}`}
+        className={`widget-container h-full group ${editMode ? "editing" : ""} ${animationsOn ? "widget-animate" : ""}`}
+        style={customStyle}
         role="region"
         aria-label={WIDGET_LABELS[widget.type] || widget.type}
       >
@@ -59,9 +103,12 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
             <X className="h-3 w-3" />
           </button>
         )}
+        {editMode && (
+          <WidgetCustomizer style={widgetStyle} onChange={handleStyleChange} />
+        )}
         <div className={editMode ? "pt-8 h-full" : "h-full"}>
           {Component ? (
-            <Component config={widget.config_json as any} />
+            <Component config={configJson} />
           ) : (
             <div className="p-4 text-muted-foreground text-sm">
               Unknown widget type: {widget.type}

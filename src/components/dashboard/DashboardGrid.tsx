@@ -22,7 +22,7 @@ const DashboardGrid = () => {
           </div>
           <h2 className="text-xl font-semibold text-foreground">Your dashboard is empty</h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Add widgets to start tracking crypto prices, news, and market data.
+            Add widgets to start tracking data — crypto, news, market sentiment, and more.
           </p>
           <div className="pt-2">
             <AddWidgetSheet />

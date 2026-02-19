@@ -39,7 +39,7 @@ const Signup = () => {
             Create your account
           </h1>
           <p className="text-sm text-muted-foreground">
-            Start building your crypto dashboard
+            Start building your custom dashboard
           </p>
         </div>
 
