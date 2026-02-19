@@ -102,7 +102,7 @@ export interface WidgetRegistryEntry {
 
 /* ──────────────────────────── Supported coins ──────────────────────────── */
 
-import { COIN_OPTIONS as COINS_FROM_CONFIG } from "@/config/site";
+import { COIN_OPTIONS as COINS_FROM_CONFIG, WIDGET_CONFIG_FIELDS } from "@/config/site";
 const COIN_OPTIONS = [...COINS_FROM_CONFIG];
 
 /* ──────────────────────────── Registry ──────────────────────────── */
@@ -128,13 +128,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     },
     defaultSize: { w: 4, h: 3 },
     constraints: { minW: 3, minH: 2, maxW: 8, maxH: 6 },
-    configFields: [
-      { key: "symbol", label: "Coin", type: "select", defaultValue: "BTC", options: COIN_OPTIONS },
-      { key: "showChart", label: "Show Sparkline Chart", type: "toggle", defaultValue: true },
-      { key: "showMarketCap", label: "Show Market Cap", type: "toggle", defaultValue: true },
-      { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: false },
-      { key: "showLastUpdate", label: "Show Last Update", type: "toggle", defaultValue: false },
-    ],
+    configFields: WIDGET_CONFIG_FIELDS.crypto_price || [],
   },
   // ── Multi Tracker ──
   {
@@ -154,18 +148,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     },
     defaultSize: { w: 4, h: 4 },
     constraints: { minW: 3, minH: 3, maxW: 12, maxH: 8 },
-    configFields: [
-      { key: "symbolsText", label: "Symbols (comma-separated)", type: "text", defaultValue: "BTC,ETH,SOL,ADA,DOGE", placeholder: "BTC,ETH,SOL" },
-      { key: "maxItems", label: "Max Items", type: "number", defaultValue: 10 },
-      { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: false },
-      { key: "showMarketCap", label: "Show Market Cap", type: "toggle", defaultValue: false },
-      { key: "sortBy", label: "Sort By", type: "select", defaultValue: "market_cap", options: [
-        { label: "Market Cap", value: "market_cap" },
-        { label: "Price", value: "price" },
-        { label: "24h Change", value: "change" },
-        { label: "Volume", value: "volume" },
-      ]},
-    ],
+    configFields: WIDGET_CONFIG_FIELDS.multi_tracker || [],
   },
   // ── Fear & Greed ──
   {
@@ -186,13 +169,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     },
     defaultSize: { w: 3, h: 3 },
     constraints: { minW: 2, minH: 2, maxW: 6, maxH: 5 },
-    configFields: [
-      { key: "indicatorType", label: "Indicator Style", type: "select", defaultValue: "gauge", options: [
-        { label: "Gauge", value: "gauge" }, { label: "Simple", value: "simple" },
-      ]},
-      { key: "showAlert", label: "Alert on Extremes", type: "toggle", defaultValue: true },
-      { key: "showTimestamp", label: "Show Last Update", type: "toggle", defaultValue: false },
-    ],
+    configFields: WIDGET_CONFIG_FIELDS.fear_greed || [],
   },
   // ── Market Context ──
   {
@@ -212,12 +189,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     },
     defaultSize: { w: 4, h: 3 },
     constraints: { minW: 3, minH: 2, maxW: 8, maxH: 5 },
-    configFields: [
-      { key: "showVolume", label: "Show Volume", type: "toggle", defaultValue: true },
-      { key: "showDominance", label: "Show BTC Dominance", type: "toggle", defaultValue: true },
-      { key: "showTopMover", label: "Show Top Mover", type: "toggle", defaultValue: false },
-      { key: "showGainersLosers", label: "Show Gainers vs Losers", type: "toggle", defaultValue: false },
-    ],
+    configFields: WIDGET_CONFIG_FIELDS.market_context || [],
   },
   // ── News ──
   {
@@ -237,15 +209,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     },
     defaultSize: { w: 4, h: 4 },
     constraints: { minW: 3, minH: 3, maxW: 12, maxH: 10 },
-    configFields: [
-      { key: "maxArticles", label: "Max Articles", type: "number", defaultValue: 20 },
-      { key: "keyword", label: "Filter Keyword", type: "text", placeholder: "Optional keyword filter" },
-      { key: "source", label: "Source Filter", type: "text", placeholder: "Optional source name" },
-      { key: "showSummary", label: "Show Summary in List", type: "toggle", defaultValue: false },
-      { key: "layout", label: "Layout", type: "select", defaultValue: "list", options: [
-        { label: "List", value: "list" }, { label: "Cards", value: "cards" },
-      ]},
-    ],
+    configFields: WIDGET_CONFIG_FIELDS.news || [],
   },
   // ── Coming Soon ──
   {
