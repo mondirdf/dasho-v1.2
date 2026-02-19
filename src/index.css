@@ -570,42 +570,6 @@
   top: 4px !important;
 }
 
-/* ── Mobile: larger touch-friendly resize handles ── */
-@media (max-width: 767px) {
-  .react-grid-item > .react-resizable-handle-s {
-    width: 64px !important;
-    height: 20px !important;
-    bottom: -6px !important;
-  }
-  .react-grid-item > .react-resizable-handle-s::after {
-    width: 48px !important;
-    height: 6px !important;
-    bottom: 7px !important;
-    left: 8px !important;
-    border-radius: 6px !important;
-    opacity: 0.7 !important;
-  }
-
-  .react-grid-item > .react-resizable-handle-e {
-    width: 20px !important;
-    height: 64px !important;
-    right: -6px !important;
-  }
-  .react-grid-item > .react-resizable-handle-e::after {
-    width: 6px !important;
-    height: 48px !important;
-    right: 7px !important;
-    top: 8px !important;
-    border-radius: 6px !important;
-    opacity: 0.7 !important;
-  }
-
-  /* Always show handles in edit mode on mobile (no hover) */
-  .dashboard-edit-mode .react-grid-item > .react-resizable-handle::after {
-    opacity: 0.7 !important;
-  }
-}
-
 /* Placeholder during drag/resize */
 .react-grid-item.react-grid-placeholder {
   background: hsla(var(--glass-glow) / 0.1) !important;
