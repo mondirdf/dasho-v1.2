@@ -11,6 +11,7 @@ import {
   BRAND, HERO, FEATURES, HOW_IT_WORKS, USE_CASES,
   PRICING, FAQ, CTA, FOOTER, MOCK_WIDGETS, WIDGET_CATEGORIES,
 } from "@/config/site";
+import logoDasho from "@/assets/logo-dasho.png";
 
 /* Icon map for features */
 const ICON_MAP: Record<string, any> = { Layout, Bell, BarChart3, Zap, Globe, Shield };
@@ -45,8 +46,8 @@ const Index = () => {
       {/* Nav */}
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link to="/" className="text-lg font-bold text-foreground tracking-tight">
-            {BRAND.namePrefix}<span className="text-primary">{BRAND.nameHighlight}</span>
+          <Link to="/" className="flex items-center gap-2">
+            <img src={logoDasho} alt={BRAND.name} className="h-10" />
           </Link>
           <div className="flex items-center gap-3">
             {loading ? null : user ? (
@@ -220,7 +221,7 @@ const Index = () => {
       <footer className="border-t border-border/50 bg-background">
         <div className="max-w-6xl mx-auto px-4 py-10 grid sm:grid-cols-3 gap-8">
           <div>
-            <p className="text-lg font-bold text-foreground">{BRAND.namePrefix}<span className="text-primary">{BRAND.nameHighlight}</span></p>
+            <img src={logoDasho} alt={BRAND.name} className="h-8" />
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{FOOTER.tagline}</p>
           </div>
           <div>

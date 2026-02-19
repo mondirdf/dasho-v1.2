@@ -39,7 +39,7 @@ const Login = () => {
             Welcome back
           </h1>
           <p className="text-sm text-muted-foreground">
-            Sign in to your Dashooo account
+            Sign in to your Dasho account
           </p>
         </div>
 

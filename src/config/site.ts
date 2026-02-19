@@ -1,6 +1,6 @@
 /**
  * ╔═══════════════════════════════════════════════════════════════════╗
- * ║                    DASHOOO — CENTRAL CONFIG                      ║
+ * ║                    DASHO — CENTRAL CONFIG                        ║
  * ║                                                                   ║
  * ║  Edit this single file to control brand, colors, SEO, copy,      ║
  * ║  widget categories, pricing, FAQ, and more.                       ║
@@ -12,17 +12,19 @@
 /* ══════════════════════════════ BRAND ══════════════════════════════ */
 
 export const BRAND = {
-  name: "Dashooo",
-  /** Used in nav/footer: "Dash" + highlighted "ooo" */
+  name: "Dasho",
+  /** Used in nav/footer: "Dash" + highlighted "o" */
   namePrefix: "Dash",
-  nameHighlight: "ooo",
-  tagline: "Your Data. Your Layout. Your Control.",
+  nameHighlight: "o",
+  tagline: "All Your Data. One View.",
   description:
     "Build fully customizable dashboards with real-time data widgets. Track crypto, finance, news, weather, and more — all in one place.",
   url: "https://dashooo.vercel.app",
   ogImage: "https://dashooo.vercel.app/og-image.png",
+  /** Path to logo image (icon + name) for navbar/footer */
+  logo: "/src/assets/logo-dasho.png",
   year: new Date().getFullYear(),
-  author: "Dashooo",
+  author: "Dasho",
 } as const;
 
 /* ══════════════════════════════ SEO ═══════════════════════════════ */
@@ -196,8 +198,8 @@ export const WIDGET_CONFIG_FIELDS: Record<string, Array<{
 /* ═══════════════════════ LANDING PAGE COPY ═══════════════════════ */
 
 export const HERO = {
-  heading: "Your Data. Your Layout.",
-  headingHighlight: "Your Control.",
+  heading: "All Your Data.",
+  headingHighlight: "One View.",
   subheading:
     "Build fully customizable dashboards with real-time widgets — crypto, finance, news, weather, and more. All in one place.",
   ctaPrimary: "Start Free",
@@ -287,7 +289,7 @@ export const PRICING = {
 
 export const FAQ = [
   {
-    q: "Is Dashooo free to use?",
+    q: "Is Dasho free to use?",
     a: "Yes! The free plan includes 1 dashboard with up to 5 widgets, real-time data, and alerts. Upgrade to Pro for unlimited dashboards and advanced features.",
   },
   {
