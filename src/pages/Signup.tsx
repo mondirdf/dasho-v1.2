@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import logoDasho from "@/assets/logo-dasho.png";
 
 const Signup = () => {
   const { user, loading: authLoading } = useAuth();
@@ -36,8 +37,20 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
-      <div className="glass-card w-full max-w-md p-8 space-y-6">
+    <div className="min-h-screen flex items-center justify-center px-4 relative">
+      {/* Animated background orbs */}
+      <div className="animated-bg">
+        <div className="orb orb-1" />
+        <div className="orb orb-2" />
+        <div className="orb orb-3" />
+      </div>
+
+      <div className="glass-card-enhanced w-full max-w-md p-8 space-y-6 relative z-10">
+        {/* Logo */}
+        <div className="flex justify-center">
+          <img src={logoDasho} alt="Dasho" className="h-16" />
+        </div>
+
         <div className="text-center space-y-2">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Create your account
@@ -48,7 +61,7 @@ const Signup = () => {
         </div>
 
         {success ? (
-          <div className="rounded-lg border border-border bg-secondary/30 p-4 text-center space-y-2">
+          <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-center space-y-2">
             <p className="text-sm text-foreground font-medium">Check your email</p>
             <p className="text-xs text-muted-foreground">
               We sent a confirmation link to <strong>{email}</strong>
@@ -65,7 +78,7 @@ const Signup = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-secondary/50 border-border"
+                className="glass-input"
               />
             </div>
 
@@ -79,7 +92,7 @@ const Signup = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                className="bg-secondary/50 border-border"
+                className="glass-input"
               />
             </div>
 
@@ -89,7 +102,7 @@ const Signup = () => {
 
             <Button
               type="submit"
-              className="w-full bg-primary hover:bg-primary/90"
+              className="w-full glow-button"
               disabled={loading}
             >
               {loading ? "Creating account…" : "Create Account"}

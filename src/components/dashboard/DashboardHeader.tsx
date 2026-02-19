@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
 import { useCallback, useState } from "react";
+import logoDasho from "@/assets/logo-dasho.png";
 import { shareTemplate } from "@/services/dataService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -58,11 +59,11 @@ const DashboardHeader = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/70 backdrop-blur-xl px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+      <header className="sticky top-0 z-20 border-b border-border/60 glass-nav px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           {!isMobile && (
-            <Link to="/" className="text-sm font-bold text-foreground tracking-tight mr-1">
-              Dash<span className="gradient-text">ooo</span>
+            <Link to="/" className="mr-1">
+              <img src={logoDasho} alt="Dasho" className="h-10" />
             </Link>
           )}
 
