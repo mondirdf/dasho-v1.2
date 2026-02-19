@@ -102,18 +102,8 @@ export interface WidgetRegistryEntry {
 
 /* ──────────────────────────── Supported coins ──────────────────────────── */
 
-const COIN_OPTIONS = [
-  { label: "BTC", value: "BTC" },
-  { label: "ETH", value: "ETH" },
-  { label: "SOL", value: "SOL" },
-  { label: "ADA", value: "ADA" },
-  { label: "DOGE", value: "DOGE" },
-  { label: "XRP", value: "XRP" },
-  { label: "DOT", value: "DOT" },
-  { label: "AVAX", value: "AVAX" },
-  { label: "LINK", value: "LINK" },
-  { label: "MATIC", value: "MATIC" },
-];
+import { COIN_OPTIONS as COINS_FROM_CONFIG } from "@/config/site";
+const COIN_OPTIONS = [...COINS_FROM_CONFIG];
 
 /* ──────────────────────────── Registry ──────────────────────────── */
 
@@ -323,13 +313,4 @@ export function getWidgetConstraints(type: string): WidgetConstraints {
   return def?.constraints ?? { minW: 2, minH: 2 };
 }
 
-export const WIDGET_CATEGORIES = [
-  { id: "all", label: "All" },
-  { id: "crypto", label: "Crypto" },
-  { id: "news", label: "News" },
-  { id: "finance", label: "Finance" },
-  { id: "weather", label: "Weather" },
-  { id: "stocks", label: "Stocks" },
-  { id: "sports", label: "Sports" },
-  { id: "productivity", label: "Productivity" },
-];
+export { WIDGET_CATEGORIES } from "@/config/site";

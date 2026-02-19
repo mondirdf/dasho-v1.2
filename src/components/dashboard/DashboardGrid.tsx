@@ -3,6 +3,7 @@ import { useDashboard } from "@/contexts/DashboardContext";
 import AddWidgetSheet from "@/components/AddWidgetSheet";
 import WidgetRenderer from "@/components/widgets/WidgetRenderer";
 import { LayoutGrid } from "lucide-react";
+import { EMPTY_DASHBOARD } from "@/config/site";
 import { Responsive, WidthProvider } from "react-grid-layout/legacy";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -37,9 +38,9 @@ const DashboardGrid = () => {
           <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
             <LayoutGrid className="h-8 w-8 text-primary" />
           </div>
-          <h2 className="text-xl font-semibold text-foreground">Your dashboard is empty</h2>
+          <h2 className="text-xl font-semibold text-foreground">{EMPTY_DASHBOARD.heading}</h2>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            Add widgets to start tracking data — crypto, news, market sentiment, and more.
+            {EMPTY_DASHBOARD.description}
           </p>
           <div className="pt-2">
             <AddWidgetSheet />

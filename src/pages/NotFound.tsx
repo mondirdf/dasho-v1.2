@@ -2,6 +2,7 @@ import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft, Search } from "lucide-react";
+import { NOT_FOUND } from "@/config/site";
 
 const NotFound = () => {
   const location = useLocation();
@@ -58,10 +59,10 @@ const NotFound = () => {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight gradient-text">
-            الصفحة غير موجودة
+            {NOT_FOUND.heading}
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed">
-            لم نتمكن من العثور على الصفحة التي تبحث عنها.
+            {NOT_FOUND.description}
             <br />
             <code className="mt-1 inline-block text-xs bg-secondary/60 px-2 py-0.5 rounded-md text-foreground/70">
               {location.pathname}
@@ -72,7 +73,7 @@ const NotFound = () => {
         <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
           <Link to="/dashboard">
             <Button className="gap-2 w-full sm:w-auto">
-              <Home className="h-4 w-4" /> الذهاب للوحة التحكم
+              <Home className="h-4 w-4" /> {NOT_FOUND.dashboardButton}
             </Button>
           </Link>
           <Button
@@ -80,7 +81,7 @@ const NotFound = () => {
             className="gap-2"
             onClick={() => window.history.back()}
           >
-            <ArrowLeft className="h-4 w-4" /> العودة للخلف
+            <ArrowLeft className="h-4 w-4" /> {NOT_FOUND.backButton}
           </Button>
         </div>
       </div>
