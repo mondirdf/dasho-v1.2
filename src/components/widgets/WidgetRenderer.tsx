@@ -1,19 +1,18 @@
 /**
- * WidgetRenderer — dynamically renders the correct widget component
- * based on widget.type. Supports per-widget style and size customization.
+ * WidgetRenderer — plug-and-play widget component registry.
+ * Each widget is an independent instance identified by its unique ID.
+ * Renders based on widget.type, passes widget.config_json to component.
  */
-import { memo, useState, useCallback, useMemo, CSSProperties } from "react";
-import { X, GripVertical } from "lucide-react";
+import { memo, useState, useMemo, CSSProperties } from "react";
+import { X, GripVertical, Settings2 } from "lucide-react";
 import type { Widget } from "@/services/dataService";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import WidgetCustomizer, { type WidgetStyle, type WidgetSize } from "./WidgetCustomizer";
+import WidgetSettingsModal, { type WidgetStyle } from "./WidgetSettingsModal";
 import CryptoPriceWidget from "./CryptoPriceWidget";
 import MultiTrackerWidget from "./MultiTrackerWidget";
 import NewsWidget from "./NewsWidget";
 import FearGreedWidget from "./FearGreedWidget";
 import MarketContextWidget from "./MarketContextWidget";
-import { supabase } from "@/integrations/supabase/client";
-import { useDashboard } from "@/contexts/DashboardContext";
 
 interface Props {
   widget: Widget;
@@ -23,7 +22,7 @@ interface Props {
 
 /**
  * Widget registry — add new widget components here.
- * Category-agnostic: each type maps to a component.
+ * Each type maps to a component that receives { config }.
  */
 const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   crypto_price: CryptoPriceWidget,
@@ -63,33 +62,11 @@ function getWidgetCustomStyle(style?: WidgetStyle): CSSProperties {
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
   const Component = WIDGET_MAP[widget.type];
   const [confirmRemove, setConfirmRemove] = useState(false);
-  const { layout, onLayoutChange } = useDashboard();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const configJson = widget.config_json as any;
   const widgetStyle: WidgetStyle = configJson?.style || {};
   const animationsOn = widgetStyle.animationsEnabled ?? true;
-
-  const currentLayoutItem = layout.find((l) => l.i === widget.id);
-  const currentSize: WidgetSize = {
-    w: currentLayoutItem?.w ?? widget.width,
-    h: currentLayoutItem?.h ?? widget.height,
-  };
-
-  const handleStyleChange = useCallback(async (newStyle: WidgetStyle) => {
-    const updated = { ...(configJson || {}), style: newStyle };
-    await supabase
-      .from("widgets")
-      .update({ config_json: updated })
-      .eq("id", widget.id);
-    (widget as any).config_json = updated;
-  }, [widget, configJson]);
-
-  const handleSizeChange = useCallback((newSize: WidgetSize) => {
-    const newLayout = layout.map((l) =>
-      l.i === widget.id ? { ...l, w: newSize.w, h: newSize.h } : l
-    );
-    onLayoutChange(newLayout);
-  }, [widget.id, layout, onLayoutChange]);
 
   const customStyle = useMemo(() => getWidgetCustomStyle(widgetStyle), [widgetStyle]);
 
@@ -101,29 +78,35 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
         role="region"
         aria-label={WIDGET_LABELS[widget.type] || widget.type}
       >
+        {/* Drag handle */}
         {editMode && (
           <div className="widget-drag-handle absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-secondary/60 to-transparent flex items-center justify-center cursor-grab z-10">
             <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
           </div>
         )}
+
+        {/* Edit mode controls */}
         {editMode && (
-          <button
-            onClick={() => setConfirmRemove(true)}
-            className="absolute top-1.5 right-1.5 z-20 p-1.5 rounded-lg bg-destructive/90 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
-            aria-label="Remove widget"
-          >
-            <X className="h-3 w-3" />
-          </button>
+          <>
+            <button
+              onClick={() => setConfirmRemove(true)}
+              className="absolute top-1.5 right-1.5 z-20 p-1.5 rounded-lg bg-destructive/90 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
+              aria-label="Remove widget"
+            >
+              <X className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => setSettingsOpen(true)}
+              className="absolute top-1.5 left-1.5 z-20 p-1.5 rounded-lg bg-secondary/80 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:text-primary"
+              aria-label="Widget settings"
+            >
+              <Settings2 className="h-3 w-3" />
+            </button>
+          </>
         )}
-        {editMode && (
-          <WidgetCustomizer
-            style={widgetStyle}
-            size={currentSize}
-            onChange={handleStyleChange}
-            onSizeChange={handleSizeChange}
-          />
-        )}
-        <div className={editMode ? "pt-8 h-full" : "h-full"}>
+
+        {/* Widget content */}
+        <div className={editMode ? "pt-8 h-full pointer-events-none" : "h-full"}>
           {Component ? (
             <Component config={configJson} />
           ) : (
@@ -133,6 +116,13 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
           )}
         </div>
       </div>
+
+      {/* Settings modal */}
+      <WidgetSettingsModal
+        widget={widget}
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+      />
 
       <ConfirmDialog
         open={confirmRemove}

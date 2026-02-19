@@ -216,4 +216,65 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+
+  /* Edit mode dashboard overlay */
+  .dashboard-edit-mode {
+    position: relative;
+  }
+  .dashboard-edit-mode::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(hsla(var(--glass-border) / 0.08) 1px, transparent 1px),
+      linear-gradient(90deg, hsla(var(--glass-border) / 0.08) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+    z-index: 0;
+    border-radius: var(--radius);
+  }
+
+  /* Smooth resize transitions for react-grid-layout */
+  .react-grid-item {
+    transition: all 200ms ease !important;
+  }
+  .react-grid-item.cssTransforms {
+    transition: transform 200ms ease !important;
+  }
+  .react-grid-item.react-draggable-dragging {
+    transition: none !important;
+    z-index: 50;
+    opacity: 0.9;
+  }
+  .react-grid-item.resizing {
+    transition: none !important;
+    z-index: 50;
+  }
+
+  /* Resize handles styling */
+  .react-grid-item > .react-resizable-handle {
+    background: none !important;
+    width: 14px !important;
+    height: 14px !important;
+  }
+  .react-grid-item > .react-resizable-handle::after {
+    content: "" !important;
+    width: 6px !important;
+    height: 6px !important;
+    border-right: 2px solid hsla(var(--glass-glow) / 0.5) !important;
+    border-bottom: 2px solid hsla(var(--glass-glow) / 0.5) !important;
+    right: 4px !important;
+    bottom: 4px !important;
+  }
+  .react-grid-item > .react-resizable-handle:hover::after {
+    border-color: hsl(var(--primary)) !important;
+  }
+
+  /* Placeholder during drag/resize */
+  .react-grid-item.react-grid-placeholder {
+    background: hsla(var(--glass-glow) / 0.1) !important;
+    border: 2px dashed hsla(var(--glass-glow) / 0.3) !important;
+    border-radius: var(--radius) !important;
+    opacity: 1 !important;
+  }
 }
