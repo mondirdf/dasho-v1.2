@@ -6,7 +6,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Pencil, Check, LogOut, Share2, Plus, Trash2, Copy,
-  RotateCcw, LayoutGrid, ChevronDown
+  RotateCcw, LayoutGrid, ChevronDown, Bell
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -126,7 +126,7 @@ const DashboardHeader = () => {
                 <span className="hidden lg:inline text-xs">{sharing ? "Sharing…" : "Share"}</span>
               </Button>
               <Link to="/alerts">
-                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" aria-label="Alerts">🔔</Button>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" aria-label="Alerts"><Bell className="h-4 w-4" /></Button>
               </Link>
               <Link to="/settings">
                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0" aria-label="Settings">⚙️</Button>
