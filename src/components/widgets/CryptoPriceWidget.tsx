@@ -1,6 +1,5 @@
 /**
  * CryptoPriceWidget — CONTENT ONLY.
- * All container styling is handled by WidgetContainer.
  * Supports compact / standard / expanded responsive modes.
  */
 import { useEffect, useState, memo, useCallback } from "react";
@@ -13,9 +12,10 @@ import { useWidgetSize } from "@/hooks/useWidgetSize";
 interface Props {
   config: {
     symbol?: string;
-    currency?: string;
     showChart?: boolean;
     showMarketCap?: boolean;
+    showVolume?: boolean;
+    showLastUpdate?: boolean;
   };
 }
 
@@ -65,6 +65,8 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
   const changeAbs = Math.abs(coin.change_24h ?? 0);
   const showChart = (config.showChart ?? true) && mode !== "compact";
   const showMarketCap = (config.showMarketCap ?? true) && mode !== "compact";
+  const showVolume = (config.showVolume ?? false) && mode !== "compact";
+  const showLastUpdate = config.showLastUpdate ?? false;
   const isCompact = mode === "compact";
 
   const sparkline = allCoins.slice(0, 8).map((c, i) => ({
@@ -73,6 +75,11 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
   }));
   const sparkPath = sparkline.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ");
   const fillPath = sparkPath + ` L 100 60 L 0 60 Z`;
+
+  const formatTime = (ts: string) => {
+    const d = new Date(ts);
+    return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  };
 
   return (
     <div ref={sizeRef} className="h-full flex flex-col justify-between overflow-hidden">
@@ -107,16 +114,17 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
           <path d={sparkPath} fill="none" stroke={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} strokeWidth="2" vectorEffect="non-scaling-stroke" />
         </svg>
       )}
-      {showMarketCap ? (
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-          <span>MCap: ${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B</span>
-          <span className="animate-pulse-glow text-[10px]">● Live</span>
+      {/* Bottom stats row */}
+      <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 flex-wrap gap-x-3 gap-y-0.5">
+        <div className="flex items-center gap-3">
+          {showMarketCap && <span>MCap: ${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B</span>}
+          {showVolume && <span>Vol: ${((coin.volume ?? 0) / 1e9).toFixed(2)}B</span>}
+          {showLastUpdate && coin.last_updated && (
+            <span className="text-[10px]">{formatTime(coin.last_updated)}</span>
+          )}
         </div>
-      ) : (
-        <div className="flex items-center justify-end text-xs text-muted-foreground pt-1">
-          <span className="animate-pulse-glow text-[10px]">● Live</span>
-        </div>
-      )}
+        <span className="animate-pulse-glow text-[10px]">● Live</span>
+      </div>
     </div>
   );
 });

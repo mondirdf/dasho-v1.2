@@ -5,7 +5,7 @@
 import { useEffect, useState, memo, useCallback } from "react";
 import { fetchCryptoData, type CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Globe, AlertCircle } from "lucide-react";
+import { Globe, AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
 
@@ -13,6 +13,8 @@ interface Props {
   config: {
     showVolume?: boolean;
     showDominance?: boolean;
+    showTopMover?: boolean;
+    showGainersLosers?: boolean;
   };
 }
 
@@ -62,8 +64,19 @@ const MarketContextWidget = memo(({ config }: Props) => {
 
   const showVolume = config?.showVolume ?? true;
   const showDominance = (config?.showDominance ?? true) && !isCompact;
+  const showTopMover = (config?.showTopMover ?? false) && !isCompact;
+  const showGainersLosers = (config?.showGainersLosers ?? false) && !isCompact;
 
-  const stats = [
+  // Compute top mover (highest absolute change)
+  const topMover = data.length > 0
+    ? data.reduce((best, c) => Math.abs(c.change_24h ?? 0) > Math.abs(best.change_24h ?? 0) ? c : best, data[0])
+    : null;
+
+  // Compute gainers vs losers
+  const gainers = data.filter((c) => (c.change_24h ?? 0) > 0).length;
+  const losers = data.filter((c) => (c.change_24h ?? 0) < 0).length;
+
+  const stats: { label: string; value: string; accent: boolean; icon?: React.ReactNode }[] = [
     { label: "Total Market Cap", value: `$${(totalMcap / 1e12).toFixed(2)}T`, accent: true },
     ...(showVolume ? [{ label: "24h Volume", value: `$${(totalVol / 1e9).toFixed(1)}B`, accent: false }] : []),
     ...(showDominance ? [{ label: "BTC Dominance", value: `${btcDom.toFixed(1)}%`, accent: false }] : []),
@@ -86,6 +99,39 @@ const MarketContextWidget = memo(({ config }: Props) => {
           </div>
         ))}
       </div>
+
+      {/* Extra insights row */}
+      {(showTopMover || showGainersLosers) && (
+        <div className="mt-3 space-y-2">
+          {showTopMover && topMover && (
+            <div className="flex items-center justify-between p-2 rounded-lg bg-secondary/20">
+              <span className="text-[11px] text-muted-foreground font-medium">Top Mover</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-foreground">{topMover.symbol}</span>
+                <span className={`flex items-center gap-0.5 text-[10px] font-semibold px-1 py-0.5 rounded ${
+                  (topMover.change_24h ?? 0) >= 0 ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+                }`}>
+                  {(topMover.change_24h ?? 0) >= 0
+                    ? <TrendingUp className="h-2.5 w-2.5" />
+                    : <TrendingDown className="h-2.5 w-2.5" />}
+                  {Math.abs(topMover.change_24h ?? 0).toFixed(2)}%
+                </span>
+              </div>
+            </div>
+          )}
+          {showGainersLosers && (
+            <div className="flex items-center justify-between p-2 rounded-lg bg-secondary/20">
+              <span className="text-[11px] text-muted-foreground font-medium">Gainers / Losers</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-success">{gainers} ↑</span>
+                <span className="text-[10px] text-muted-foreground">/</span>
+                <span className="text-xs font-bold text-destructive">{losers} ↓</span>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {!isCompact && (
         <div className="flex items-center justify-end mt-3">
           <span className="animate-pulse-glow text-[10px] text-muted-foreground">● Live</span>
