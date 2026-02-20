@@ -196,6 +196,24 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     constraints: { minW: 3, minH: 3, maxW: 12, maxH: 10 },
     configFields: WIDGET_CONFIG_FIELDS.news || [],
   },
+  // ── AI Market Recap ──
+  {
+    type: "market_recap",
+    category: "market",
+    assetType: "crypto",
+    label: "AI Market Recap",
+    desc: "AI-powered 24h market summary",
+    icon: TrendingUp,
+    iconColor: "text-primary",
+    available: true,
+    visual: {
+      bg: "glass", shadow: "md", layout: "default", animation: "fadeIn",
+      decorative: true, hoverLift: true,
+    },
+    defaultSize: { w: 4, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 8, maxH: 6 },
+    configFields: WIDGET_CONFIG_FIELDS.market_recap || [],
+  },
   // ── Coming Soon: Stocks ──
   {
     type: "stock_price", category: "stocks", assetType: "stocks",

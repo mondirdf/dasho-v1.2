@@ -116,6 +116,7 @@ export const ASSET_TYPES: { id: AssetType; label: string; active: boolean }[] = 
 export const WIDGET_CATEGORIES = [
   { id: "all", label: "All", available: true },
   { id: "crypto", label: "Crypto", available: true },
+  { id: "market", label: "Market", available: true },
   { id: "news", label: "News", available: true },
   { id: "stocks", label: "Stocks", available: false },
   { id: "forex", label: "Forex", available: false },
@@ -186,6 +187,11 @@ export const WIDGET_CONFIG_FIELDS: Record<string, Array<{
     { key: "showSummary", label: "Show Summary in List", type: "toggle", defaultValue: false },
     { key: "layout", label: "Layout", type: "select", defaultValue: "list", options: [
       { label: "List", value: "list" }, { label: "Cards", value: "cards" },
+    ]},
+  ],
+  market_recap: [
+    { key: "timeframe", label: "Timeframe", type: "select", defaultValue: "24h", options: [
+      { label: "24 Hours", value: "24h" },
     ]},
   ],
 };

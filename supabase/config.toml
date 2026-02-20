@@ -1,1 +1,4 @@
 project_id = "wlustbjdqwemnqtyilxp"
+
+[functions.market-recap]
+verify_jwt = false
