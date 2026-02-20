@@ -109,7 +109,7 @@ const Index = () => {
 
         {/* Crypto Preview — Only crypto widgets */}
         <section className="max-w-5xl mx-auto px-3 sm:px-4 pb-16 sm:pb-20" aria-label="Crypto dashboard preview">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-6 sm:mb-8">Your Crypto Overview</h2>
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-6 sm:mb-8">Your Market Overview</h2>
           <div className="glass-card-enhanced p-3 sm:p-6">
             <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
               {MOCK_WIDGETS.map((w) => (
@@ -151,8 +151,8 @@ const Index = () => {
 
         {/* Features — Crypto Widgets */}
         <section id="features" className="max-w-6xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Crypto Trading Widgets</h2>
-          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground text-center max-w-lg mx-auto">Professional-grade crypto tools, zero complexity.</p>
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Market Trading Widgets</h2>
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground text-center max-w-lg mx-auto">Professional-grade market tools, zero complexity.</p>
           <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {FEATURES.map((f) => {
               const FIcon = ICON_MAP[f.icon] || Globe;
@@ -185,7 +185,7 @@ const Index = () => {
 
         {/* Use Cases */}
         <section className="max-w-4xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Built For Crypto</h2>
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Built For Traders</h2>
           <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             {USE_CASES.map((u) => (
               <div key={u.title} className="glass-card-enhanced p-6 space-y-2">
@@ -269,7 +269,8 @@ const Index = () => {
             </ul>
           </div>
         </div>
-        <div className="border-t border-border/50 py-4">
+        <div className="border-t border-border/50 py-4 space-y-1">
+          <p className="text-center text-xs text-muted-foreground font-medium text-primary/70">{FOOTER.roadmapNote}</p>
           <p className="text-center text-xs text-muted-foreground">&copy; {BRAND.year} {BRAND.name}. All rights reserved.</p>
         </div>
       </footer>

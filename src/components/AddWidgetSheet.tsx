@@ -144,8 +144,9 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
     }
   }, [selected, configs, addWidget, onDone, resetState]);
 
+  const activeCats = WIDGET_CATEGORIES.filter((c) => c.available).map((c) => c.id);
   const filtered = activeCategory === "all"
-    ? WIDGET_REGISTRY.filter((w) => ["crypto", "news"].includes(w.category))
+    ? WIDGET_REGISTRY.filter((w) => activeCats.includes(w.category as any))
     : WIDGET_REGISTRY.filter((w) => w.category === activeCategory);
 
   /** Check if any selected widget has configFields */
@@ -162,14 +163,17 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
         {WIDGET_CATEGORIES.map((cat) => (
           <button
             key={cat.id}
-            onClick={() => setActiveCategory(cat.id)}
+            onClick={() => cat.available && setActiveCategory(cat.id)}
+            disabled={!cat.available}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-              activeCategory === cat.id
-                ? "bg-primary text-primary-foreground"
-                : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
+              !cat.available
+                ? "bg-secondary/30 text-muted-foreground/50 cursor-not-allowed"
+                : activeCategory === cat.id
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
             }`}
           >
-            {cat.label}
+            {cat.label}{!cat.available ? " ⏳" : ""}
           </button>
         ))}
       </div>
