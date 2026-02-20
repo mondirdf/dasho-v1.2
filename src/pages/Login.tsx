@@ -46,7 +46,7 @@ const Login = () => {
       <div className="glass-card-enhanced w-full max-w-md p-5 sm:p-8 space-y-5 sm:space-y-6 relative z-10">
         {/* Logo */}
         <div className="flex justify-center">
-          <img src={logoDasho} alt="Dasho" className="h-24 sm:h-40 object-contain" />
+          <img src={logoDasho} alt="Dasho" className="h-12 sm:h-14 object-contain" />
         </div>
 
         <div className="text-center space-y-1.5 sm:space-y-2">
@@ -98,12 +98,17 @@ const Login = () => {
           </Button>
         </form>
 
-        <p className="text-center text-xs sm:text-sm text-muted-foreground">
-          Don't have an account?{" "}
-          <Link to="/signup" className="text-primary hover:underline">
-            Sign up
+        <div className="text-center space-y-1.5">
+          <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+            Forgot password?
           </Link>
-        </p>
+          <p className="text-xs sm:text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Link to="/signup" className="text-primary hover:underline">
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

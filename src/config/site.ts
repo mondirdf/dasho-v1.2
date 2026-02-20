@@ -358,8 +358,8 @@ export const FOOTER = {
     { label: "Sign Up", to: "/signup" },
   ],
   legalLinks: [
-    { label: "Privacy Policy" },
-    { label: "Terms of Service" },
+    { label: "Privacy Policy", to: "/privacy" },
+    { label: "Terms of Service", to: "/terms" },
   ],
   roadmapNote: "Multi-Asset Support Coming Soon",
 } as const;
@@ -385,8 +385,8 @@ export const EMPTY_DASHBOARD = {
 
 export const NOT_FOUND = {
   code: "404",
-  heading: "الصفحة غير موجودة",
-  description: "يبدو أن هذه الصفحة قد انتقلت أو لم تعد موجودة.",
-  backButton: "العودة",
-  dashboardButton: "لوحة التحكم",
+  heading: "Page Not Found",
+  description: "The page you're looking for doesn't exist or has been moved.",
+  backButton: "Go Back",
+  dashboardButton: "Dashboard",
 } as const;

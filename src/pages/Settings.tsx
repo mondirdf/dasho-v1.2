@@ -244,8 +244,8 @@ const Settings = () => {
   };
 
   const handleChangePassword = async () => {
-    if (newPassword.length < 6) {
-      toast({ title: "Password must be at least 6 characters", variant: "destructive" });
+    if (newPassword.length < 8) {
+      toast({ title: "Password must be at least 8 characters", variant: "destructive" });
       return;
     }
     setChangingPw(true);
@@ -262,12 +262,25 @@ const Settings = () => {
   };
 
   const handleDeleteAccount = async () => {
-    await signOut();
-    toast({
-      title: "Account deletion requested",
-      description: "Please contact support to complete account deletion.",
-    });
-    navigate("/");
+    try {
+      // Delete user data first, then sign out
+      if (user) {
+        // Delete user's dashboards (widgets cascade via FK)
+        await supabase.from("dashboards").delete().eq("user_id", user.id);
+        // Delete user's alerts
+        await supabase.from("alerts").delete().eq("user_id", user.id);
+        // Delete user's triggered alerts
+        await supabase.from("triggered_alerts").delete().eq("user_id", user.id);
+      }
+      await signOut();
+      toast({
+        title: "Account data deleted",
+        description: "Your dashboards, widgets, and alerts have been removed. Contact support to fully delete your auth account.",
+      });
+      navigate("/");
+    } catch {
+      toast({ title: "Error deleting account data", variant: "destructive" });
+    }
   };
 
   const loading = profileLoading || prefsLoading;
