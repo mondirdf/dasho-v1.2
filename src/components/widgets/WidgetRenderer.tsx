@@ -74,18 +74,18 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
           </div>
         )}
 
-        {/* Edit controls */}
+        {/* Edit controls — must stay above pointer-events-none content */}
         {editMode && (
           <>
             <button
-              onClick={() => setConfirmRemove(true)}
+              onClick={(e) => { e.stopPropagation(); setConfirmRemove(true); }}
               className="absolute top-1.5 right-1.5 z-20 p-1.5 rounded-lg bg-destructive/90 text-destructive-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110"
               aria-label="Remove widget"
             >
               <X className="h-3 w-3" />
             </button>
             <button
-              onClick={() => setSettingsOpen(true)}
+              onClick={(e) => { e.stopPropagation(); setSettingsOpen(true); }}
               className="absolute top-1.5 left-1.5 z-20 p-1.5 rounded-lg bg-secondary/80 text-muted-foreground opacity-0 group-hover:opacity-100 transition-all hover:scale-110 hover:text-primary"
               aria-label="Widget settings"
             >
@@ -106,21 +106,26 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
         </div>
       </WidgetContainer>
 
-      <WidgetSettingsModal
-        widget={widget}
-        open={settingsOpen}
-        onOpenChange={setSettingsOpen}
-      />
+      {/* Dialogs rendered outside WidgetContainer to avoid pointer-events issues */}
+      {settingsOpen && (
+        <WidgetSettingsModal
+          widget={widget}
+          open={settingsOpen}
+          onOpenChange={setSettingsOpen}
+        />
+      )}
 
-      <ConfirmDialog
-        open={confirmRemove}
-        onOpenChange={setConfirmRemove}
-        title="Remove widget?"
-        description="This widget will be permanently removed from your dashboard."
-        onConfirm={() => { onRemove(widget.id); setConfirmRemove(false); }}
-        confirmLabel="Remove"
-        destructive
-      />
+      {confirmRemove && (
+        <ConfirmDialog
+          open={confirmRemove}
+          onOpenChange={setConfirmRemove}
+          title="Remove widget?"
+          description="This widget will be permanently removed from your dashboard."
+          onConfirm={() => { onRemove(widget.id); setConfirmRemove(false); }}
+          confirmLabel="Remove"
+          destructive
+        />
+      )}
     </>
   );
 });
