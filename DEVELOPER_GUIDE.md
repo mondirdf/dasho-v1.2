@@ -206,12 +206,66 @@ No database changes needed — categories are UI-only groupings.
 | `fetch-news` | Scheduled / manual | Fetches news articles → `cache_news` |
 | `check-alerts` | Scheduled / manual | Compares alerts against cache prices → triggers matching alerts |
 | `scheduler` | Cron | Orchestrates periodic calls to the above functions |
+| `market-recap` | On-demand | AI-powered market summary (cached 6h server-side) |
 
 ### Adding a new data source:
 1. Create edge function: `supabase/functions/fetch-weather/index.ts`
 2. Create cache table: `cache_weather` (via migration)
 3. Add to scheduler if needed
 4. Create widget component that reads from the cache table
+
+---
+
+## AI Market Recap — Switching AI Provider
+
+The `market-recap` edge function supports **two AI providers** out of the box:
+
+| Provider | Config | Cost |
+|----------|--------|------|
+| **Lovable AI Gateway** (default) | No setup needed — uses `LOVABLE_API_KEY` | Free tier included |
+| **Google Gemini API** | Requires `GEMINI_API_KEY` | Pay-per-use via Google Cloud |
+
+### How to switch to your own Gemini API key:
+
+**Step 1:** Get a Gemini API key from [Google AI Studio](https://aistudio.google.com/apikey)
+
+**Step 2:** Add the secret in Supabase:
+- Go to **Supabase Dashboard → Settings → Edge Functions → Secrets**
+- Add: `GEMINI_API_KEY` = `your-key-here`
+
+**Step 3:** Done! The function **auto-detects** which provider to use:
+- If `GEMINI_API_KEY` exists → uses Google Gemini directly
+- If not → falls back to Lovable AI Gateway
+
+### How it works internally:
+
+```typescript
+// In supabase/functions/market-recap/index.ts
+const AI_PROVIDER = Deno.env.get("GEMINI_API_KEY") ? "gemini" : "lovable";
+```
+
+### Customizing the model:
+
+Edit the `aiModel` variable in the edge function:
+
+```typescript
+// Lovable Gateway models:
+aiModel = "google/gemini-3-flash-preview";  // Fast (default)
+aiModel = "google/gemini-2.5-pro";          // Higher quality
+
+// Direct Gemini models:
+aiModel = "gemini-2.5-flash";              // Fast (default)
+aiModel = "gemini-2.5-pro";                // Higher quality
+```
+
+### Cache behavior:
+
+| Layer | TTL | Scope |
+|-------|-----|-------|
+| Server (edge function) | 6 hours | Shared across all users |
+| Client (browser) | 10 minutes | Per user session |
+
+Gemini is called **at most ~4 times per day**, regardless of user count.
 
 ---
 

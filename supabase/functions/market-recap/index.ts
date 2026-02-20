@@ -119,20 +119,46 @@ serve(async (req) => {
     // Build snapshot from DB
     const snapshot = await buildSnapshotFromDB();
 
-    // Call Gemini via Lovable AI Gateway
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) {
-      throw new Error("LOVABLE_API_KEY is not configured");
-    }
+    // ─── AI Provider Configuration ───────────────────────────────
+    // To switch from Lovable AI Gateway to your own Gemini API key:
+    //
+    // 1. Add secret GEMINI_API_KEY in Supabase → Settings → Edge Functions → Secrets
+    // 2. The function auto-detects and uses your key
+    // 3. That's it!
+    //
+    // Provider: "lovable" (default) or "gemini" (if GEMINI_API_KEY is set)
+    // See DEVELOPER_GUIDE.md for full instructions.
+    // ─────────────────────────────────────────────────────────────
+    const AI_PROVIDER: "lovable" | "gemini" = Deno.env.get("GEMINI_API_KEY") ? "gemini" : "lovable";
 
-    const aiResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
+    let aiUrl: string;
+    let aiHeaders: Record<string, string>;
+    let aiModel: string;
+
+    if (AI_PROVIDER === "gemini") {
+      const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY")!;
+      aiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+      aiHeaders = {
+        Authorization: `Bearer ${GEMINI_API_KEY}`,
+        "Content-Type": "application/json",
+      };
+      aiModel = "gemini-2.5-flash";
+    } else {
+      const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+      if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+      aiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
+      aiHeaders = {
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
         "Content-Type": "application/json",
-      },
+      };
+      aiModel = "google/gemini-3-flash-preview";
+    }
+
+    const aiResponse = await fetch(aiUrl, {
+      method: "POST",
+      headers: aiHeaders,
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: aiModel,
         messages: [
           {
             role: "system",
