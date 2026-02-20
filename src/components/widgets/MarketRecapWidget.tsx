@@ -30,10 +30,13 @@ const RecapSkeleton = () => (
   </div>
 );
 
+// Module-level cache so data survives widget remounts (e.g. drag/resize)
+let _cachedRecap: MarketRecap | null = null;
+
 const MarketRecapWidget = ({ config }: { config: any }) => {
   const [ref, size] = useWidgetSize();
-  const [recap, setRecap] = useState<MarketRecap | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [recap, setRecap] = useState<MarketRecap | null>(_cachedRecap);
+  const [loading, setLoading] = useState(!_cachedRecap);
   const [canRefresh, setCanRefresh] = useState(false);
   const { isPro, recapRefresh } = usePlanLimits();
   const { preferences } = usePreferences();
@@ -47,6 +50,7 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
         recapDetailLevel: preferences.recapDetailLevel,
         selectedCoins: preferences.selectedCoins,
       });
+      _cachedRecap = data;
       setRecap(data);
       setCanRefresh(false);
       if (data && !data.error) {
@@ -58,7 +62,10 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
   }, [preferences.recapDetailLevel, preferences.selectedCoins]);
 
   useEffect(() => {
-    fetchRecap();
+    // Skip fetch if we already have cached data from a previous mount
+    if (!_cachedRecap) {
+      fetchRecap();
+    }
     const interval = setInterval(() => {
       setCanRefresh(canRefreshRecap("crypto", "24h"));
     }, 30_000);
