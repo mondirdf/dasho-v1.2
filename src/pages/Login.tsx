@@ -98,16 +98,16 @@ const Login = () => {
           </Button>
         </form>
 
-        <div className="text-center space-y-1.5">
-          <Link to="/forgot-password" className="text-xs text-primary hover:underline">
-            Forgot password?
-          </Link>
+        <div className="text-center space-y-3">
           <p className="text-xs sm:text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-primary hover:underline">
+            <Link to="/signup" className="text-primary hover:underline font-medium">
               Sign up
             </Link>
           </p>
+          <Link to="/forgot-password" className="block text-xs text-muted-foreground hover:text-primary transition-colors">
+            Forgot password?
+          </Link>
         </div>
       </div>
     </div>
