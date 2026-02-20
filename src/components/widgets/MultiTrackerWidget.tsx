@@ -3,7 +3,8 @@
  * Supports compact / standard / expanded responsive modes.
  */
 import { useEffect, useState, memo, useMemo, useCallback } from "react";
-import { fetchCryptoData, type CryptoData } from "@/services/dataService";
+import { fetchCryptoDataCompat } from "@/adapters/market";
+import type { CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
@@ -37,7 +38,7 @@ const MultiTrackerWidget = memo(({ config }: Props) => {
   const maxItems = config.maxItems || 10;
 
   const loadData = useCallback(() => {
-    fetchCryptoData()
+    fetchCryptoDataCompat()
       .then((data) => {
         const filtered = data.filter((c) => targetSymbols.includes(c.symbol));
         const result = filtered.length > 0 ? filtered : data.slice(0, 5);
