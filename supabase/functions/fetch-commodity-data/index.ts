@@ -6,7 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Twelve Data commodity symbols
 const COMMODITIES = [
   { apiSymbol: "XAU/USD", displaySymbol: "GOLD" },
   { apiSymbol: "XAG/USD", displaySymbol: "SILVER" },
@@ -22,16 +21,20 @@ interface CommodityData {
 }
 
 async function fetchQuote(apiSymbol: string, displaySymbol: string, apiKey: string): Promise<CommodityData | null> {
-  const url = `https://api.twelvedata.com/quote?symbol=${apiSymbol}&apikey=${apiKey}`;
-  const res = await fetch(url);
-  if (!res.ok) return null;
-  const json = await res.json();
-  if (json.status === "error" || !json.close) return null;
-  return {
-    symbol: displaySymbol,
-    price: parseFloat(json.close) || 0,
-    change_24h: parseFloat(json.percent_change) || 0,
-  };
+  try {
+    const url = `https://api.twelvedata.com/quote?symbol=${apiSymbol}&apikey=${apiKey}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    if (json.status === "error" || !json.close) return null;
+    return {
+      symbol: displaySymbol,
+      price: parseFloat(json.close) || 0,
+      change_24h: parseFloat(json.percent_change) || 0,
+    };
+  } catch {
+    return null;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -46,7 +49,6 @@ Deno.serve(async (req) => {
 
   const apiKey = Deno.env.get("TWELVE_DATA_API_KEY");
   if (!apiKey) {
-    console.warn("TWELVE_DATA_API_KEY not set — skipping commodity fetch");
     return new Response(
       JSON.stringify({ ok: false, error: "TWELVE_DATA_API_KEY not configured" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -54,17 +56,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const results: CommodityData[] = [];
-
-    for (const { apiSymbol, displaySymbol } of COMMODITIES) {
-      try {
-        const data = await fetchQuote(apiSymbol, displaySymbol, apiKey);
-        if (data) results.push(data);
-        await new Promise((r) => setTimeout(r, 8000));
-      } catch (e) {
-        console.warn(`Failed to fetch ${displaySymbol}:`, e);
-      }
-    }
+    // Fetch all in parallel (5 commodities is within Twelve Data limits)
+    const promises = COMMODITIES.map((c) => fetchQuote(c.apiSymbol, c.displaySymbol, apiKey));
+    const settled = await Promise.all(promises);
+    const results = settled.filter(Boolean) as CommodityData[];
 
     for (const commodity of results) {
       await supabase.from("cache_commodity_data").upsert(
