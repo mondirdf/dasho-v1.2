@@ -1,10 +1,9 @@
 /**
- * Plan limits hook — returns current plan and limit checks.
+ * Plan limits hook — returns current plan, limit checks, and feature flags.
  */
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { fetchProfile } from "@/services/dataService";
-import type { Profile } from "@/services/dataService";
 
 export interface PlanLimits {
   plan: string;
@@ -12,6 +11,22 @@ export interface PlanLimits {
   maxAlerts: number;
   maxWidgets: number;
   isPro: boolean;
+}
+
+/** Feature flags derived from plan */
+export interface ProFeatures {
+  /** 4h recap timeframe */
+  recap4h: boolean;
+  /** Weekly recap timeframe */
+  recapWeekly: boolean;
+  /** Manual recap refresh */
+  recapRefresh: boolean;
+  /** Unlimited widgets */
+  unlimitedWidgets: boolean;
+  /** Advanced alert types */
+  advancedAlerts: boolean;
+  /** Priority data refresh */
+  priorityRefresh: boolean;
 }
 
 const FREE_LIMITS: Omit<PlanLimits, "plan" | "isPro"> = {
@@ -26,7 +41,7 @@ const PRO_LIMITS: Omit<PlanLimits, "plan" | "isPro"> = {
   maxWidgets: Infinity,
 };
 
-export function usePlanLimits(): PlanLimits & { loading: boolean } {
+export function usePlanLimits(): PlanLimits & ProFeatures & { loading: boolean } {
   const { user } = useAuth();
   const [plan, setPlan] = useState("free");
   const [loading, setLoading] = useState(true);
@@ -43,5 +58,14 @@ export function usePlanLimits(): PlanLimits & { loading: boolean } {
   const isPro = plan === "pro";
   const limits = isPro ? PRO_LIMITS : FREE_LIMITS;
 
-  return { plan, isPro, ...limits, loading };
+  const features: ProFeatures = {
+    recap4h: isPro,
+    recapWeekly: isPro,
+    recapRefresh: isPro,
+    unlimitedWidgets: isPro,
+    advancedAlerts: isPro,
+    priorityRefresh: isPro,
+  };
+
+  return { plan, isPro, ...limits, ...features, loading };
 }

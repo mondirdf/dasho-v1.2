@@ -143,7 +143,7 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground italic leading-relaxed">
                   "Bullish momentum continues with BTC leading the rally. Market sentiment shifts to Greed territory..."
                 </p>
-                <span className="text-[10px] text-muted-foreground/60">Coming Soon</span>
+                <span className="text-[10px] text-primary/70 font-medium">Free with 24h • Pro: 4h & Weekly</span>
               </div>
             </div>
           </div>
@@ -209,6 +209,9 @@ const Index = () => {
                 <div className="relative z-10">
                   <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
                   <p className="text-3xl font-bold text-foreground mt-1">{plan.price}<span className="text-sm font-normal text-muted-foreground">{plan.period}</span></p>
+                  {"yearlyNote" in plan && (
+                    <p className="text-xs text-primary/80 mt-1">{plan.yearlyNote}</p>
+                  )}
                 </div>
                 <ul className="relative z-10 space-y-2">
                   {plan.features.map((f) => (
