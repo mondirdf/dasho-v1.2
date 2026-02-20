@@ -72,13 +72,14 @@ async function buildSnapshotFromDB(): Promise<Record<string, unknown>> {
 }
 
 /* ── Build safe prompt ── */
-function buildPrompt(snapshot: Record<string, unknown>): string {
+function buildPrompt(snapshot: Record<string, unknown>, detailLevel: "short" | "medium" = "medium"): string {
+  const wordLimit = detailLevel === "short" ? "60–90" : "120–180";
   return `Summarize the following crypto market snapshot.
 Focus strictly on what changed in the last 24 hours.
 Do not provide predictions or investment advice.
 Do not use hype language or suggest buying or selling.
 Keep it concise, neutral, and professional.
-Limit your response to 120–180 words.
+Limit your response to ${wordLimit} words.
 
 Market Snapshot:
 ${JSON.stringify(snapshot, null, 2)}`;
@@ -99,9 +100,10 @@ serve(async (req) => {
   }
 
   try {
-    const cacheKey = "crypto_24h";
-
-    // Check cache first
+    let body: any = {};
+    try { body = await req.json(); } catch { /* empty body ok */ }
+    const detailLevel = body?.detailLevel === "short" ? "short" : "medium";
+    const cacheKey = `crypto_24h_${detailLevel}`;
     const cached = recapCache.get(cacheKey);
     if (cached && Date.now() < cached.expiresAt) {
       return new Response(
@@ -165,7 +167,7 @@ serve(async (req) => {
             content:
               "You are a professional market analyst. You summarize market data factually. Never give financial advice, predictions, or use hype language.",
           },
-          { role: "user", content: buildPrompt(snapshot) },
+          { role: "user", content: buildPrompt(snapshot, detailLevel) },
         ],
         max_tokens: 300,
         temperature: 0.3,

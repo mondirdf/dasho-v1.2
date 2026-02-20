@@ -30,8 +30,10 @@ const clientCache = new Map<string, ClientCacheEntry>();
 export async function getMarketRecap(
   assetType: "crypto" = "crypto",
   timeframe: "24h" = "24h",
+  userPreferences?: { recapDetailLevel?: "short" | "medium"; selectedCoins?: string[] },
 ): Promise<MarketRecap> {
-  const key = `${assetType}_${timeframe}`;
+  const detailLevel = userPreferences?.recapDetailLevel ?? "medium";
+  const key = `${assetType}_${timeframe}_${detailLevel}`;
 
   // Check client cache
   const cached = clientCache.get(key);
@@ -41,7 +43,12 @@ export async function getMarketRecap(
 
   try {
     const { data, error } = await supabase.functions.invoke("market-recap", {
-      body: { assetType, timeframe },
+      body: {
+        assetType,
+        timeframe,
+        detailLevel,
+        selectedCoins: userPreferences?.selectedCoins,
+      },
     });
 
     if (error) throw error;

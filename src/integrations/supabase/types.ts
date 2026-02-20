@@ -289,6 +289,7 @@ export type Database = {
           email: string | null
           id: string
           plan: string
+          preferences_json: Json
           trial_ends_at: string | null
         }
         Insert: {
@@ -298,6 +299,7 @@ export type Database = {
           email?: string | null
           id: string
           plan?: string
+          preferences_json?: Json
           trial_ends_at?: string | null
         }
         Update: {
@@ -307,6 +309,7 @@ export type Database = {
           email?: string | null
           id?: string
           plan?: string
+          preferences_json?: Json
           trial_ends_at?: string | null
         }
         Relationships: []
