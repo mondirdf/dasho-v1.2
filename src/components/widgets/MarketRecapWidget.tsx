@@ -1,6 +1,6 @@
 /**
  * MarketRecapWidget — AI-powered market recap with Pro gating.
- * Primary dashboard widget optimized for daily habit formation.
+ * Visually distinct: darker tone, clear title, subtle timestamp.
  */
 import { useState, useEffect, useCallback } from "react";
 import { Sparkles, RefreshCw, Clock, Crown } from "lucide-react";
@@ -11,7 +11,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { usePreferences } from "@/hooks/usePreferences";
-import ProGate from "@/components/ProGate";
 
 type Timeframe = "24h" | "4h" | "weekly";
 
@@ -21,15 +20,13 @@ const TIMEFRAME_LABELS: Record<Timeframe, string> = {
   weekly: "7d",
 };
 
-/** Smooth skeleton that matches recap content layout */
 const RecapSkeleton = () => (
-  <div className="space-y-3">
-    <Skeleton className="h-3 w-full" />
-    <Skeleton className="h-3 w-[92%]" />
-    <Skeleton className="h-3 w-[78%]" />
-    <Skeleton className="h-3 w-full" />
-    <Skeleton className="h-3 w-[85%]" />
-    <Skeleton className="h-3 w-[60%]" />
+  <div className="space-y-2">
+    <Skeleton className="h-2.5 w-full" />
+    <Skeleton className="h-2.5 w-[92%]" />
+    <Skeleton className="h-2.5 w-[78%]" />
+    <Skeleton className="h-2.5 w-full" />
+    <Skeleton className="h-2.5 w-[85%]" />
   </div>
 );
 
@@ -71,29 +68,17 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
   const timeAgo = recap?.generatedAt ? formatTimeAgo(recap.generatedAt) : null;
 
   return (
-    <div ref={ref} className="h-full flex flex-col p-4 gap-3">
-      {/* Header with time context */}
+    <div ref={ref} className="h-full flex flex-col gap-2">
+      {/* Header */}
       <div className="flex items-center justify-between shrink-0">
-        <div className="flex flex-col gap-0.5">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-primary" />
-            <span className="font-semibold text-sm text-foreground">
-              Market Recap — Last 24h
-            </span>
-          </div>
-          {/* Human-readable timestamp */}
-          {timeAgo && !loading && !recap?.error && (
-            <div className="flex items-center gap-1 ml-6">
-              <Clock className="h-2.5 w-2.5 text-muted-foreground" />
-              <span className="text-[10px] text-muted-foreground">
-                Updated {timeAgo}
-                {recap?.cached && " · cached"}
-              </span>
-            </div>
-          )}
-        </div>
         <div className="flex items-center gap-2">
-          {/* Timeframe selector */}
+          <Sparkles className="h-3.5 w-3.5 text-primary" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            AI Market Recap — Last 24h
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          {/* Timeframe pills */}
           <div className="flex gap-0.5">
             {(["24h", "4h", "weekly"] as Timeframe[]).map((tf) => {
               const isActive = timeframe === tf;
@@ -101,11 +86,11 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
               return (
                 <span
                   key={tf}
-                  className={`text-[10px] px-1.5 py-0.5 rounded transition-colors ${
+                  className={`text-[9px] px-1 py-0.5 rounded ${
                     isActive
-                      ? "bg-primary/20 text-primary font-medium"
-                      : "bg-secondary/60 text-muted-foreground"
-                  } ${isProOnly && !isPro ? "opacity-40" : ""}`}
+                      ? "bg-primary/15 text-primary font-medium"
+                      : "text-muted-foreground/40"
+                  } ${isProOnly && !isPro ? "opacity-30" : ""}`}
                 >
                   {TIMEFRAME_LABELS[tf]}
                   {isProOnly && !isPro && <Crown className="inline h-2 w-2 ml-0.5" />}
@@ -114,49 +99,50 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
             })}
           </div>
 
-          {/* Refresh button — Pro only */}
           {recapRefresh ? (
             <button
               onClick={fetchRecap}
               disabled={!canRefresh || loading}
-              className="p-1 rounded hover:bg-secondary/60 disabled:opacity-30 transition-colors"
+              className="p-0.5 rounded hover:bg-secondary/40 disabled:opacity-20 transition-colors"
               aria-label="Refresh recap"
             >
-              <RefreshCw className={`h-3.5 w-3.5 text-muted-foreground ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-3 w-3 text-muted-foreground/50 ${loading ? "animate-spin" : ""}`} />
             </button>
           ) : (
-            <div className="p-1 opacity-30 cursor-not-allowed" title="Pro feature">
-              <RefreshCw className="h-3.5 w-3.5 text-muted-foreground" />
+            <div className="p-0.5 opacity-20" title="Pro feature">
+              <RefreshCw className="h-3 w-3 text-muted-foreground" />
             </div>
           )}
         </div>
       </div>
 
-      {/* Content with smooth skeleton */}
+      {/* Timestamp */}
+      {timeAgo && !loading && !recap?.error && (
+        <div className="flex items-center gap-1">
+          <Clock className="h-2 w-2 text-muted-foreground/30" />
+          <span className="text-[8px] text-muted-foreground/30 tabular-nums">
+            Updated {timeAgo}
+            {recap?.cached && " · cached"}
+          </span>
+        </div>
+      )}
+
+      {/* Content */}
       <ScrollArea className="flex-1 min-h-0">
         {loading && !recap ? (
           <RecapSkeleton />
         ) : recap?.error && recap.text === "Market recap temporarily unavailable." ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground py-6">
-            <Sparkles className="h-8 w-8 opacity-30" />
-            <div className="text-center space-y-1">
-              <p className="text-xs font-medium">Market recap temporarily unavailable.</p>
-              <p className="text-[10px] text-muted-foreground/70">Data will refresh automatically.</p>
-            </div>
+          <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground py-4">
+            <Sparkles className="h-6 w-6 opacity-20" />
+            <p className="text-[10px]">Market recap temporarily unavailable.</p>
+            <p className="text-[9px] text-muted-foreground/40">Data will refresh automatically.</p>
           </div>
         ) : (
-          <p className="text-sm leading-relaxed text-foreground/90 whitespace-pre-line">
+          <p className="text-xs leading-relaxed text-foreground/80 whitespace-pre-line">
             {recap?.text}
           </p>
         )}
       </ScrollArea>
-
-      {/* Habit reinforcement footer */}
-      {!loading && !recap?.error && (
-        <p className="text-[9px] text-muted-foreground/50 text-center shrink-0">
-          Stay updated daily for smarter market awareness.
-        </p>
-      )}
     </div>
   );
 };

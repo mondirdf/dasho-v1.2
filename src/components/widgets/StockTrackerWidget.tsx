@@ -6,8 +6,9 @@ import { useEffect, useState, memo, useCallback } from "react";
 import { fetchMarketDataList } from "@/adapters/market";
 import type { UnifiedMarketData } from "@/adapters/market";
 import { Skeleton } from "@/components/ui/skeleton";
-import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
+import { WidgetHeader, ChangeIndicator, SecondaryValue } from "./shared";
 
 interface Props {
   config: {
@@ -22,6 +23,7 @@ const StockTrackerWidget = memo(({ config }: Props) => {
   const [stocks, setStocks] = useState<UnifiedMarketData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [lastFetch, setLastFetch] = useState<number | null>(null);
 
   const loadData = useCallback(() => {
     fetchMarketDataList("stock")
@@ -32,6 +34,7 @@ const StockTrackerWidget = memo(({ config }: Props) => {
           if (symbols?.length) data = data.filter((d) => symbols.includes(d.symbol));
           setStocks(data.slice(0, config.maxItems ?? 10));
           setError(false);
+          setLastFetch(Date.now());
         } else {
           setError(true);
         }
@@ -44,8 +47,9 @@ const StockTrackerWidget = memo(({ config }: Props) => {
 
   if (loading) {
     return (
-      <div ref={sizeRef} className="h-full space-y-2">
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-8 w-full" />)}
+      <div ref={sizeRef} className="h-full space-y-1.5">
+        <Skeleton className="h-4 w-20" />
+        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-7 w-full" />)}
       </div>
     );
   }
@@ -53,10 +57,10 @@ const StockTrackerWidget = memo(({ config }: Props) => {
   if (error || stocks.length === 0) {
     return (
       <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center gap-2">
-        <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
-        <p className="text-muted-foreground text-sm">{error ? "Failed to load stock data" : "No stock data available"}</p>
-        <p className="text-muted-foreground text-xs">Add ALPHA_VANTAGE_API_KEY to enable</p>
-        <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
+        <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
+        <p className="text-muted-foreground text-xs">{error ? "Failed to load stock data" : "No stock data available"}</p>
+        <p className="text-muted-foreground/50 text-[10px]">Add ALPHA_VANTAGE_API_KEY to enable</p>
+        <button onClick={loadData} className="text-[10px] text-primary hover:underline">Retry</button>
       </div>
     );
   }
@@ -64,25 +68,29 @@ const StockTrackerWidget = memo(({ config }: Props) => {
   const isCompact = mode === "compact";
 
   return (
-    <div ref={sizeRef} className="h-full flex flex-col gap-1 overflow-auto">
-      <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Stocks</div>
-      {stocks.map((stock) => {
-        const positive = stock.change24h >= 0;
-        return (
-          <div key={stock.symbol} className="flex items-center justify-between py-1.5 border-b border-border/30 last:border-0">
-            <span className={`${isCompact ? "text-xs" : "text-sm"} font-semibold text-foreground`}>{stock.symbol}</span>
-            <div className="flex items-center gap-3">
-              <span className={`${isCompact ? "text-xs" : "text-sm"} font-mono text-foreground`}>
+    <div ref={sizeRef} className="h-full flex flex-col overflow-auto">
+      <WidgetHeader title="Stocks" status="cached" updatedAt={lastFetch} compact={isCompact} />
+
+      <div className="space-y-0 flex-1">
+        {stocks.map((stock) => (
+          <div key={stock.symbol} className={`flex items-center justify-between ${isCompact ? "py-1" : "py-1.5"} border-b border-border/20 last:border-0`}>
+            <span className={`${isCompact ? "text-[10px]" : "text-xs"} font-semibold text-foreground w-14`}>
+              {stock.symbol}
+            </span>
+            <div className="flex items-center gap-2 ml-auto">
+              {config.showVolume && !isCompact && stock.volume && (
+                <SecondaryValue label="Vol" value={`${(stock.volume / 1e6).toFixed(1)}M`} compact />
+              )}
+              <span className={`${isCompact ? "text-[10px]" : "text-xs"} font-medium text-foreground tabular-nums min-w-[60px] text-right`}>
                 ${stock.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}
               </span>
-              <span className={`flex items-center gap-0.5 ${isCompact ? "text-[10px]" : "text-xs"} font-semibold ${positive ? "text-success" : "text-destructive"}`}>
-                {positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                {Math.abs(stock.change24h).toFixed(2)}%
+              <span className="min-w-[52px] text-right">
+                <ChangeIndicator value={stock.change24h} compact={isCompact} />
               </span>
             </div>
           </div>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 });
