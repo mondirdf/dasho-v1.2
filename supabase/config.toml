@@ -2,3 +2,6 @@ project_id = "wlustbjdqwemnqtyilxp"
 
 [functions.market-recap]
 verify_jwt = false
+
+[functions.track-analytics]
+verify_jwt = false

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Lock, Check, ArrowLeft, ArrowRight, Settings2 } from "lucide-react";
 import { useDashboard } from "@/contexts/DashboardContext";
+import { trackEvent } from "@/analytics/behaviorTracker";
 import { useState, useCallback } from "react";
 import { WIDGET_REGISTRY, WIDGET_CATEGORIES, getWidgetDef } from "@/components/widgets/widgetRegistry";
 import type { ConfigField } from "@/components/widgets/widgetRegistry";
@@ -135,6 +136,7 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
     try {
       for (const type of selected) {
         await addWidget(type, configs[type] || {});
+        trackEvent("widget_add", { type });
       }
       resetState();
       setOpen(false);

@@ -146,6 +146,99 @@ Deno.serve(async (req) => {
       userGrowth.push({ date: dateStr, users: count });
     }
 
+    // ── BEHAVIOR ANALYTICS ──
+
+    // DAU from analytics_events (last 24h)
+    const { data: analyticsDauRaw } = await supabaseAdmin
+      .from("analytics_events")
+      .select("user_id")
+      .gte("created_at", todayStart)
+      .not("user_id", "is", null);
+    const analyticsDau = new Set(analyticsDauRaw?.map((e) => e.user_id)).size;
+
+    // Recap views today
+    const { count: recapViewsToday } = await supabaseAdmin
+      .from("analytics_events")
+      .select("*", { count: "exact", head: true })
+      .eq("event_name", "recap_view")
+      .gte("created_at", todayStart);
+
+    // Widgets added today
+    const { count: widgetsAddedToday } = await supabaseAdmin
+      .from("analytics_events")
+      .select("*", { count: "exact", head: true })
+      .eq("event_name", "widget_add")
+      .gte("created_at", todayStart);
+
+    // Upgrade clicks this week
+    const { count: upgradeClicksWeek } = await supabaseAdmin
+      .from("analytics_events")
+      .select("*", { count: "exact", head: true })
+      .eq("event_name", "upgrade_click")
+      .gte("created_at", weekAgo);
+
+    // 7-day retention: users active today AND 7 days ago
+    const sevenDaysAgoStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgoEnd = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+    const { data: activeSevenDaysAgoRaw } = await supabaseAdmin
+      .from("analytics_events")
+      .select("user_id")
+      .gte("created_at", sevenDaysAgoStart.toISOString())
+      .lt("created_at", sevenDaysAgoEnd.toISOString())
+      .not("user_id", "is", null);
+    const activeSevenDaysAgo = new Set(activeSevenDaysAgoRaw?.map((e) => e.user_id));
+
+    const { data: activeTodayRaw } = await supabaseAdmin
+      .from("analytics_events")
+      .select("user_id")
+      .gte("created_at", todayStart)
+      .not("user_id", "is", null);
+    const activeToday = new Set(activeTodayRaw?.map((e) => e.user_id));
+
+    let retainedCount = 0;
+    for (const uid of activeSevenDaysAgo) {
+      if (activeToday.has(uid)) retainedCount++;
+    }
+    const retentionRate = activeSevenDaysAgo.size > 0
+      ? ((retainedCount / activeSevenDaysAgo.size) * 100).toFixed(1)
+      : "0.0";
+
+    // 7-day trend: dashboard_open and recap_view per day
+    const behaviorTrend: { date: string; dashboard_opens: number; recap_views: number }[] = [];
+    const { data: trendRaw } = await supabaseAdmin
+      .from("analytics_events")
+      .select("event_name, created_at")
+      .in("event_name", ["dashboard_open", "recap_view"])
+      .gte("created_at", weekAgo);
+
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+      const dateStr = date.toISOString().split("T")[0];
+      const dayEvents = trendRaw?.filter((e) => e.created_at.startsWith(dateStr)) ?? [];
+      behaviorTrend.push({
+        date: dateStr,
+        dashboard_opens: dayEvents.filter((e) => e.event_name === "dashboard_open").length,
+        recap_views: dayEvents.filter((e) => e.event_name === "recap_view").length,
+      });
+    }
+
+    // Top 5 widget types by widget_add events
+    const { data: widgetAddEvents } = await supabaseAdmin
+      .from("analytics_events")
+      .select("metadata")
+      .eq("event_name", "widget_add");
+
+    const widgetCounts: Record<string, number> = {};
+    for (const e of widgetAddEvents ?? []) {
+      const meta = e.metadata as Record<string, unknown>;
+      const type = typeof meta?.type === "string" ? meta.type : "unknown";
+      widgetCounts[type] = (widgetCounts[type] || 0) + 1;
+    }
+    const topWidgets = Object.entries(widgetCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([type, count]) => ({ type, count }));
+
     return new Response(
       JSON.stringify({
         totalUsers: totalUsers ?? 0,
@@ -157,6 +250,16 @@ Deno.serve(async (req) => {
         churnRate: parseFloat(churnRate),
         revenueOverTime,
         userGrowth,
+        // Behavior analytics
+        analytics: {
+          dau: analyticsDau,
+          recapViewsToday: recapViewsToday ?? 0,
+          widgetsAddedToday: widgetsAddedToday ?? 0,
+          upgradeClicksWeek: upgradeClicksWeek ?? 0,
+          retentionRate: parseFloat(retentionRate),
+          behaviorTrend,
+          topWidgets,
+        },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );

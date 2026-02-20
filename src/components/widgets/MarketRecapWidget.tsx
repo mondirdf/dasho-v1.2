@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Sparkles, RefreshCw, Clock, Crown } from "lucide-react";
 import { getMarketRecap, canRefreshRecap, type MarketRecap } from "@/engines/marketRecapEngine";
+import { trackEvent } from "@/analytics/behaviorTracker";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -46,6 +47,9 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
       const data = await getMarketRecap("crypto", "24h");
       setRecap(data);
       setCanRefresh(false);
+      if (data && !data.error) {
+        trackEvent("recap_view");
+      }
     } finally {
       setLoading(false);
     }

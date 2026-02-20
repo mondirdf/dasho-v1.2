@@ -7,6 +7,7 @@
 import { memo, useState } from "react";
 import { Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/analytics/behaviorTracker";
 import {
   Dialog,
   DialogContent,
@@ -86,7 +87,7 @@ const ProGate = memo(({ feature, forceGate, children }: ProGateProps) => {
           </div>
 
           <div className="flex flex-col gap-2 pt-2">
-            <Button className="w-full glow-button gap-2" onClick={() => setModalOpen(false)}>
+            <Button className="w-full glow-button gap-2" onClick={() => { trackEvent("upgrade_click"); setModalOpen(false); }}>
               <Crown className="h-4 w-4" />
               Upgrade Now — $5/mo
             </Button>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { trackEvent } from "@/analytics/behaviorTracker";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ const Login = () => {
       setError(error.message);
       setLoading(false);
     } else {
+      trackEvent("login");
       navigate("/dashboard");
     }
   };
