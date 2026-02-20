@@ -3,7 +3,8 @@
  * Supports compact / standard / expanded responsive modes.
  */
 import { useEffect, useState, memo, useCallback } from "react";
-import { fetchCryptoData, type CryptoData } from "@/services/dataService";
+import { fetchCryptoDataCompat } from "@/adapters/market";
+import type { CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Globe, AlertCircle, TrendingUp, TrendingDown } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
@@ -25,7 +26,7 @@ const MarketContextWidget = memo(({ config }: Props) => {
   const [error, setError] = useState(false);
 
   const loadData = useCallback(() => {
-    fetchCryptoData()
+    fetchCryptoDataCompat()
       .then((d) => { setData(d); setError(false); })
       .catch(() => setError(true))
       .finally(() => setLoading(false));

@@ -3,7 +3,8 @@
  * Supports compact / standard / expanded responsive modes.
  */
 import { useEffect, useState, memo, useCallback } from "react";
-import { fetchCryptoData, type CryptoData } from "@/services/dataService";
+import { fetchCryptoDataCompat } from "@/adapters/market";
+import type { CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown, AlertCircle } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
@@ -28,7 +29,7 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
 
   const loadData = useCallback(() => {
     const symbol = config.symbol || "BTC";
-    fetchCryptoData()
+    fetchCryptoDataCompat()
       .then((data) => {
         setAllCoins(data);
         setCoin(data.find((c) => c.symbol === symbol) || data[0] || null);
