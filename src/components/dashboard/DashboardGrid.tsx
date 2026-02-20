@@ -110,37 +110,35 @@ const DashboardGrid = () => {
 
   /** Auto-scroll when dragging near edges */
   const autoScrollRef = useRef<number | null>(null);
+  const lastPointerY = useRef<number>(0);
 
   const handleDragMove = useCallback((event: DragMoveEvent) => {
-    if (autoScrollRef.current) cancelAnimationFrame(autoScrollRef.current);
+    if (autoScrollRef.current) {
+      cancelAnimationFrame(autoScrollRef.current);
+      autoScrollRef.current = null;
+    }
+
+    // Track live pointer position via activatorEvent + delta
+    const activator = event.activatorEvent as PointerEvent | TouchEvent;
+    const startY = 'touches' in activator
+      ? (activator.touches[0]?.clientY ?? 0)
+      : (activator as PointerEvent).clientY;
+    const currentY = startY + (event.delta?.y ?? 0);
+    lastPointerY.current = currentY;
 
     const scrollContainer = document.scrollingElement || document.documentElement;
     const viewportHeight = window.innerHeight;
-    const pointerY = (event.activatorEvent as PointerEvent | TouchEvent);
-    
-    // Get current pointer position from the delta
-    let clientY: number;
-    if ('touches' in pointerY) {
-      clientY = pointerY.touches[0]?.clientY ?? 0;
-    } else {
-      clientY = (pointerY as PointerEvent).clientY + (event.delta?.y ?? 0);
+    const edgeThreshold = 60;
+    const maxSpeed = 4; // much slower, comfortable scroll
+
+    // Only scroll once per move event — no looping RAF
+    if (currentY > viewportHeight - edgeThreshold) {
+      const intensity = Math.min((currentY - (viewportHeight - edgeThreshold)) / edgeThreshold, 1);
+      scrollContainer.scrollTop += Math.round(maxSpeed * intensity);
+    } else if (currentY < edgeThreshold) {
+      const intensity = Math.min((edgeThreshold - currentY) / edgeThreshold, 1);
+      scrollContainer.scrollTop -= Math.round(maxSpeed * intensity);
     }
-
-    const edgeThreshold = 80;
-    const maxSpeed = 18;
-
-    const scrollStep = () => {
-      if (clientY > viewportHeight - edgeThreshold) {
-        const intensity = Math.min((clientY - (viewportHeight - edgeThreshold)) / edgeThreshold, 1);
-        scrollContainer.scrollTop += maxSpeed * intensity;
-        autoScrollRef.current = requestAnimationFrame(scrollStep);
-      } else if (clientY < edgeThreshold) {
-        const intensity = Math.min((edgeThreshold - clientY) / edgeThreshold, 1);
-        scrollContainer.scrollTop -= maxSpeed * intensity;
-        autoScrollRef.current = requestAnimationFrame(scrollStep);
-      }
-    };
-    scrollStep();
   }, []);
 
   const handleDragCancel = useCallback(() => {
