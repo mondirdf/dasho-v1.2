@@ -49,7 +49,7 @@ const Index = () => {
       <nav className="sticky top-0 z-50 glass-nav">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <img src={logoDasho} alt={BRAND.name} className="h-[90px] sm:h-[144px]" />
+            <img src={logoDasho} alt={BRAND.name} className="h-8 sm:h-10" />
           </Link>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <a href="#features" className="hidden sm:inline-flex">
@@ -251,7 +251,7 @@ const Index = () => {
       <footer className="relative z-10 border-t border-border/50 bg-background/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-8 sm:py-10 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
           <div>
-            <img src={logoDasho} alt={BRAND.name} className="h-[128px] sm:h-[192px]" />
+            <img src={logoDasho} alt={BRAND.name} className="h-10 sm:h-12" />
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{FOOTER.tagline}</p>
           </div>
           <div>
@@ -268,7 +268,7 @@ const Index = () => {
           <div>
             <p className="text-sm font-semibold text-foreground mb-3">Legal</p>
             <ul className="space-y-1.5 text-sm text-muted-foreground">
-              {FOOTER.legalLinks.map((l) => <li key={l.label}><span className="cursor-default">{l.label}</span></li>)}
+              {FOOTER.legalLinks.map((l: { label: string; to: string }) => <li key={l.label}><Link to={l.to} className="hover:text-foreground transition-colors">{l.label}</Link></li>)}
             </ul>
           </div>
         </div>

@@ -1,20 +1,47 @@
 /**
  * WidgetRenderer — resolves widget type → component, wraps in WidgetContainer.
- *
- * This component:
- *  1. Looks up the widget component from WIDGET_MAP
- *  2. Wraps it in WidgetContainer (which applies all visual styling from registry)
- *  3. Renders edit-mode controls (drag handle, remove, settings)
- *
- * Widget components receive ONLY { config } and render pure content.
  */
-import { memo, useState } from "react";
-import { X, GripVertical, Settings2 } from "lucide-react";
+import { memo, useState, Component, type ErrorInfo, type ReactNode } from "react";
+import { X, GripVertical, Settings2, AlertTriangle } from "lucide-react";
 import type { Widget } from "@/services/dataService";
 import { getWidgetDef } from "./widgetRegistry";
 import WidgetContainer from "./WidgetContainer";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import WidgetSettingsModal, { type WidgetStyle } from "./WidgetSettingsModal";
+
+/** Per-widget error boundary — prevents one broken widget from crashing the dashboard */
+class WidgetErrorBoundary extends Component<
+  { children: ReactNode; widgetType: string },
+  { hasError: boolean; error?: Error }
+> {
+  constructor(props: { children: ReactNode; widgetType: string }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: Error, info: ErrorInfo) {
+    console.error(`Widget [${this.props.widgetType}] crashed:`, error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full gap-2 p-4 text-center">
+          <AlertTriangle className="h-6 w-6 text-warning" />
+          <p className="text-xs text-muted-foreground">This widget encountered an error.</p>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            className="text-xs text-primary hover:underline"
+          >
+            Try again
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 import CryptoPriceWidget from "./CryptoPriceWidget";
 import MultiTrackerWidget from "./MultiTrackerWidget";
 import NewsWidget from "./NewsWidget";
@@ -96,13 +123,15 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
 
         {/* Content — widget renders pure content, no styling */}
         <div className={editMode ? "pt-8 h-full pointer-events-none" : "h-full"}>
-          {Component ? (
-            <Component config={configJson} />
-          ) : (
-            <div className="text-muted-foreground text-sm">
-              Unknown widget type: {widget.type}
-            </div>
-          )}
+          <WidgetErrorBoundary widgetType={widget.type}>
+            {Component ? (
+              <Component config={configJson} />
+            ) : (
+              <div className="text-muted-foreground text-sm">
+                Unknown widget type: {widget.type}
+              </div>
+            )}
+          </WidgetErrorBoundary>
         </div>
       </WidgetContainer>
 
