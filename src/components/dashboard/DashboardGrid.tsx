@@ -207,7 +207,7 @@ const DashboardGrid = () => {
         margin={[12, 12]}
         resizeHandles={["n", "s", "e", "w"]}
         compactType="vertical"
-        preventCollision={true}
+        preventCollision={false}
       >
         {widgets.map((w) => {
           const c = getWidgetConstraints(w.type);
