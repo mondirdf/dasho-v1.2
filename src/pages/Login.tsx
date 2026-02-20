@@ -33,7 +33,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 relative">
+    <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-8 sm:py-0 relative">
       {/* Animated background orbs */}
       <div className="animated-bg">
         <div className="orb orb-1" />
@@ -41,24 +41,24 @@ const Login = () => {
         <div className="orb orb-3" />
       </div>
 
-      <div className="glass-card-enhanced w-full max-w-md p-8 space-y-6 relative z-10">
+      <div className="glass-card-enhanced w-full max-w-md p-5 sm:p-8 space-y-5 sm:space-y-6 relative z-10">
         {/* Logo */}
         <div className="flex justify-center">
-          <img src={logoDasho} alt="Dasho" className="h-40 object-contain" />
+          <img src={logoDasho} alt="Dasho" className="h-24 sm:h-40 object-contain" />
         </div>
 
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <div className="text-center space-y-1.5 sm:space-y-2">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
             Welcome back
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Sign in to your Dasho account
           </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+        <form onSubmit={handleLogin} className="space-y-3 sm:space-y-4">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="email" className="text-xs sm:text-sm">Email</Label>
             <Input
               id="email"
               type="email"
@@ -66,12 +66,12 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="glass-input"
+              className="glass-input h-10 sm:h-11 text-sm"
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="password" className="text-xs sm:text-sm">Password</Label>
             <Input
               id="password"
               type="password"
@@ -79,24 +79,24 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="glass-input"
+              className="glass-input h-10 sm:h-11 text-sm"
             />
           </div>
 
           {error && (
-            <p className="text-sm text-destructive">{error}</p>
+            <p className="text-xs sm:text-sm text-destructive">{error}</p>
           )}
 
           <Button
             type="submit"
-            className="w-full glow-button"
+            className="w-full glow-button h-10 sm:h-11 text-sm sm:text-base"
             disabled={loading}
           >
             {loading ? "Signing in…" : "Sign In"}
           </Button>
         </form>
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-xs sm:text-sm text-muted-foreground">
           Don't have an account?{" "}
           <Link to="/signup" className="text-primary hover:underline">
             Sign up
