@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useRef, useEffect } from "react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import AddWidgetSheet from "@/components/AddWidgetSheet";
 import WidgetRenderer from "@/components/widgets/WidgetRenderer";
@@ -20,6 +20,7 @@ import {
   useSensor,
   useSensors,
   type DragEndEvent,
+  type DragMoveEvent,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -103,9 +104,51 @@ const DashboardGrid = () => {
 
   /** DnD sensors with activation delay to avoid conflicts with scroll */
   const sensors = useSensors(
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
   );
+
+  /** Auto-scroll when dragging near edges */
+  const autoScrollRef = useRef<number | null>(null);
+
+  const handleDragMove = useCallback((event: DragMoveEvent) => {
+    if (autoScrollRef.current) cancelAnimationFrame(autoScrollRef.current);
+
+    const scrollContainer = document.scrollingElement || document.documentElement;
+    const viewportHeight = window.innerHeight;
+    const pointerY = (event.activatorEvent as PointerEvent | TouchEvent);
+    
+    // Get current pointer position from the delta
+    let clientY: number;
+    if ('touches' in pointerY) {
+      clientY = pointerY.touches[0]?.clientY ?? 0;
+    } else {
+      clientY = (pointerY as PointerEvent).clientY + (event.delta?.y ?? 0);
+    }
+
+    const edgeThreshold = 80;
+    const maxSpeed = 18;
+
+    const scrollStep = () => {
+      if (clientY > viewportHeight - edgeThreshold) {
+        const intensity = Math.min((clientY - (viewportHeight - edgeThreshold)) / edgeThreshold, 1);
+        scrollContainer.scrollTop += maxSpeed * intensity;
+        autoScrollRef.current = requestAnimationFrame(scrollStep);
+      } else if (clientY < edgeThreshold) {
+        const intensity = Math.min((edgeThreshold - clientY) / edgeThreshold, 1);
+        scrollContainer.scrollTop -= maxSpeed * intensity;
+        autoScrollRef.current = requestAnimationFrame(scrollStep);
+      }
+    };
+    scrollStep();
+  }, []);
+
+  const handleDragCancel = useCallback(() => {
+    if (autoScrollRef.current) {
+      cancelAnimationFrame(autoScrollRef.current);
+      autoScrollRef.current = null;
+    }
+  }, []);
 
   /** Handle drag end — reorder by swapping y positions */
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -151,7 +194,13 @@ const DashboardGrid = () => {
   if (isMobile) {
     return (
       <div className="p-3 space-y-3 animate-fade-in">
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={(e) => { handleDragCancel(); handleDragEnd(e); }}
+          onDragMove={handleDragMove}
+          onDragCancel={handleDragCancel}
+        >
           <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
             {sortedWidgets.map((w) => (
               <SortableWidget
