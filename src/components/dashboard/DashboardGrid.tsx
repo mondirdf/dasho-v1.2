@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import AddWidgetSheet from "@/components/AddWidgetSheet";
 import WidgetRenderer from "@/components/widgets/WidgetRenderer";
@@ -11,7 +11,7 @@ import "react-resizable/css/styles.css";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getWidgetConstraints } from "@/components/widgets/widgetRegistry";
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { useState } from "react";
+import WidgetSettingsModal from "@/components/widgets/WidgetSettingsModal";
 
 const ResponsiveGrid = WidthProvider(Responsive);
 
@@ -19,6 +19,8 @@ const DashboardGrid = () => {
   const { widgets, layout, editMode, removeWidget, onLayoutChange } = useDashboard();
   const isMobile = useIsMobile();
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [settingsWidgetId, setSettingsWidgetId] = useState<string | null>(null);
+  const settingsWidget = widgets.find((w) => w.id === settingsWidgetId) ?? null;
 
   /** Build layout items with per-widget constraints from registry */
   const constrainedLayout = useMemo(() => {
@@ -96,6 +98,7 @@ const DashboardGrid = () => {
                 onMoveUp={(id) => mobileReorder(id, "up")}
                 onMoveDown={(id) => mobileReorder(id, "down")}
                 onRemove={(id) => setConfirmId(id)}
+                onSettings={(id) => setSettingsWidgetId(id)}
               />
             )}
             <div className={`min-h-[200px] ${editMode ? "rounded-b-[var(--radius)] overflow-hidden ring-1 ring-primary/20" : ""}`}>
@@ -112,6 +115,13 @@ const DashboardGrid = () => {
           confirmLabel="Remove"
           destructive
         />
+        {settingsWidget && (
+          <WidgetSettingsModal
+            widget={settingsWidget}
+            open={!!settingsWidgetId}
+            onOpenChange={(open) => !open && setSettingsWidgetId(null)}
+          />
+        )}
       </div>
     );
   }
