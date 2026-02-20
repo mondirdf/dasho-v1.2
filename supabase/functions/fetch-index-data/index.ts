@@ -6,7 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Alpha Vantage uses these symbols for major indices
 const INDEX_SYMBOLS = [
   { apiSymbol: "SPY", displaySymbol: "SP500", label: "S&P 500" },
   { apiSymbol: "QQQ", displaySymbol: "NASDAQ", label: "NASDAQ" },
@@ -22,18 +21,22 @@ interface IndexData {
 }
 
 async function fetchFromAlphaVantage(apiSymbol: string, displaySymbol: string, apiKey: string): Promise<IndexData | null> {
-  const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${apiSymbol}&apikey=${apiKey}`;
-  const res = await fetch(url);
-  if (!res.ok) return null;
-  const json = await res.json();
-  const q = json?.["Global Quote"];
-  if (!q || !q["05. price"]) return null;
-  return {
-    symbol: displaySymbol,
-    price: parseFloat(q["05. price"]) || 0,
-    change_24h: parseFloat(q["10. change percent"]?.replace("%", "")) || 0,
-    volume: parseInt(q["06. volume"]) || 0,
-  };
+  try {
+    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${apiSymbol}&apikey=${apiKey}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const json = await res.json();
+    const q = json?.["Global Quote"];
+    if (!q || !q["05. price"]) return null;
+    return {
+      symbol: displaySymbol,
+      price: parseFloat(q["05. price"]) || 0,
+      change_24h: parseFloat(q["10. change percent"]?.replace("%", "")) || 0,
+      volume: parseInt(q["06. volume"]) || 0,
+    };
+  } catch {
+    return null;
+  }
 }
 
 Deno.serve(async (req) => {
@@ -48,7 +51,6 @@ Deno.serve(async (req) => {
 
   const apiKey = Deno.env.get("ALPHA_VANTAGE_API_KEY");
   if (!apiKey) {
-    console.warn("ALPHA_VANTAGE_API_KEY not set — skipping index fetch");
     return new Response(
       JSON.stringify({ ok: false, error: "ALPHA_VANTAGE_API_KEY not configured" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -56,17 +58,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const results: IndexData[] = [];
-
-    for (const { apiSymbol, displaySymbol } of INDEX_SYMBOLS) {
-      try {
-        const data = await fetchFromAlphaVantage(apiSymbol, displaySymbol, apiKey);
-        if (data) results.push(data);
-        await new Promise((r) => setTimeout(r, 12500));
-      } catch (e) {
-        console.warn(`Failed to fetch ${displaySymbol}:`, e);
-      }
-    }
+    // Fetch all in parallel (4 indices)
+    const promises = INDEX_SYMBOLS.map((i) => fetchFromAlphaVantage(i.apiSymbol, i.displaySymbol, apiKey));
+    const settled = await Promise.all(promises);
+    const results = settled.filter(Boolean) as IndexData[];
 
     for (const idx of results) {
       await supabase.from("cache_index_data").upsert(
