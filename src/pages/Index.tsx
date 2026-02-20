@@ -47,11 +47,11 @@ const Index = () => {
 
       {/* Nav */}
       <nav className="sticky top-0 z-50 glass-nav">
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logoDasho} alt={BRAND.name} className="h-[90px]" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            <img src={logoDasho} alt={BRAND.name} className="h-[56px] sm:h-[90px]" />
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             <a href="#features" className="hidden sm:inline-flex">
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs">
                 Widgets
@@ -63,11 +63,11 @@ const Index = () => {
               </Button>
             </a>
             {loading ? null : user ? (
-              <Link to="/dashboard"><Button size="sm" className="gap-1.5 glow-button">Dashboard <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
+              <Link to="/dashboard"><Button size="sm" className="gap-1.5 glow-button text-xs sm:text-sm">Dashboard <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
             ) : (
               <>
-                <Link to="/login"><Button variant="ghost" size="sm">Sign In</Button></Link>
-                <Link to="/signup"><Button size="sm" className="gap-1.5 glow-button">{HERO.ctaPrimary} <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
+                <Link to="/login"><Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">Sign In</Button></Link>
+                <Link to="/signup"><Button size="sm" className="gap-1 sm:gap-1.5 glow-button text-xs sm:text-sm px-3 sm:px-4">{HERO.ctaPrimary} <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" /></Button></Link>
               </>
             )}
           </div>
@@ -79,14 +79,14 @@ const Index = () => {
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsla(263,70%,66%,0.15),transparent_55%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsla(220,70%,55%,0.08),transparent_50%)]" />
-          <div className="relative max-w-6xl mx-auto px-4 pt-20 pb-16 text-center">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1] max-w-4xl mx-auto">
+          <div className="relative max-w-6xl mx-auto px-4 pt-12 sm:pt-20 pb-12 sm:pb-16 text-center">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1] max-w-4xl mx-auto">
               {HERO.heading}{" "}<span className="text-primary">{HERO.headingHighlight}</span>
             </h1>
-            <p className="mt-5 text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">{HERO.subheading}</p>
-            <div className="mt-8 flex items-center justify-center gap-3">
-              <Link to="/signup"><Button size="lg" className="gap-2 text-base px-8 glow-button">{HERO.ctaPrimary} <ArrowRight className="h-4 w-4" /></Button></Link>
-              <a href="#features"><Button variant="outline" size="lg" className="text-base px-8">{HERO.ctaSecondary}</Button></a>
+            <p className="mt-4 sm:mt-5 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">{HERO.subheading}</p>
+            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link to="/signup" className="w-full sm:w-auto"><Button size="lg" className="gap-2 text-base px-8 glow-button w-full sm:w-auto">{HERO.ctaPrimary} <ArrowRight className="h-4 w-4" /></Button></Link>
+              <a href="#features" className="w-full sm:w-auto"><Button variant="outline" size="lg" className="text-base px-8 w-full sm:w-auto">{HERO.ctaSecondary}</Button></a>
             </div>
           </div>
         </section>
@@ -108,10 +108,10 @@ const Index = () => {
         </section>
 
         {/* Crypto Preview — Only crypto widgets */}
-        <section className="max-w-5xl mx-auto px-4 pb-20" aria-label="Crypto dashboard preview">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center mb-8">Your Crypto Overview</h2>
-          <div className="glass-card-enhanced p-4 sm:p-6">
-            <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <section className="max-w-5xl mx-auto px-3 sm:px-4 pb-16 sm:pb-20" aria-label="Crypto dashboard preview">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-6 sm:mb-8">Your Crypto Overview</h2>
+          <div className="glass-card-enhanced p-3 sm:p-6">
+            <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
               {MOCK_WIDGETS.map((w) => (
                 <div key={w.label} className="rounded-lg bg-secondary/40 p-3 space-y-1 border border-border/20">
                   <div className="flex items-center justify-between">
@@ -120,11 +120,11 @@ const Index = () => {
                       {w.positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{w.change}
                     </span>
                   </div>
-                  <p className="text-lg font-bold text-foreground">{w.value}</p>
+                  <p className="text-base sm:text-lg font-bold text-foreground">{w.value}</p>
                 </div>
               ))}
             </div>
-            <div className="relative z-10 mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="relative z-10 mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
               <div className="rounded-lg bg-secondary/40 p-4 border border-border/20">
                 <p className="text-xs text-muted-foreground mb-1">Market Sentiment</p>
                 <p className="text-3xl font-bold text-success">72</p>
@@ -150,10 +150,10 @@ const Index = () => {
         </section>
 
         {/* Features — Crypto Widgets */}
-        <section id="features" className="max-w-6xl mx-auto px-4 py-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">Crypto Trading Widgets</h2>
-          <p className="mt-3 text-muted-foreground text-center max-w-lg mx-auto">Professional-grade crypto tools, zero complexity.</p>
-          <div className="mt-12 grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section id="features" className="max-w-6xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Crypto Trading Widgets</h2>
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground text-center max-w-lg mx-auto">Professional-grade crypto tools, zero complexity.</p>
+          <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {FEATURES.map((f) => {
               const FIcon = ICON_MAP[f.icon] || Globe;
               return (
@@ -168,9 +168,9 @@ const Index = () => {
         </section>
 
         {/* How it Works */}
-        <section className="max-w-4xl mx-auto px-4 py-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">How It Works</h2>
-          <div className="mt-12 grid sm:grid-cols-3 gap-8">
+        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">How It Works</h2>
+          <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
             {HOW_IT_WORKS.map((s) => (
               <div key={s.step} className="text-center space-y-3">
                 <div className="mx-auto w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
@@ -184,9 +184,9 @@ const Index = () => {
         </section>
 
         {/* Use Cases */}
-        <section className="max-w-4xl mx-auto px-4 py-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">Built For Crypto</h2>
-          <div className="mt-10 grid sm:grid-cols-3 gap-6">
+        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Built For Crypto</h2>
+          <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
             {USE_CASES.map((u) => (
               <div key={u.title} className="glass-card-enhanced p-6 space-y-2">
                 <h3 className="relative z-10 text-base font-semibold text-foreground">{u.title}</h3>
@@ -197,10 +197,10 @@ const Index = () => {
         </section>
 
         {/* Pricing */}
-        <section id="pricing" className="max-w-4xl mx-auto px-4 py-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">Simple Pricing</h2>
-          <p className="mt-3 text-muted-foreground text-center">Start free, upgrade when you need more.</p>
-          <div className="mt-10 grid sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+        <section id="pricing" className="max-w-4xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Simple Pricing</h2>
+          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground text-center">Start free, upgrade when you need more.</p>
+          <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto">
             {Object.values(PRICING).map((plan) => (
               <div key={plan.name} className={`glass-card-enhanced p-6 space-y-5 relative ${plan.highlighted ? "border-primary/40" : ""}`}>
                 {plan.highlighted && "badge" in plan && (
@@ -224,14 +224,14 @@ const Index = () => {
         </section>
 
         {/* FAQ */}
-        <section className="max-w-2xl mx-auto px-4 py-16">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">FAQ</h2>
+        <section className="max-w-2xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">FAQ</h2>
           <div className="mt-10">{FAQ.map((f) => <FaqItem key={f.q} q={f.q} a={f.a} />)}</div>
         </section>
 
         {/* CTA */}
-        <section className="max-w-4xl mx-auto px-4 py-16 text-center">
-          <div className="glass-card-enhanced p-10 sm:p-14 relative overflow-hidden">
+        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-10 sm:py-16 text-center">
+          <div className="glass-card-enhanced p-6 sm:p-14 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsla(263,70%,66%,0.12),transparent_70%)]" />
             <div className="relative z-10">
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{CTA.heading}</h2>
@@ -246,9 +246,9 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border/50 bg-background/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-4 py-10 grid sm:grid-cols-3 gap-8">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-8 sm:py-10 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
           <div>
-            <img src={logoDasho} alt={BRAND.name} className="h-[96px]" />
+            <img src={logoDasho} alt={BRAND.name} className="h-[64px] sm:h-[96px]" />
             <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{FOOTER.tagline}</p>
           </div>
           <div>
