@@ -80,18 +80,35 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
     const w = await fetchWidgets(dash.id);
     setWidgets(w);
     const savedLayout = Array.isArray(dash.layout_json) ? (dash.layout_json as unknown as LayoutItem[]) : [];
-    if (savedLayout.length > 0) {
+    const isSingleColumn = savedLayout.length > 1 && savedLayout.every((l) => l.x === 0);
+    if (savedLayout.length > 0 && !isSingleColumn) {
       setLayout(savedLayout);
     } else {
-      setLayout(
-        w.map((widget) => ({
-          i: widget.id,
-          x: widget.position_x,
-          y: widget.position_y,
-          w: widget.width,
-          h: widget.height,
-        }))
-      );
+      // Auto-distribute widgets across 12-col grid
+      const cols = 12;
+      const items: LayoutItem[] = [];
+      for (const widget of w) {
+        const def = getWidgetDef(widget.type);
+        const size = def?.defaultSize ?? { w: 4, h: 3 };
+        const ww = Math.min(size.w, cols);
+        const hh = size.h;
+        // Find first open spot
+        const maxY = items.reduce((max, l) => Math.max(max, l.y + l.h), 0) + hh;
+        let placed = false;
+        for (let y = 0; y <= maxY && !placed; y++) {
+          for (let x = 0; x <= cols - ww && !placed; x++) {
+            const fits = !items.some(
+              (l) => l.x < x + ww && l.x + l.w > x && l.y < y + hh && l.y + l.h > y
+            );
+            if (fits) {
+              items.push({ i: widget.id, x, y, w: ww, h: hh });
+              placed = true;
+            }
+          }
+        }
+        if (!placed) items.push({ i: widget.id, x: 0, y: maxY, w: ww, h: hh });
+      }
+      setLayout(items);
     }
   };
 
@@ -244,10 +261,28 @@ export const DashboardProvider = ({ children }: { children: ReactNode }) => {
         const size = def?.defaultSize ?? { w: 4, h: 3 };
         const w = await createWidget(dashboard.id, type, config);
         setWidgets((prev) => [...prev, w]);
-        setLayout((prev: LayoutItem[]) => [
-          ...prev,
-          { i: w.id, x: 0, y: Infinity, w: size.w, h: size.h },
-        ]);
+        setLayout((prev: LayoutItem[]) => {
+          // Smart placement: find the best x position to fill the grid row
+          const cols = 12;
+          const maxY = prev.reduce((max, l) => Math.max(max, l.y + l.h), 0);
+          // Try to fit in existing rows first
+          let bestX = 0;
+          let bestY = maxY; // fallback: new row
+          for (let y = 0; y <= maxY; y++) {
+            for (let x = 0; x <= cols - size.w; x++) {
+              const fits = !prev.some(
+                (l) => l.x < x + size.w && l.x + l.w > x && l.y < y + size.h && l.y + l.h > y
+              );
+              if (fits) {
+                bestX = x;
+                bestY = y;
+                // Found a spot, use it
+                return [...prev, { i: w.id, x: bestX, y: bestY, w: size.w, h: size.h }];
+              }
+            }
+          }
+          return [...prev, { i: w.id, x: 0, y: bestY, w: size.w, h: size.h }];
+        });
         toast({ title: "Widget added" });
       } catch (e: any) {
         const msg = e?.message || "";
