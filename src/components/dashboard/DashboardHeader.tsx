@@ -63,7 +63,7 @@ const DashboardHeader = () => {
         <div className="flex items-center gap-2 min-w-0">
           {!isMobile && (
             <Link to="/" className="mr-1">
-              <img src={logoDasho} alt="Dasho" className="h-8" />
+              <img src={logoDasho} alt="Dasho" className="h-16" />
             </Link>
           )}
 
