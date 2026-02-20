@@ -100,15 +100,15 @@ export const COLORS = {
 /* ═══════════════════════ ASSET TYPES ═════════════════════════════ */
 /**
  * Asset types define which market verticals the platform supports.
- * Only "crypto" is currently active — others are roadmap placeholders.
  */
-export type AssetType = "crypto" | "stocks" | "forex" | "commodities";
+export type AssetType = "crypto" | "stocks" | "forex" | "commodities" | "indices";
 
 export const ASSET_TYPES: { id: AssetType; label: string; active: boolean }[] = [
   { id: "crypto", label: "Crypto", active: true },
-  { id: "stocks", label: "Stocks", active: false },
-  { id: "forex", label: "Forex", active: false },
-  { id: "commodities", label: "Commodities", active: false },
+  { id: "stocks", label: "Stocks", active: true },
+  { id: "forex", label: "Forex", active: true },
+  { id: "commodities", label: "Commodities", active: true },
+  { id: "indices", label: "Indices", active: true },
 ] as const;
 
 /* ═══════════════════════ WIDGET CATEGORIES ════════════════════════ */
@@ -118,9 +118,10 @@ export const WIDGET_CATEGORIES = [
   { id: "crypto", label: "Crypto", available: true },
   { id: "market", label: "Market", available: true },
   { id: "news", label: "News", available: true },
-  { id: "stocks", label: "Stocks", available: false },
-  { id: "forex", label: "Forex", available: false },
-  { id: "commodities", label: "Commodities", available: false },
+  { id: "stocks", label: "Stocks", available: true },
+  { id: "forex", label: "Forex", available: true },
+  { id: "commodities", label: "Commodities", available: true },
+  { id: "indices", label: "Indices", available: true },
 ] as const;
 
 /* ═══════════════════════ SUPPORTED COINS ═════════════════════════ */

@@ -1,10 +1,10 @@
 /**
  * Unified Market Data Model
  * This is the canonical format all widgets should consume.
- * Asset-type agnostic — works for crypto, stocks, forex, commodities.
+ * Asset-type agnostic — works for crypto, stocks, forex, commodities, indices.
  */
 
-export type AssetType = "crypto" | "stock" | "forex" | "commodity";
+export type AssetType = "crypto" | "stock" | "forex" | "commodity" | "index";
 
 export interface UnifiedMarketData {
   symbol: string;

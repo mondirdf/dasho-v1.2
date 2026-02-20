@@ -5,3 +5,18 @@ verify_jwt = false
 
 [functions.track-analytics]
 verify_jwt = false
+
+[functions.fetch-stock-data]
+verify_jwt = false
+
+[functions.fetch-forex-data]
+verify_jwt = false
+
+[functions.fetch-commodity-data]
+verify_jwt = false
+
+[functions.fetch-index-data]
+verify_jwt = false
+
+[functions.fetch-macro-news]
+verify_jwt = false
