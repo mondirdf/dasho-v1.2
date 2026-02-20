@@ -2,7 +2,7 @@ import { Link, Navigate } from "react-router-dom";
 import {
   BarChart3, Bell, Layout, Zap, Shield, Globe,
   ArrowRight, Check, ChevronDown, TrendingUp, TrendingDown,
-  Newspaper, LineChart, Gauge,
+  Newspaper, LineChart, Gauge, Target, PieChart, Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -19,15 +19,20 @@ const ICON_MAP: Record<string, any> = {
   Layout, Bell, BarChart3, Zap, Globe, Shield, LineChart, Newspaper, Gauge,
 };
 
+/* Use case icons */
+const USE_CASE_ICONS = [Target, PieChart, Users];
+
 const FaqItem = ({ q, a }: { q: string; a: string }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border-b border-border/50">
+    <div className="glass-card px-5 py-0 mb-2 overflow-hidden transition-all">
       <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-4 text-left" aria-expanded={open}>
         <span className="text-sm font-medium text-foreground">{q}</span>
-        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
+        <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform duration-200 shrink-0 ml-3 ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && <p className="pb-4 text-sm text-muted-foreground leading-relaxed">{a}</p>}
+      <div className={`overflow-hidden transition-all duration-200 ${open ? "max-h-40 pb-4" : "max-h-0"}`}>
+        <p className="text-sm text-muted-foreground leading-relaxed">{a}</p>
+      </div>
     </div>
   );
 };
@@ -45,11 +50,11 @@ const Index = () => {
         <div className="orb orb-3" />
       </div>
 
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 glass-nav">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 h-14 flex items-center justify-between">
+      {/* Nav — Fix #1: better logo size, #2: mobile logo visible, #3: shorter CTA text on mobile, #13: Sign In more visible, #18: more distinct navbar */}
+      <nav className="sticky top-0 z-50 glass-nav border-b border-border/40">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <img src={logoDasho} alt={BRAND.name} className="h-8 sm:h-10" />
+            <img src={logoDasho} alt={BRAND.name} className="h-7 sm:h-9" />
           </Link>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <a href="#features" className="hidden sm:inline-flex">
@@ -66,8 +71,18 @@ const Index = () => {
               <Link to="/dashboard"><Button size="sm" className="gap-1.5 glow-button text-xs sm:text-sm">Dashboard <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
             ) : (
               <>
-                <Link to="/login"><Button variant="ghost" size="sm" className="text-xs sm:text-sm px-2 sm:px-3">Sign In</Button></Link>
-                <Link to="/signup"><Button size="sm" className="gap-1 sm:gap-1.5 glow-button text-xs sm:text-sm px-3 sm:px-4">{HERO.ctaPrimary} <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" /></Button></Link>
+                <Link to="/login">
+                  <Button variant="outline" size="sm" className="text-xs sm:text-sm px-3 sm:px-4 border-border/60 hover:border-primary/40">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button size="sm" className="gap-1 sm:gap-1.5 glow-button text-xs sm:text-sm px-3 sm:px-4">
+                    <span className="sm:hidden">Get Started</span>
+                    <span className="hidden sm:inline">{HERO.ctaPrimary}</span>
+                    <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  </Button>
+                </Link>
               </>
             )}
           </div>
@@ -75,72 +90,83 @@ const Index = () => {
       </nav>
 
       <main className="relative z-10">
-        {/* Hero */}
+        {/* Hero — Fix #4: reduced padding on mobile, #19: bigger subtitle text */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsla(263,70%,66%,0.15),transparent_55%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsla(220,70%,55%,0.08),transparent_50%)]" />
-          <div className="relative max-w-6xl mx-auto px-4 pt-12 sm:pt-20 pb-12 sm:pb-16 text-center">
+          <div className="relative max-w-6xl mx-auto px-4 pt-10 sm:pt-20 pb-10 sm:pb-16 text-center">
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1] max-w-4xl mx-auto">
               {HERO.heading}{" "}<span className="text-primary">{HERO.headingHighlight}</span>
             </h1>
-            <p className="mt-4 sm:mt-5 text-base sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">{HERO.subheading}</p>
+            <p className="mt-4 sm:mt-5 text-sm sm:text-lg text-foreground/70 max-w-xl mx-auto leading-relaxed">
+              {HERO.subheading}
+            </p>
+            {/* Fix #16: Explore Widgets button more visible */}
             <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <Link to="/signup" className="w-full sm:w-auto"><Button size="lg" className="gap-2 text-base px-8 glow-button w-full sm:w-auto">{HERO.ctaPrimary} <ArrowRight className="h-4 w-4" /></Button></Link>
-              <a href="#features" className="w-full sm:w-auto"><Button variant="outline" size="lg" className="text-base px-8 w-full sm:w-auto">{HERO.ctaSecondary}</Button></a>
+              <Link to="/signup" className="w-full sm:w-auto">
+                <Button size="lg" className="gap-2 text-base px-8 glow-button w-full sm:w-auto">
+                  {HERO.ctaPrimary} <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <a href="#features" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="text-base px-8 w-full sm:w-auto border-border/60 hover:border-primary/40 hover:bg-primary/5">
+                  {HERO.ctaSecondary}
+                </Button>
+              </a>
             </div>
           </div>
         </section>
 
-        {/* Value Props — 3 bullets */}
-        <section className="max-w-4xl mx-auto px-4 pb-16">
-          <div className="grid sm:grid-cols-3 gap-6">
+        {/* Value Props — Fix #5: consistent border glow with hover effect */}
+        <section className="max-w-4xl mx-auto px-4 pb-12 sm:pb-16">
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
             {VALUE_PROPS.map((v) => {
               const VIcon = ICON_MAP[v.icon] || BarChart3;
               return (
-                <div key={v.title} className="glass-card-enhanced p-6 space-y-3 text-center">
-                  <div className="relative z-10 mx-auto p-3 rounded-xl bg-primary/10 w-fit"><VIcon className="h-6 w-6 text-primary" /></div>
-                  <h3 className="relative z-10 text-base font-semibold text-foreground">{v.title}</h3>
-                  <p className="relative z-10 text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
+                <div key={v.title} className="glass-card-enhanced p-5 sm:p-6 space-y-3 text-center group hover:border-primary/30 transition-all duration-300">
+                  <div className="relative z-10 mx-auto p-3 rounded-xl bg-primary/10 w-fit group-hover:bg-primary/15 transition-colors"><VIcon className="h-6 w-6 text-primary" /></div>
+                  <h3 className="relative z-10 text-sm sm:text-base font-semibold text-foreground">{v.title}</h3>
+                  <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">{v.desc}</p>
                 </div>
               );
             })}
           </div>
         </section>
 
-        {/* Crypto Preview — Only crypto widgets */}
-        <section className="max-w-5xl mx-auto px-3 sm:px-4 pb-16 sm:pb-20" aria-label="Crypto dashboard preview">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-6 sm:mb-8">Your Market Overview</h2>
+        {/* Crypto Preview — Fix #6: better spacing on mobile */}
+        <section className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-20" aria-label="Crypto dashboard preview">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-5 sm:mb-8">Your Market Overview</h2>
           <div className="glass-card-enhanced p-3 sm:p-6">
-            <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
+            <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
               {MOCK_WIDGETS.map((w) => (
-                <div key={w.label} className="rounded-lg bg-secondary/40 p-3 space-y-1 border border-border/20">
+                <div key={w.label} className="rounded-lg bg-secondary/40 p-2.5 sm:p-3 space-y-1 border border-border/20">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium text-muted-foreground">{w.label}</span>
-                    <span className={`flex items-center gap-0.5 text-xs font-semibold ${w.positive ? "text-success" : "text-destructive"}`}>
-                      {w.positive ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}{w.change}
+                    <span className="text-[11px] sm:text-xs font-medium text-muted-foreground">{w.label}</span>
+                    <span className={`flex items-center gap-0.5 text-[11px] sm:text-xs font-semibold ${w.positive ? "text-success" : "text-destructive"}`}>
+                      {w.positive ? <TrendingUp className="h-2.5 w-2.5 sm:h-3 sm:w-3" /> : <TrendingDown className="h-2.5 w-2.5 sm:h-3 sm:w-3" />}{w.change}
                     </span>
                   </div>
-                  <p className="text-base sm:text-lg font-bold text-foreground">{w.value}</p>
+                  <p className="text-sm sm:text-lg font-bold text-foreground">{w.value}</p>
                 </div>
               ))}
             </div>
-            <div className="relative z-10 mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-              <div className="rounded-lg bg-secondary/40 p-4 border border-border/20">
+            <div className="relative z-10 mt-2.5 sm:mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
+              <div className="rounded-lg bg-secondary/40 p-3 sm:p-4 border border-border/20">
                 <p className="text-xs text-muted-foreground mb-1">Market Sentiment</p>
-                <p className="text-3xl font-bold text-success">72</p>
+                <p className="text-2xl sm:text-3xl font-bold text-success">72</p>
                 <p className="text-xs text-success font-medium">Greed</p>
               </div>
-              <div className="rounded-lg bg-secondary/40 p-4 space-y-2 border border-border/20">
+              <div className="rounded-lg bg-secondary/40 p-3 sm:p-4 space-y-1.5 sm:space-y-2 border border-border/20">
                 <p className="text-xs text-muted-foreground">Crypto News</p>
-                <p className="text-sm text-foreground line-clamp-1">Bitcoin breaks $97K as institutional buying surges</p>
-                <p className="text-sm text-foreground line-clamp-1">Ethereum staking hits record high ahead of upgrade</p>
+                <p className="text-xs sm:text-sm text-foreground line-clamp-1">Bitcoin breaks $97K as institutional buying surges</p>
+                <p className="text-xs sm:text-sm text-foreground line-clamp-1">Ethereum staking hits record high ahead of upgrade</p>
               </div>
-              <div className="rounded-lg bg-secondary/40 p-4 space-y-2 border border-border/20">
+              <div className="rounded-lg bg-secondary/40 p-3 sm:p-4 space-y-1.5 sm:space-y-2 border border-border/20">
                 <div className="flex items-center gap-2 mb-1">
                   <Zap className="h-3.5 w-3.5 text-warning" />
                   <p className="text-xs text-muted-foreground">AI Market Recap</p>
                 </div>
-                <p className="text-sm text-muted-foreground italic leading-relaxed">
+                <p className="text-xs sm:text-sm text-muted-foreground italic leading-relaxed">
                   "Bullish momentum continues with BTC leading the rally. Market sentiment shifts to Greed territory..."
                 </p>
                 <span className="text-[10px] text-primary/70 font-medium">Free with 24h • Pro: 4h & Weekly</span>
@@ -149,73 +175,90 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Features — Crypto Widgets */}
-        <section id="features" className="max-w-6xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
+        {/* Features — Fix #17: hover effects on feature cards */}
+        <section id="features" className="max-w-6xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
           <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Market Trading Widgets</h2>
-          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground text-center max-w-lg mx-auto">Professional-grade market tools, zero complexity.</p>
-          <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <p className="mt-2 sm:mt-3 text-xs sm:text-base text-muted-foreground text-center max-w-lg mx-auto">Professional-grade market tools, zero complexity.</p>
+          <div className="mt-6 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {FEATURES.map((f) => {
               const FIcon = ICON_MAP[f.icon] || Globe;
               return (
-                <div key={f.title} className="glass-card-enhanced p-6 space-y-3">
-                  <div className="relative z-10 p-2.5 rounded-lg bg-primary/10 w-fit"><FIcon className="h-5 w-5 text-primary" /></div>
-                  <h3 className="relative z-10 text-base font-semibold text-foreground">{f.title}</h3>
-                  <p className="relative z-10 text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
+                <div key={f.title} className="glass-card-enhanced p-5 sm:p-6 space-y-3 group hover:border-primary/30 transition-all duration-300 hover:-translate-y-0.5">
+                  <div className="relative z-10 p-2.5 rounded-lg bg-primary/10 w-fit group-hover:bg-primary/15 transition-colors"><FIcon className="h-5 w-5 text-primary" /></div>
+                  <h3 className="relative z-10 text-sm sm:text-base font-semibold text-foreground">{f.title}</h3>
+                  <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">{f.desc}</p>
                 </div>
               );
             })}
           </div>
         </section>
 
-        {/* How it Works */}
-        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
+        {/* How it Works — Fix #7: reduced spacing */}
+        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
           <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">How It Works</h2>
-          <div className="mt-8 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-            {HOW_IT_WORKS.map((s) => (
-              <div key={s.step} className="text-center space-y-3">
+          <div className="mt-6 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
+            {HOW_IT_WORKS.map((s, i) => (
+              <div key={s.step} className="text-center space-y-3 relative">
+                {/* Connector line on desktop */}
+                {i < HOW_IT_WORKS.length - 1 && (
+                  <div className="hidden sm:block absolute top-5 left-[calc(50%+24px)] w-[calc(100%-48px)] h-px bg-gradient-to-r from-primary/30 to-transparent" />
+                )}
                 <div className="mx-auto w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-primary/30">
                   <span className="text-primary font-bold text-lg">{s.step}</span>
                 </div>
-                <h3 className="text-base font-semibold text-foreground">{s.title}</h3>
-                <p className="text-sm text-muted-foreground">{s.desc}</p>
+                <h3 className="text-sm sm:text-base font-semibold text-foreground">{s.title}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground">{s.desc}</p>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Use Cases */}
-        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
+        {/* Use Cases — Fix #15: added icons to each card */}
+        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
           <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Built For Traders</h2>
-          <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-            {USE_CASES.map((u) => (
-              <div key={u.title} className="glass-card-enhanced p-6 space-y-2">
-                <h3 className="relative z-10 text-base font-semibold text-foreground">{u.title}</h3>
-                <p className="relative z-10 text-sm text-muted-foreground leading-relaxed">{u.desc}</p>
-              </div>
-            ))}
+          <div className="mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+            {USE_CASES.map((u, i) => {
+              const UIcon = USE_CASE_ICONS[i] || Target;
+              return (
+                <div key={u.title} className="glass-card-enhanced p-5 sm:p-6 space-y-3 group hover:border-primary/30 transition-all duration-300">
+                  <div className="relative z-10 p-2 rounded-lg bg-primary/10 w-fit">
+                    <UIcon className="h-4 w-4 text-primary" />
+                  </div>
+                  <h3 className="relative z-10 text-sm sm:text-base font-semibold text-foreground">{u.title}</h3>
+                  <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">{u.desc}</p>
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* Pricing */}
-        <section id="pricing" className="max-w-4xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
+        {/* Pricing — Fix #14: more visual distinction between plans */}
+        <section id="pricing" className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
           <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Simple Pricing</h2>
-          <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground text-center">Start free, upgrade when you need more.</p>
-          <div className="mt-8 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto">
+          <p className="mt-2 sm:mt-3 text-xs sm:text-base text-muted-foreground text-center">Start free, upgrade when you need more.</p>
+          <div className="mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto">
             {Object.values(PRICING).map((plan) => (
-              <div key={plan.name} className={`glass-card-enhanced p-6 space-y-5 relative ${plan.highlighted ? "border-primary/40" : ""}`}>
+              <div
+                key={plan.name}
+                className={`glass-card-enhanced p-5 sm:p-6 space-y-5 relative transition-all duration-300 ${
+                  plan.highlighted
+                    ? "border-primary/50 shadow-[0_0_30px_-5px_hsla(263,70%,60%,0.15)] scale-[1.02] sm:scale-105"
+                    : "hover:border-border/60"
+                }`}
+              >
                 {plan.highlighted && "badge" in plan && (
                   <div className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium z-10">{plan.badge}</div>
                 )}
                 <div className="relative z-10">
-                  <h3 className="text-lg font-bold text-foreground">{plan.name}</h3>
-                  <p className="text-3xl font-bold text-foreground mt-1">{plan.price}<span className="text-sm font-normal text-muted-foreground">{plan.period}</span></p>
+                  <h3 className="text-base sm:text-lg font-bold text-foreground">{plan.name}</h3>
+                  <p className="text-2xl sm:text-3xl font-bold text-foreground mt-1">{plan.price}<span className="text-xs sm:text-sm font-normal text-muted-foreground">{plan.period}</span></p>
                   {"yearlyNote" in plan && (
                     <p className="text-xs text-primary/80 mt-1">{plan.yearlyNote}</p>
                   )}
                 </div>
                 <ul className="relative z-10 space-y-2">
                   {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2 text-sm text-muted-foreground"><Check className="h-4 w-4 text-success shrink-0" /> {f}</li>
+                    <li key={f} className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground"><Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success shrink-0" /> {f}</li>
                   ))}
                 </ul>
                 <Link to="/signup" className="block relative z-10">
@@ -226,55 +269,57 @@ const Index = () => {
           </div>
         </section>
 
-        {/* FAQ */}
-        <section className="max-w-2xl mx-auto px-3 sm:px-4 py-10 sm:py-16">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">FAQ</h2>
-          <div className="mt-10">{FAQ.map((f) => <FaqItem key={f.q} q={f.q} a={f.a} />)}</div>
+        {/* FAQ — Fix #8: cards instead of flat list */}
+        <section className="max-w-2xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-6 sm:mb-8">FAQ</h2>
+          <div className="space-y-0">{FAQ.map((f) => <FaqItem key={f.q} q={f.q} a={f.a} />)}</div>
         </section>
 
-        {/* CTA */}
-        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-10 sm:py-16 text-center">
+        {/* CTA — Fix #9: less whitespace on mobile */}
+        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-16 text-center">
           <div className="glass-card-enhanced p-6 sm:p-14 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsla(263,70%,66%,0.12),transparent_70%)]" />
             <div className="relative z-10">
-              <h2 className="text-2xl sm:text-3xl font-bold text-foreground">{CTA.heading}</h2>
-              <p className="mt-3 text-muted-foreground">{CTA.subheading}</p>
-              <Link to="/signup" className="inline-block mt-6">
-                <Button size="lg" className="gap-2 text-base px-10 glow-button">{CTA.button} <ArrowRight className="h-4 w-4" /></Button>
+              <h2 className="text-xl sm:text-3xl font-bold text-foreground">{CTA.heading}</h2>
+              <p className="mt-2 sm:mt-3 text-sm sm:text-base text-muted-foreground">{CTA.subheading}</p>
+              <Link to="/signup" className="inline-block mt-5 sm:mt-6">
+                <Button size="lg" className="gap-2 text-sm sm:text-base px-8 sm:px-10 glow-button">{CTA.button} <ArrowRight className="h-4 w-4" /></Button>
               </Link>
             </div>
           </div>
         </section>
       </main>
 
-      {/* Footer */}
+      {/* Footer — Fix #10: tighter logo-text gap, #11: roadmap note integrated, #20: better column alignment */}
       <footer className="relative z-10 border-t border-border/50 bg-background/80 backdrop-blur-sm">
-        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-8 sm:py-10 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-          <div>
-            <img src={logoDasho} alt={BRAND.name} className="h-10 sm:h-12" />
-            <p className="text-xs text-muted-foreground mt-2 leading-relaxed">{FOOTER.tagline}</p>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground mb-3">Product</p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              {FOOTER.productLinks.map((l) => (
-                <li key={l.label}>
-                  {"to" in l ? <Link to={l.to!} className="hover:text-foreground transition-colors">{l.label}</Link>
-                    : <a href={l.href} className="hover:text-foreground transition-colors">{l.label}</a>}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-foreground mb-3">Legal</p>
-            <ul className="space-y-1.5 text-sm text-muted-foreground">
-              {FOOTER.legalLinks.map((l: { label: string; to: string }) => <li key={l.label}><Link to={l.to} className="hover:text-foreground transition-colors">{l.label}</Link></li>)}
-            </ul>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
+            <div className="col-span-2 sm:col-span-2">
+              <img src={logoDasho} alt={BRAND.name} className="h-8 sm:h-9" />
+              <p className="text-xs text-muted-foreground mt-3 leading-relaxed max-w-xs">{FOOTER.tagline}</p>
+              <p className="text-[11px] text-primary/60 font-medium mt-2">{FOOTER.roadmapNote}</p>
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-semibold text-foreground mb-3">Product</p>
+              <ul className="space-y-1.5 text-xs sm:text-sm text-muted-foreground">
+                {FOOTER.productLinks.map((l) => (
+                  <li key={l.label}>
+                    {"to" in l ? <Link to={l.to!} className="hover:text-foreground transition-colors">{l.label}</Link>
+                      : <a href={l.href} className="hover:text-foreground transition-colors">{l.label}</a>}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-semibold text-foreground mb-3">Legal</p>
+              <ul className="space-y-1.5 text-xs sm:text-sm text-muted-foreground">
+                {FOOTER.legalLinks.map((l: { label: string; to: string }) => <li key={l.label}><Link to={l.to} className="hover:text-foreground transition-colors">{l.label}</Link></li>)}
+              </ul>
+            </div>
           </div>
         </div>
-        <div className="border-t border-border/50 py-4 space-y-1">
-          <p className="text-center text-xs text-muted-foreground font-medium text-primary/70">{FOOTER.roadmapNote}</p>
-          <p className="text-center text-xs text-muted-foreground">&copy; {BRAND.year} {BRAND.name}. All rights reserved.</p>
+        <div className="border-t border-border/50 py-3 sm:py-4">
+          <p className="text-center text-[11px] text-muted-foreground">&copy; {BRAND.year} {BRAND.name}. All rights reserved.</p>
         </div>
       </footer>
     </div>
