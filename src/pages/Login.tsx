@@ -44,7 +44,7 @@ const Login = () => {
       <div className="glass-card-enhanced w-full max-w-md p-8 space-y-6 relative z-10">
         {/* Logo */}
         <div className="flex justify-center">
-          <img src={logoDasho} alt="Dasho" className="h-16" />
+          <img src={logoDasho} alt="Dasho" className="h-40 object-contain" />
         </div>
 
         <div className="text-center space-y-2">
