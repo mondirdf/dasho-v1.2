@@ -46,9 +46,10 @@ const SortableWidget = ({ widget, editMode, onRemove, onSettings, onConfirmRemov
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? "none" : transition,
     zIndex: isDragging ? 50 : undefined,
-    opacity: isDragging ? 0.85 : 1,
+    opacity: isDragging ? 0.9 : 1,
+    scale: isDragging ? "1.02" : "1",
   };
 
   return (
@@ -103,8 +104,8 @@ const DashboardGrid = () => {
 
   /** DnD sensors with activation delay to avoid conflicts with scroll */
   const sensors = useSensors(
-    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 8 } }),
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 10 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
   );
 
 

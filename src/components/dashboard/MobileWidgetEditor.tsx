@@ -1,13 +1,8 @@
 /**
  * MobileWidgetEditor — touch-friendly widget editing for mobile.
- * 
- * Provides:
- *  - Drag handle (via @dnd-kit listeners)
- *  - Settings button
- *  - Remove widget
  */
 import { memo } from "react";
-import { X, GripHorizontal, Settings2 } from "lucide-react";
+import { X, Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Widget } from "@/services/dataService";
 import type { SyntheticListenerMap } from "@dnd-kit/core/dist/hooks/utilities";
@@ -22,15 +17,14 @@ interface Props {
 const MobileWidgetEditor = memo(({ widget, onRemove, onSettings, dragListeners }: Props) => {
   return (
     <div className="relative bg-secondary/80 rounded-t-[var(--radius)] border border-b-0 border-primary/20">
-      {/* Centered drag handle — full-width touch target */}
-      <div className="flex justify-center">
-        <button
-          className="touch-none flex items-center justify-center w-24 h-10 cursor-grab active:cursor-grabbing rounded-b-lg"
-          aria-label="Drag to reorder"
-          {...dragListeners}
-        >
-          <GripHorizontal className="h-6 w-6 text-primary/60" />
-        </button>
+      {/* Full-width drag handle — easy to grab from anywhere along the top */}
+      <div
+        className="touch-none flex items-center justify-center w-full h-12 cursor-grab active:cursor-grabbing active:bg-primary/10 transition-colors select-none"
+        aria-label="Drag to reorder"
+        {...dragListeners}
+      >
+        {/* Visual pill indicator */}
+        <div className="w-12 h-1.5 rounded-full bg-primary/40" />
       </div>
       {/* Controls row */}
       <div className="flex items-center justify-between px-3 pb-2 -mt-1">
