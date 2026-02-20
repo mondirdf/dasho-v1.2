@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DashboardProvider, useDashboard } from "@/contexts/DashboardContext";
+import { trackEvent } from "@/analytics/behaviorTracker";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardGrid from "@/components/dashboard/DashboardGrid";
 import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
@@ -12,6 +14,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const DashboardContent = () => {
   const { loading, isNewUser } = useDashboard();
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (!loading && !isNewUser) {
+      trackEvent("dashboard_open");
+    }
+  }, [loading, isNewUser]);
 
   if (loading) {
     return (

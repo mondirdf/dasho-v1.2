@@ -4,6 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // ── Types ──
+interface BehaviorAnalytics {
+  dau: number;
+  recapViewsToday: number;
+  widgetsAddedToday: number;
+  upgradeClicksWeek: number;
+  retentionRate: number;
+  behaviorTrend: { date: string; dashboard_opens: number; recap_views: number }[];
+  topWidgets: { type: string; count: number }[];
+}
+
 interface AdminStats {
   totalUsers: number;
   dailyActiveUsers: number;
@@ -14,6 +24,7 @@ interface AdminStats {
   churnRate: number;
   revenueOverTime: { date: string; revenue: number }[];
   userGrowth: { date: string; users: number }[];
+  analytics: BehaviorAnalytics;
 }
 
 interface PromoCode {

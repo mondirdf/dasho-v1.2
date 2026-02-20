@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import {
   Users, DollarSign, TrendingUp, TrendingDown,
   Activity, ShieldCheck, Tag, Plus, Lock,
+  BarChart3, Eye, MousePointerClick, Sparkles, Repeat,
 } from "lucide-react";
 import {
   LineChart, Line, AreaChart, Area,
@@ -146,6 +147,71 @@ const UserGrowthChart = ({ data }: { data: { date: string; users: number }[] }) 
             strokeWidth={2} dot={false} />
         </LineChart>
       </ResponsiveContainer>
+    </CardContent>
+  </Card>
+);
+
+// ── Behavior Trend Chart ──
+const BehaviorTrendChart = ({ data }: { data: { date: string; dashboard_opens: number; recap_views: number }[] }) => (
+  <Card className="glass-card col-span-full">
+    <CardHeader className="pb-2">
+      <CardTitle className="text-sm font-medium text-muted-foreground">Engagement Trend (7 days)</CardTitle>
+    </CardHeader>
+    <CardContent className="h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={data}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(228 18% 16%)" />
+          <XAxis dataKey="date" tick={{ fontSize: 10, fill: "hsl(215 20% 55%)" }}
+            tickFormatter={(v) => v.slice(5)} />
+          <YAxis tick={{ fontSize: 10, fill: "hsl(215 20% 55%)" }} />
+          <Tooltip {...chartTooltipStyle} />
+          <Line type="monotone" dataKey="dashboard_opens" name="Dashboard Opens"
+            stroke="hsl(263 70% 60%)" strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="recap_views" name="Recap Views"
+            stroke="hsl(152 69% 45%)" strokeWidth={2} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </CardContent>
+  </Card>
+);
+
+// ── Top Widgets ──
+const WIDGET_LABELS: Record<string, string> = {
+  crypto_price: "Price Tracker",
+  multi_tracker: "Multi Tracker",
+  news: "News Feed",
+  fear_greed: "Fear & Greed",
+  market_context: "Market Context",
+  market_recap: "AI Market Recap",
+};
+
+const TopWidgetsCard = ({ data }: { data: { type: string; count: number }[] }) => (
+  <Card className="glass-card">
+    <CardHeader className="pb-2">
+      <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+        <BarChart3 className="h-4 w-4" /> Top Widgets
+      </CardTitle>
+    </CardHeader>
+    <CardContent>
+      {data.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-4">No data yet</p>
+      ) : (
+        <div className="space-y-3">
+          {data.map((w, i) => (
+            <div key={w.type} className="flex items-center gap-3">
+              <span className="text-xs font-bold text-muted-foreground w-4">{i + 1}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">
+                  {WIDGET_LABELS[w.type] || w.type}
+                </p>
+              </div>
+              <Badge variant="secondary" className="tabular-nums-animate text-xs">
+                {w.count}
+              </Badge>
+            </div>
+          ))}
+        </div>
+      )}
     </CardContent>
   </Card>
 );
@@ -319,6 +385,8 @@ const AdminDashboard = () => {
   if (!user) return <Navigate to="/login" replace />;
   if (!isAdmin) return <AdminLogin onLogin={login} loading={loginLoading} error={loginError} />;
 
+  const analytics = stats.data?.analytics;
+
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6 max-w-7xl mx-auto space-y-6">
       {/* Header */}
@@ -356,6 +424,36 @@ const AdminDashboard = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             <RevenueChart data={stats.data.revenueOverTime} />
             <UserGrowthChart data={stats.data.userGrowth} />
+          </div>
+
+          {/* ── Product Analytics Section ── */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-primary" />
+              <h2 className="text-lg font-semibold">Product Analytics</h2>
+            </div>
+
+            {analytics ? (
+              <>
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+                  <StatCard label="Daily Active Users" value={analytics.dau} icon={Users} />
+                  <StatCard label="Recap Views Today" value={analytics.recapViewsToday} icon={Eye} />
+                  <StatCard label="Widgets Added Today" value={analytics.widgetsAddedToday} icon={Plus} />
+                  <StatCard label="Upgrade Clicks (7d)" value={analytics.upgradeClicksWeek} icon={MousePointerClick} />
+                  <StatCard label="7-Day Retention" value={`${analytics.retentionRate}%`} icon={Repeat}
+                    trend={analytics.retentionRate > 20 ? "up" : "neutral"} />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                  <div className="col-span-full lg:col-span-2">
+                    <BehaviorTrendChart data={analytics.behaviorTrend} />
+                  </div>
+                  <TopWidgetsCard data={analytics.topWidgets} />
+                </div>
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">Analytics data not available</p>
+            )}
           </div>
         </>
       ) : (
