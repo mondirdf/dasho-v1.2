@@ -196,7 +196,7 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     constraints: { minW: 3, minH: 3, maxW: 12, maxH: 10 },
     configFields: WIDGET_CONFIG_FIELDS.news || [],
   },
-  // ── AI Market Recap ──
+  // ── AI Market Recap (Primary — always sorted first) ──
   {
     type: "market_recap",
     category: "market",
@@ -207,11 +207,11 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     iconColor: "text-primary",
     available: true,
     visual: {
-      bg: "glass", shadow: "md", layout: "default", animation: "fadeIn",
-      decorative: true, hoverLift: true,
+      bg: "gradient", shadow: "glow", layout: "default", animation: "fadeIn",
+      accentHsl: "263 70% 60%", decorative: true, hoverLift: true,
     },
-    defaultSize: { w: 4, h: 4 },
-    constraints: { minW: 3, minH: 3, maxW: 8, maxH: 6 },
+    defaultSize: { w: 6, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 12, maxH: 6 },
     configFields: WIDGET_CONFIG_FIELDS.market_recap || [],
   },
   // ── Coming Soon: Stocks ──
