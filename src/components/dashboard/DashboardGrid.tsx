@@ -76,24 +76,30 @@ const DashboardGrid = () => {
   const [settingsWidgetId, setSettingsWidgetId] = useState<string | null>(null);
   const settingsWidget = widgets.find((w) => w.id === settingsWidgetId) ?? null;
 
-  /** Build layout items with per-widget constraints from registry */
+  /** Build layout items — ensure market_recap is at y=0 (top of grid) */
   const constrainedLayout = useMemo(() => {
     return layout.map((item) => {
       const widget = widgets.find((w) => w.id === item.i);
       const c = getWidgetConstraints(widget?.type ?? "");
+      const isRecap = widget?.type === "market_recap";
       return {
         ...item,
+        // Push recap to top-left if not manually positioned
+        ...(isRecap && item.y > 0 && !editMode ? { y: 0, x: 0 } : {}),
         minW: c.minW,
         minH: c.minH,
         ...(c.maxW ? { maxW: c.maxW } : {}),
         ...(c.maxH ? { maxH: c.maxH } : {}),
       };
     });
-  }, [layout, widgets]);
+  }, [layout, widgets, editMode]);
 
-  /** Sort widgets by layout y position for mobile display */
+  /** Sort widgets: market_recap always first, then by layout y position */
   const sortedWidgets = useMemo(() => {
     return [...widgets].sort((a, b) => {
+      // market_recap always comes first
+      if (a.type === "market_recap" && b.type !== "market_recap") return -1;
+      if (b.type === "market_recap" && a.type !== "market_recap") return 1;
       const la = layout.find((l) => l.i === a.id);
       const lb = layout.find((l) => l.i === b.id);
       return (la?.y ?? 0) - (lb?.y ?? 0);
