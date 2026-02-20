@@ -20,6 +20,7 @@ import MultiTrackerWidget from "./MultiTrackerWidget";
 import NewsWidget from "./NewsWidget";
 import FearGreedWidget from "./FearGreedWidget";
 import MarketContextWidget from "./MarketContextWidget";
+import MarketRecapWidget from "./MarketRecapWidget";
 
 interface Props {
   widget: Widget;
@@ -37,6 +38,7 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   news: NewsWidget,
   fear_greed: FearGreedWidget,
   market_context: MarketContextWidget,
+  market_recap: MarketRecapWidget,
 };
 
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
