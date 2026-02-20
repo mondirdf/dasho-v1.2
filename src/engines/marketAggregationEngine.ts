@@ -49,6 +49,8 @@ export interface SnapshotConfig {
   includeNews?: boolean;
   moversCount?: number;
   newsLimit?: number;
+  volatilityThreshold?: number;
+  highlightTopMovers?: boolean;
 }
 
 // ─── In-memory cache ───────────────────────────────────────────

@@ -10,6 +10,7 @@ import { useWidgetSize } from "@/hooks/useWidgetSize";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
+import { usePreferences } from "@/hooks/usePreferences";
 import ProGate from "@/components/ProGate";
 
 type Timeframe = "24h" | "4h" | "weekly";
@@ -38,13 +39,17 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
   const [loading, setLoading] = useState(true);
   const [canRefresh, setCanRefresh] = useState(false);
   const { isPro, recapRefresh } = usePlanLimits();
+  const { preferences } = usePreferences();
 
   const timeframe: Timeframe = config?.timeframe ?? "24h";
 
   const fetchRecap = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await getMarketRecap("crypto", "24h");
+      const data = await getMarketRecap("crypto", "24h", {
+        recapDetailLevel: preferences.recapDetailLevel,
+        selectedCoins: preferences.selectedCoins,
+      });
       setRecap(data);
       setCanRefresh(false);
       if (data && !data.error) {
@@ -53,7 +58,7 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [preferences.recapDetailLevel, preferences.selectedCoins]);
 
   useEffect(() => {
     fetchRecap();
