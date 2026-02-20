@@ -89,6 +89,7 @@ export interface WidgetConstraints {
 export interface WidgetRegistryEntry {
   type: string;
   category: string;
+  assetType: string;
   label: string;
   desc: string;
   icon: LucideIcon;
@@ -112,19 +113,15 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
   {
     type: "crypto_price",
     category: "crypto",
+    assetType: "crypto",
     label: "Price Tracker",
     desc: "Single coin price tracker with sparkline",
     icon: LineChart,
     iconColor: "text-primary",
     available: true,
     visual: {
-      bg: "glass",
-      shadow: "md",
-      layout: "default",
-      animation: "fadeIn",
-      accentHsl: "263 70% 60%",
-      decorative: true,
-      hoverLift: true,
+      bg: "glass", shadow: "md", layout: "default", animation: "fadeIn",
+      accentHsl: "263 70% 60%", decorative: true, hoverLift: true,
     },
     defaultSize: { w: 4, h: 3 },
     constraints: { minW: 3, minH: 2, maxW: 8, maxH: 6 },
@@ -134,17 +131,14 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
   {
     type: "multi_tracker",
     category: "crypto",
+    assetType: "crypto",
     label: "Multi Tracker",
     desc: "Track multiple coins at once",
     icon: BarChart3,
     iconColor: "text-accent",
     available: true,
     visual: {
-      bg: "glass",
-      shadow: "md",
-      layout: "default",
-      animation: "fadeIn",
-      hoverLift: true,
+      bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true,
     },
     defaultSize: { w: 4, h: 4 },
     constraints: { minW: 3, minH: 3, maxW: 12, maxH: 8 },
@@ -154,18 +148,15 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
   {
     type: "fear_greed",
     category: "crypto",
+    assetType: "crypto",
     label: "Fear & Greed",
     desc: "Market sentiment index gauge",
     icon: Gauge,
     iconColor: "text-success",
     available: true,
     visual: {
-      bg: "glass",
-      shadow: "md",
-      layout: "default",
-      animation: "fadeIn",
-      decorative: true,
-      hoverLift: true,
+      bg: "glass", shadow: "md", layout: "default", animation: "fadeIn",
+      decorative: true, hoverLift: true,
     },
     defaultSize: { w: 3, h: 3 },
     constraints: { minW: 2, minH: 2, maxW: 6, maxH: 5 },
@@ -175,17 +166,14 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
   {
     type: "market_context",
     category: "crypto",
+    assetType: "crypto",
     label: "Market Context",
     desc: "Overall market statistics",
     icon: Globe,
     iconColor: "text-primary",
     available: true,
     visual: {
-      bg: "glass",
-      shadow: "md",
-      layout: "default",
-      animation: "fadeIn",
-      hoverLift: true,
+      bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true,
     },
     defaultSize: { w: 4, h: 3 },
     constraints: { minW: 3, minH: 2, maxW: 8, maxH: 5 },
@@ -195,70 +183,49 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
   {
     type: "news",
     category: "news",
+    assetType: "crypto",
     label: "News Feed",
-    desc: "Latest news articles",
+    desc: "Latest market news articles",
     icon: Newspaper,
     iconColor: "text-warning",
     available: true,
     visual: {
-      bg: "glass",
-      shadow: "md",
-      layout: "default",
-      animation: "fadeIn",
-      hoverLift: true,
+      bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true,
     },
     defaultSize: { w: 4, h: 4 },
     constraints: { minW: 3, minH: 3, maxW: 12, maxH: 10 },
     configFields: WIDGET_CONFIG_FIELDS.news || [],
   },
-  // ── Coming Soon ──
+  // ── Coming Soon: Stocks ──
   {
-    type: "forex_rates", category: "finance", label: "Forex Rates", desc: "Live currency exchange rates",
-    icon: BarChart3, iconColor: "text-accent", available: false,
-    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 4, h: 3 }, constraints: { minW: 3, minH: 2 }, configFields: [],
-  },
-  {
-    type: "portfolio", category: "finance", label: "Portfolio", desc: "Track your investment portfolio",
-    icon: TrendingUp, iconColor: "text-success", available: false,
-    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 4, h: 3 }, constraints: { minW: 3, minH: 3 }, configFields: [],
-  },
-  {
-    type: "weather_current", category: "weather", label: "Current Weather", desc: "Live weather for your city",
-    icon: Cloud, iconColor: "text-accent", available: false,
-    visual: { bg: "gradient", shadow: "md", layout: "default", animation: "fadeIn", decorative: true, hoverLift: true },
-    defaultSize: { w: 3, h: 3 }, constraints: { minW: 2, minH: 2 }, configFields: [],
-  },
-  {
-    type: "weather_forecast", category: "weather", label: "Forecast", desc: "5-day weather forecast",
-    icon: Cloud, iconColor: "text-primary", available: false,
-    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 6, h: 3 }, constraints: { minW: 4, minH: 2 }, configFields: [],
-  },
-  {
-    type: "stock_price", category: "stocks", label: "Stock Price", desc: "Real-time stock quotes",
+    type: "stock_price", category: "stocks", assetType: "stocks",
+    label: "Stock Price", desc: "Real-time stock quotes",
     icon: TrendingUp, iconColor: "text-success", available: false,
     visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
     defaultSize: { w: 4, h: 3 }, constraints: { minW: 3, minH: 2 }, configFields: [],
   },
   {
-    type: "stock_chart", category: "stocks", label: "Stock Chart", desc: "Interactive stock charts",
+    type: "stock_chart", category: "stocks", assetType: "stocks",
+    label: "Stock Chart", desc: "Interactive stock charts",
     icon: LineChart, iconColor: "text-primary", available: false,
     visual: { bg: "glass", shadow: "lg", layout: "default", animation: "fadeIn", hoverLift: true },
     defaultSize: { w: 6, h: 4 }, constraints: { minW: 4, minH: 3 }, configFields: [],
   },
+  // ── Coming Soon: Forex ──
   {
-    type: "live_scores", category: "sports", label: "Live Scores", desc: "Live sports scores",
-    icon: Gamepad2, iconColor: "text-warning", available: false,
+    type: "forex_rates", category: "forex", assetType: "forex",
+    label: "Forex Rates", desc: "Live currency exchange rates",
+    icon: BarChart3, iconColor: "text-accent", available: false,
     visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
     defaultSize: { w: 4, h: 3 }, constraints: { minW: 3, minH: 2 }, configFields: [],
   },
+  // ── Coming Soon: Commodities ──
   {
-    type: "clock_widget", category: "productivity", label: "World Clock", desc: "Multiple timezone clocks",
-    icon: Clock, iconColor: "text-muted-foreground", available: false,
-    visual: { bg: "subtle", shadow: "sm", layout: "compact", animation: "fadeIn", hoverLift: true },
-    defaultSize: { w: 3, h: 2 }, constraints: { minW: 2, minH: 2 }, configFields: [],
+    type: "commodities_tracker", category: "commodities", assetType: "commodities",
+    label: "Commodities", desc: "Gold, oil, and commodity prices",
+    icon: TrendingUp, iconColor: "text-warning", available: false,
+    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
+    defaultSize: { w: 4, h: 3 }, constraints: { minW: 3, minH: 2 }, configFields: [],
   },
 ];
 

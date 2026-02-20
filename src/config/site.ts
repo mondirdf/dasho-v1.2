@@ -13,15 +13,13 @@
 
 export const BRAND = {
   name: "Dasho",
-  /** Used in nav/footer: "Dash" + highlighted "o" */
   namePrefix: "Dash",
   nameHighlight: "o",
-  tagline: "Crypto Market Dashboard",
+  tagline: "Market Intelligence Dashboard",
   description:
-    "A focused crypto dashboard with real-time data, AI market recap, and customizable trading widgets.",
+    "A focused market dashboard with real-time crypto data, AI-powered recaps, and customizable trading widgets. Multi-asset support coming soon.",
   url: "https://dashooo.vercel.app",
   ogImage: "https://dashooo.vercel.app/og-image.png",
-  /** Path to logo image (icon + name) for navbar/footer */
   logo: "/src/assets/logo-dasho.png",
   year: new Date().getFullYear(),
   author: "Dasho",
@@ -52,7 +50,7 @@ export const SEO = {
   },
   alerts: {
     title: `Alerts — ${BRAND.name}`,
-    description: `Manage your smart data alerts.`,
+    description: `Manage your smart market alerts.`,
   },
   settings: {
     title: `Settings — ${BRAND.name}`,
@@ -70,7 +68,7 @@ export const STRUCTURED_DATA = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   name: BRAND.name,
-  applicationCategory: "BusinessApplication",
+  applicationCategory: "FinanceApplication",
   operatingSystem: "Web",
   description: BRAND.description,
   offers: {
@@ -81,11 +79,7 @@ export const STRUCTURED_DATA = {
 } as const;
 
 /* ══════════════════════════ COLOR TOKENS ══════════════════════════ */
-/**
- * These map to CSS custom properties in index.css.
- * To change the primary color, update BOTH here and in index.css :root.
- * Format: "H S% L%" (HSL without commas, for Tailwind compatibility).
- */
+
 export const COLORS = {
   primary: "263 70% 60%",
   accent: "220 70% 55%",
@@ -98,23 +92,34 @@ export const COLORS = {
   muted: "228 20% 13%",
   mutedForeground: "215 20% 55%",
   border: "228 18% 16%",
-  /** Glass effect tokens */
   glassBg: "228 28% 11%",
   glassBorder: "228 18% 20%",
   glassGlow: "263 70% 60%",
 } as const;
 
-/* ═══════════════════════ WIDGET CATEGORIES ════════════════════════ */
+/* ═══════════════════════ ASSET TYPES ═════════════════════════════ */
 /**
- * Controls which categories appear in AddWidgetSheet,
- * the landing page chips, and the widget registry filter.
- *
- * `available`: show as active (true) or "coming soon" (false).
+ * Asset types define which market verticals the platform supports.
+ * Only "crypto" is currently active — others are roadmap placeholders.
  */
+export type AssetType = "crypto" | "stocks" | "forex" | "commodities";
+
+export const ASSET_TYPES: { id: AssetType; label: string; active: boolean }[] = [
+  { id: "crypto", label: "Crypto", active: true },
+  { id: "stocks", label: "Stocks", active: false },
+  { id: "forex", label: "Forex", active: false },
+  { id: "commodities", label: "Commodities", active: false },
+] as const;
+
+/* ═══════════════════════ WIDGET CATEGORIES ════════════════════════ */
+
 export const WIDGET_CATEGORIES = [
   { id: "all", label: "All", available: true },
   { id: "crypto", label: "Crypto", available: true },
   { id: "news", label: "News", available: true },
+  { id: "stocks", label: "Stocks", available: false },
+  { id: "forex", label: "Forex", available: false },
+  { id: "commodities", label: "Commodities", available: false },
 ] as const;
 
 /* ═══════════════════════ SUPPORTED COINS ═════════════════════════ */
@@ -133,12 +138,7 @@ export const COIN_OPTIONS = [
 ] as const;
 
 /* ═══════════════════════ WIDGET CONFIG FIELDS ════════════════════ */
-/**
- * Controls which settings appear for each widget type.
- * Add/remove/reorder fields here — they show in AddWidgetSheet & WidgetSettingsModal.
- *
- * Supported types: "text" | "number" | "toggle" | "select"
- */
+
 export const WIDGET_CONFIG_FIELDS: Record<string, Array<{
   key: string;
   label: string;
@@ -193,18 +193,18 @@ export const WIDGET_CONFIG_FIELDS: Record<string, Array<{
 /* ═══════════════════════ LANDING PAGE COPY ═══════════════════════ */
 
 export const HERO = {
-  heading: "Your Crypto Market",
+  heading: "Your Market",
   headingHighlight: "Command Center.",
   subheading:
-    "A focused crypto dashboard built for traders who want clarity, not noise.",
-  ctaPrimary: "Open Dashboard",
-  ctaSecondary: "Explore Crypto Widgets",
+    "Real-time data, AI-powered recaps, and customizable widgets for modern traders.",
+  ctaPrimary: "Open Crypto Dashboard",
+  ctaSecondary: "Explore Widgets",
 } as const;
 
 export const VALUE_PROPS = [
   {
-    title: "Real-Time Crypto Data",
-    desc: "Live prices, volume, market cap — updated every minute across all major coins.",
+    title: "Real-Time Market Data",
+    desc: "Live prices, volume, market cap — updated every minute across major digital assets.",
     icon: "BarChart3" as const,
   },
   {
@@ -214,7 +214,7 @@ export const VALUE_PROPS = [
   },
   {
     title: "Customizable Trading Widgets",
-    desc: "Build your ideal trading view with drag-and-drop crypto widgets.",
+    desc: "Build your ideal trading view with drag-and-drop widgets designed for financial markets.",
     icon: "Layout" as const,
   },
 ] as const;
@@ -222,7 +222,7 @@ export const VALUE_PROPS = [
 export const FEATURES = [
   {
     title: "Price Tracking",
-    desc: "Track any coin with real-time sparkline charts and instant price alerts.",
+    desc: "Track any asset with real-time sparkline charts and instant price alerts.",
     icon: "LineChart" as const,
   },
   {
@@ -236,13 +236,13 @@ export const FEATURES = [
     icon: "Gauge" as const,
   },
   {
-    title: "Crypto News Feed",
-    desc: "Curated crypto news with keyword filtering and source control.",
+    title: "Market News Feed",
+    desc: "Curated market news with keyword filtering and source control.",
     icon: "Newspaper" as const,
   },
   {
-    title: "Multi-Coin Tracker",
-    desc: "Monitor multiple coins side-by-side, sorted by performance or market cap.",
+    title: "Multi-Asset Tracker",
+    desc: "Monitor multiple assets side-by-side, sorted by performance or market cap.",
     icon: "BarChart3" as const,
   },
   {
@@ -254,22 +254,22 @@ export const FEATURES = [
 
 export const HOW_IT_WORKS = [
   { step: "1", title: "Sign Up Free", desc: "Create your account in seconds. No credit card required." },
-  { step: "2", title: "Build Your Board", desc: "Add crypto widgets, drag to arrange, resize to fit your trading style." },
+  { step: "2", title: "Build Your Board", desc: "Add market widgets, drag to arrange, resize to fit your trading style." },
   { step: "3", title: "Stay Sharp", desc: "Set price alerts, monitor sentiment, and never miss a market move." },
 ] as const;
 
 export const USE_CASES = [
   {
     title: "Day Traders",
-    desc: "Real-time price tracking, breakout alerts, and multi-coin monitoring for fast execution.",
+    desc: "Real-time price tracking, breakout alerts, and multi-asset monitoring for fast execution.",
   },
   {
-    title: "Crypto Analysts",
+    title: "Market Analysts",
     desc: "Market sentiment, Fear & Greed index, and curated news feeds for informed analysis.",
   },
   {
     title: "Portfolio Managers",
-    desc: "Share crypto dashboards with your team. Clone templates and collaborate on market views.",
+    desc: "Share market dashboards with your team. Clone templates and collaborate on market views.",
   },
 ] as const;
 
@@ -293,7 +293,7 @@ export const PRICING = {
       "Advanced alerts",
       "Priority data refresh",
       "Share & export",
-      "All crypto widgets",
+      "All market widgets",
     ],
     cta: "Upgrade to Pro",
     highlighted: true,
@@ -303,15 +303,15 @@ export const PRICING = {
 export const FAQ = [
   {
     q: "Is Dasho free to use?",
-    a: "Yes! The free plan includes 1 dashboard with up to 5 crypto widgets, real-time data, and price alerts. Upgrade to Pro for unlimited dashboards and advanced features.",
+    a: "Yes! The free plan includes 1 dashboard with up to 5 widgets, real-time data, and price alerts. Upgrade to Pro for unlimited dashboards and advanced features.",
   },
   {
-    q: "What crypto data can I track?",
-    a: "Track prices, volume, market cap, 24h changes, Fear & Greed index, market sentiment, and curated crypto news — all in real time.",
+    q: "What market data can I track?",
+    a: "Currently you can track crypto prices, volume, market cap, 24h changes, Fear & Greed index, market sentiment, and curated news — all in real time. Stocks, forex, and commodities are on the roadmap.",
   },
   {
     q: "Can I share my dashboard?",
-    a: "Absolutely. Save any crypto dashboard as a template and share it with a public link. Others can clone it into their own account with one click.",
+    a: "Absolutely. Save any dashboard as a template and share it with a public link. Others can clone it into their own account with one click.",
   },
   {
     q: "How fast is the data?",
@@ -321,16 +321,20 @@ export const FAQ = [
     q: "Is my data secure?",
     a: "Yes. All data is protected with Row Level Security. Your dashboards, alerts, and settings are completely private to your account.",
   },
+  {
+    q: "Will you support stocks and forex?",
+    a: "Yes — multi-asset support for stocks, forex, and commodities is on our roadmap. Crypto is the first fully supported vertical.",
+  },
 ] as const;
 
 export const CTA = {
   heading: "Ready to trade smarter?",
-  subheading: "Build your crypto command center today — free forever.",
+  subheading: "Build your market command center today — free forever.",
   button: "Open Dashboard",
 } as const;
 
 export const FOOTER = {
-  tagline: "Dasho is a crypto-focused dashboard designed to help traders monitor market activity with clarity and speed.",
+  tagline: "Dasho is a market intelligence dashboard designed for digital and financial assets. Start with crypto — expand to global markets.",
   productLinks: [
     { label: "Features", href: "#features" },
     { label: "Dashboard", to: "/dashboard" },
@@ -340,6 +344,7 @@ export const FOOTER = {
     { label: "Privacy Policy" },
     { label: "Terms of Service" },
   ],
+  roadmapNote: "Multi-Asset Support Coming Soon",
 } as const;
 
 /* ═══════════════════════ MOCK DATA (LANDING) ═════════════════════ */
@@ -356,7 +361,7 @@ export const MOCK_WIDGETS = [
 
 export const EMPTY_DASHBOARD = {
   heading: "Your dashboard is empty",
-  description: "Add crypto widgets to start tracking prices, sentiment, and market news.",
+  description: "Add market widgets to start tracking prices, sentiment, and news.",
 } as const;
 
 /* ═══════════════════ 404 PAGE ════════════════════════════════════ */
