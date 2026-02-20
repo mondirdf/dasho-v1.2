@@ -145,7 +145,7 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
   }, [selected, configs, addWidget, onDone, resetState]);
 
   const filtered = activeCategory === "all"
-    ? WIDGET_REGISTRY
+    ? WIDGET_REGISTRY.filter((w) => ["crypto", "news"].includes(w.category))
     : WIDGET_REGISTRY.filter((w) => w.category === activeCategory);
 
   /** Check if any selected widget has configFields */

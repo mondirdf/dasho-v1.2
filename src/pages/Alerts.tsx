@@ -27,8 +27,6 @@ import { usePlanLimits } from "@/hooks/usePlanLimits";
 /** Source type definitions — add new data sources here */
 const SOURCE_TYPES = [
   { id: "crypto", label: "Crypto" },
-  { id: "stock", label: "Stocks" },
-  { id: "weather", label: "Weather" },
   { id: "custom", label: "Custom" },
 ] as const;
 
