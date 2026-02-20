@@ -21,6 +21,11 @@ import NewsWidget from "./NewsWidget";
 import FearGreedWidget from "./FearGreedWidget";
 import MarketContextWidget from "./MarketContextWidget";
 import MarketRecapWidget from "./MarketRecapWidget";
+import StockTrackerWidget from "./StockTrackerWidget";
+import ForexRatesWidget from "./ForexRatesWidget";
+import CommodityWidget from "./CommodityWidget";
+import GlobalIndicesWidget from "./GlobalIndicesWidget";
+import MacroNewsWidget from "./MacroNewsWidget";
 
 interface Props {
   widget: Widget;
@@ -39,6 +44,11 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   fear_greed: FearGreedWidget,
   market_context: MarketContextWidget,
   market_recap: MarketRecapWidget,
+  stock_tracker: StockTrackerWidget,
+  forex_rates: ForexRatesWidget,
+  commodities_tracker: CommodityWidget,
+  global_indices: GlobalIndicesWidget,
+  macro_news: MacroNewsWidget,
 };
 
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {

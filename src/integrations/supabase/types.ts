@@ -88,6 +88,27 @@ export type Database = {
         }
         Relationships: []
       }
+      cache_commodity_data: {
+        Row: {
+          change_24h: number | null
+          last_updated: string
+          price: number | null
+          symbol: string
+        }
+        Insert: {
+          change_24h?: number | null
+          last_updated?: string
+          price?: number | null
+          symbol: string
+        }
+        Update: {
+          change_24h?: number | null
+          last_updated?: string
+          price?: number | null
+          symbol?: string
+        }
+        Relationships: []
+      }
       cache_crypto_data: {
         Row: {
           change_24h: number | null
@@ -136,6 +157,78 @@ export type Database = {
         }
         Relationships: []
       }
+      cache_forex_data: {
+        Row: {
+          change_24h: number | null
+          last_updated: string
+          price: number | null
+          symbol: string
+        }
+        Insert: {
+          change_24h?: number | null
+          last_updated?: string
+          price?: number | null
+          symbol: string
+        }
+        Update: {
+          change_24h?: number | null
+          last_updated?: string
+          price?: number | null
+          symbol?: string
+        }
+        Relationships: []
+      }
+      cache_index_data: {
+        Row: {
+          change_24h: number | null
+          last_updated: string
+          price: number | null
+          symbol: string
+          volume: number | null
+        }
+        Insert: {
+          change_24h?: number | null
+          last_updated?: string
+          price?: number | null
+          symbol: string
+          volume?: number | null
+        }
+        Update: {
+          change_24h?: number | null
+          last_updated?: string
+          price?: number | null
+          symbol?: string
+          volume?: number | null
+        }
+        Relationships: []
+      }
+      cache_macro_news: {
+        Row: {
+          fetched_at: string
+          id: string
+          published_at: string | null
+          source: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          fetched_at?: string
+          id?: string
+          published_at?: string | null
+          source?: string | null
+          title: string
+          url: string
+        }
+        Update: {
+          fetched_at?: string
+          id?: string
+          published_at?: string | null
+          source?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
       cache_news: {
         Row: {
           fetched_at: string
@@ -163,6 +256,33 @@ export type Database = {
           summary?: string | null
           title?: string
           url?: string
+        }
+        Relationships: []
+      }
+      cache_stock_data: {
+        Row: {
+          change_24h: number | null
+          last_updated: string
+          market_cap: number | null
+          price: number | null
+          symbol: string
+          volume: number | null
+        }
+        Insert: {
+          change_24h?: number | null
+          last_updated?: string
+          market_cap?: number | null
+          price?: number | null
+          symbol: string
+          volume?: number | null
+        }
+        Update: {
+          change_24h?: number | null
+          last_updated?: string
+          market_cap?: number | null
+          price?: number | null
+          symbol?: string
+          volume?: number | null
         }
         Relationships: []
       }

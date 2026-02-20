@@ -2,7 +2,7 @@
  * Market Adapter — single entry point for all market data.
  *
  * Widgets import from here instead of calling API services directly.
- * To add a new asset class, create its adapter and register it in the switch.
+ * Each asset type has its own adapter that reads from cache tables.
  */
 import type {
   AssetType,
@@ -11,6 +11,10 @@ import type {
   MarketDataListResult,
 } from "./types";
 import { fetchCryptoMarketData, fetchCryptoMarketDataList, fetchCryptoDataViaAdapter } from "./cryptoAdapter";
+import { fetchStockMarketData, fetchStockMarketDataList } from "./stockAdapter";
+import { fetchForexMarketData, fetchForexMarketDataList } from "./forexAdapter";
+import { fetchCommodityMarketData, fetchCommodityMarketDataList } from "./commodityAdapter";
+import { fetchIndexMarketData, fetchIndexMarketDataList } from "./indexAdapter";
 import type { CryptoData } from "@/services/dataService";
 
 // ── Single symbol ──
@@ -23,11 +27,13 @@ export async function fetchMarketData(
     case "crypto":
       return fetchCryptoMarketData(symbol);
     case "stock":
-      return { success: false, error: "Stock adapter not implemented yet", assetType };
+      return fetchStockMarketData(symbol);
     case "forex":
-      return { success: false, error: "Forex adapter not implemented yet", assetType };
+      return fetchForexMarketData(symbol);
     case "commodity":
-      return { success: false, error: "Commodity adapter not implemented yet", assetType };
+      return fetchCommodityMarketData(symbol);
+    case "index":
+      return fetchIndexMarketData(symbol);
     default:
       return { success: false, error: "Unsupported asset type", assetType };
   }
@@ -42,11 +48,13 @@ export async function fetchMarketDataList(
     case "crypto":
       return fetchCryptoMarketDataList();
     case "stock":
-      return { success: false, error: "Stock adapter not implemented yet", assetType };
+      return fetchStockMarketDataList();
     case "forex":
-      return { success: false, error: "Forex adapter not implemented yet", assetType };
+      return fetchForexMarketDataList();
     case "commodity":
-      return { success: false, error: "Commodity adapter not implemented yet", assetType };
+      return fetchCommodityMarketDataList();
+    case "index":
+      return fetchIndexMarketDataList();
     default:
       return { success: false, error: "Unsupported asset type", assetType };
   }
