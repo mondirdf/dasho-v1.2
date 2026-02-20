@@ -12,8 +12,61 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { getWidgetConstraints } from "@/components/widgets/widgetRegistry";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import WidgetSettingsModal from "@/components/widgets/WidgetSettingsModal";
+import {
+  DndContext,
+  closestCenter,
+  TouchSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import type { Widget } from "@/services/dataService";
 
 const ResponsiveGrid = WidthProvider(Responsive);
+
+/** Sortable wrapper for mobile widgets */
+const SortableWidget = ({ widget, editMode, onRemove, onSettings, onConfirmRemove }: {
+  widget: Widget;
+  editMode: boolean;
+  onRemove: (id: string) => void;
+  onSettings: (id: string) => void;
+  onConfirmRemove: (id: string) => void;
+}) => {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: widget.id,
+    disabled: !editMode,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.85 : 1,
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes}>
+      {editMode && (
+        <MobileWidgetEditor
+          widget={widget}
+          onRemove={(id) => onConfirmRemove(id)}
+          onSettings={(id) => onSettings(id)}
+          dragListeners={listeners}
+        />
+      )}
+      <div className={`min-h-[200px] ${editMode ? "rounded-b-[var(--radius)] overflow-hidden ring-1 ring-primary/20" : ""}`}>
+        <WidgetRenderer widget={widget} editMode={false} onRemove={onRemove} />
+      </div>
+    </div>
+  );
+};
 
 const DashboardGrid = () => {
   const { widgets, layout, editMode, removeWidget, onLayoutChange } = useDashboard();
@@ -37,25 +90,6 @@ const DashboardGrid = () => {
     });
   }, [layout, widgets]);
 
-  /** Mobile reorder: swap widget positions in layout */
-  const mobileReorder = useCallback((id: string, direction: "up" | "down") => {
-    const idx = widgets.findIndex((w) => w.id === id);
-    if (idx < 0) return;
-    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
-    if (swapIdx < 0 || swapIdx >= widgets.length) return;
-
-    // Swap y positions in layout
-    const newLayout = layout.map((item) => {
-      const itemA = layout.find((l) => l.i === widgets[idx].id);
-      const itemB = layout.find((l) => l.i === widgets[swapIdx].id);
-      if (!itemA || !itemB) return item;
-      if (item.i === itemA.i) return { ...item, y: itemB.y };
-      if (item.i === itemB.i) return { ...item, y: itemA.y };
-      return item;
-    });
-    onLayoutChange(newLayout);
-  }, [widgets, layout, onLayoutChange]);
-
   /** Sort widgets by layout y position for mobile display */
   const sortedWidgets = useMemo(() => {
     return [...widgets].sort((a, b) => {
@@ -64,6 +98,35 @@ const DashboardGrid = () => {
       return (la?.y ?? 0) - (lb?.y ?? 0);
     });
   }, [widgets, layout]);
+
+  const sortedIds = useMemo(() => sortedWidgets.map((w) => w.id), [sortedWidgets]);
+
+  /** DnD sensors with activation delay to avoid conflicts with scroll */
+  const sensors = useSensors(
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+  );
+
+  /** Handle drag end — reorder by swapping y positions */
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = sortedWidgets.findIndex((w) => w.id === active.id);
+    const newIndex = sortedWidgets.findIndex((w) => w.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+
+    // Build new y-order by reassigning y values
+    const reordered = [...sortedWidgets];
+    const [moved] = reordered.splice(oldIndex, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    const newLayout = layout.map((item) => {
+      const newY = reordered.findIndex((w) => w.id === item.i);
+      return newY >= 0 ? { ...item, y: newY } : item;
+    });
+    onLayoutChange(newLayout);
+  }, [sortedWidgets, layout, onLayoutChange]);
 
   if (widgets.length === 0) {
     return (
@@ -84,28 +147,24 @@ const DashboardGrid = () => {
     );
   }
 
-  /* ── Mobile layout: stacked with optional edit controls ── */
+  /* ── Mobile layout: DnD sortable ── */
   if (isMobile) {
     return (
       <div className="p-3 space-y-3 animate-fade-in">
-        {sortedWidgets.map((w, i) => (
-          <div key={w.id}>
-            {editMode && (
-              <MobileWidgetEditor
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={sortedIds} strategy={verticalListSortingStrategy}>
+            {sortedWidgets.map((w) => (
+              <SortableWidget
+                key={w.id}
                 widget={w}
-                index={i}
-                total={sortedWidgets.length}
-                onMoveUp={(id) => mobileReorder(id, "up")}
-                onMoveDown={(id) => mobileReorder(id, "down")}
-                onRemove={(id) => setConfirmId(id)}
+                editMode={editMode}
+                onRemove={removeWidget}
                 onSettings={(id) => setSettingsWidgetId(id)}
+                onConfirmRemove={(id) => setConfirmId(id)}
               />
-            )}
-            <div className={`min-h-[200px] ${editMode ? "rounded-b-[var(--radius)] overflow-hidden ring-1 ring-primary/20" : ""}`}>
-              <WidgetRenderer widget={w} editMode={false} onRemove={removeWidget} />
-            </div>
-          </div>
-        ))}
+            ))}
+          </SortableContext>
+        </DndContext>
         <ConfirmDialog
           open={!!confirmId}
           onOpenChange={(open) => !open && setConfirmId(null)}
