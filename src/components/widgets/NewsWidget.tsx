@@ -1,12 +1,11 @@
 /**
  * NewsWidget — CONTENT ONLY.
- * Supports compact / standard / expanded responsive modes.
- * Supports list & cards layout + inline summary toggle.
+ * Clean news list with max 2-line titles and subtle metadata.
  */
 import { useEffect, useState, memo, useCallback } from "react";
 import { fetchNews, type NewsData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ExternalLink, Newspaper, AlertCircle } from "lucide-react";
+import { ExternalLink, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
+import { WidgetHeader } from "./shared";
 
 interface Props {
   config: {
@@ -36,7 +36,6 @@ const NewsWidget = memo(({ config }: Props) => {
   const keyword = config?.keyword?.toLowerCase() || "";
   const sourceFilter = config?.source?.toLowerCase() || "";
   const showSummary = config?.showSummary ?? false;
-  const layoutType = config?.layout ?? "list";
 
   const loadData = useCallback(() => {
     fetchNews()
@@ -55,119 +54,91 @@ const NewsWidget = memo(({ config }: Props) => {
 
   const isCompact = mode === "compact";
 
+  const timeAgo = (dateStr: string | null) => {
+    if (!dateStr) return "";
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 60) return `${mins}m`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h`;
+    return `${Math.floor(hrs / 24)}d`;
+  };
+
   if (loading) {
     return (
-      <div ref={sizeRef} className="h-full space-y-3">
-        <Skeleton className="h-5 w-24" />
+      <div ref={sizeRef} className="h-full space-y-2">
+        <Skeleton className="h-4 w-24" />
         {[1, 2, 3].map((i) => (
-          <div key={i} className="space-y-1.5">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-3 w-32" />
+          <div key={i} className="space-y-1">
+            <Skeleton className="h-3.5 w-full" />
+            <Skeleton className="h-2.5 w-24" />
           </div>
         ))}
       </div>
     );
   }
 
-  if (error) {
+  if (error || news.length === 0) {
     return (
       <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center gap-2">
-        <AlertCircle className="h-8 w-8 text-muted-foreground/40" />
-        <p className="text-muted-foreground text-sm">Failed to load news</p>
-        <button onClick={loadData} className="text-xs text-primary hover:underline">Retry</button>
+        <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
+        <p className="text-muted-foreground text-xs">{error ? "Failed to load news" : "No news yet"}</p>
+        <button onClick={loadData} className="text-[10px] text-primary hover:underline">Retry</button>
       </div>
     );
   }
-
-  if (news.length === 0) {
-    return (
-      <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center">
-        <Newspaper className="h-8 w-8 text-muted-foreground/40 mb-2" />
-        <p className="text-muted-foreground text-sm">No news yet.</p>
-        <p className="text-muted-foreground/60 text-xs">Refreshes every 5 minutes</p>
-      </div>
-    );
-  }
-
-  const useCards = layoutType === "cards" && !isCompact;
 
   return (
     <>
       <div ref={sizeRef} className="h-full overflow-auto">
-        <h3 className={`${isCompact ? "text-xs mb-2" : "text-sm mb-3"} font-semibold text-foreground flex items-center gap-2`}>
-          <Newspaper className={`${isCompact ? "h-3.5 w-3.5" : "h-4 w-4"} text-warning`} />
-          Crypto News
-        </h3>
+        <WidgetHeader title="Crypto News" status="cached" compact={isCompact} />
 
-        {useCards ? (
-          /* ── Cards layout ── */
-          <div className="grid grid-cols-2 gap-2">
-            {news.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setSelected(item)}
-                className="text-left p-2.5 rounded-lg bg-secondary/20 hover:bg-secondary/40 transition-colors border border-border/20"
-              >
-                <p className="text-xs text-foreground line-clamp-2 leading-snug font-medium">
-                  {item.title}
+        <div className="space-y-0">
+          {news.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => setSelected(item)}
+              className={`w-full text-left group block ${isCompact ? "py-1.5" : "py-2"} border-b border-border/15 last:border-0`}
+            >
+              <p className={`${isCompact ? "text-[10px] line-clamp-1" : "text-xs line-clamp-2"} text-foreground group-hover:text-primary transition-colors leading-snug`}>
+                {item.title}
+              </p>
+              {!isCompact && (
+                <div className="flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[9px] text-muted-foreground/50">{item.source ?? "Unknown"}</span>
+                  {item.published_at && (
+                    <span className="text-[9px] text-muted-foreground/30">{timeAgo(item.published_at)}</span>
+                  )}
+                </div>
+              )}
+              {showSummary && item.summary && !isCompact && (
+                <p className="text-[10px] text-muted-foreground/40 mt-0.5 line-clamp-1 leading-relaxed">
+                  {item.summary}
                 </p>
-                <p className="text-[10px] text-muted-foreground mt-1.5">
-                  {item.source ?? "Unknown"} · {item.published_at ? new Date(item.published_at).toLocaleDateString() : ""}
-                </p>
-                {showSummary && item.summary && (
-                  <p className="text-[10px] text-muted-foreground/80 mt-1 line-clamp-2 leading-relaxed">
-                    {item.summary}
-                  </p>
-                )}
-              </button>
-            ))}
-          </div>
-        ) : (
-          /* ── List layout ── */
-          <div className="space-y-0.5">
-            {news.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setSelected(item)}
-                className={`w-full text-left group block ${isCompact ? "py-1.5 px-1" : "py-2.5 px-2"} rounded-lg hover:bg-secondary/30 transition-colors`}
-              >
-                <p className={`${isCompact ? "text-xs line-clamp-1" : "text-sm line-clamp-2"} text-foreground group-hover:text-primary transition-colors leading-snug`}>
-                  {item.title}
-                </p>
-                {!isCompact && (
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    {item.source ?? "Unknown"} · {item.published_at ? new Date(item.published_at).toLocaleDateString() : ""}
-                  </p>
-                )}
-                {showSummary && item.summary && !isCompact && (
-                  <p className="text-[11px] text-muted-foreground/70 mt-1 line-clamp-2 leading-relaxed">
-                    {item.summary}
-                  </p>
-                )}
-              </button>
-            ))}
-          </div>
-        )}
+              )}
+            </button>
+          ))}
+        </div>
       </div>
 
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>
         <DialogContent className="sm:max-w-lg max-h-[80vh] overflow-auto bg-card/95 backdrop-blur-xl">
           <DialogHeader>
-            <DialogTitle className="text-base leading-snug">{selected?.title}</DialogTitle>
+            <DialogTitle className="text-sm leading-snug">{selected?.title}</DialogTitle>
           </DialogHeader>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-[10px] text-muted-foreground">
             {selected?.source} · {selected?.published_at ? new Date(selected.published_at).toLocaleString() : ""}
           </p>
           {selected?.summary && (
-            <p className="text-sm text-foreground leading-relaxed mt-2">{selected.summary}</p>
+            <p className="text-xs text-foreground/80 leading-relaxed mt-2">{selected.summary}</p>
           )}
           <a
             href={selected?.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline mt-3 font-medium"
+            className="inline-flex items-center gap-1 text-xs text-primary hover:underline mt-2 font-medium"
           >
-            Read full article <ExternalLink className="h-3.5 w-3.5" />
+            Read full article <ExternalLink className="h-3 w-3" />
           </a>
         </DialogContent>
       </Dialog>
