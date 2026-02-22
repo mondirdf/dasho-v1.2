@@ -1,9 +1,13 @@
 /**
  * Plan limits hook — returns current plan, limit checks, and feature flags.
+ *
+ * All limits are defined in src/config/site.ts → PLAN_LIMITS & PRO_FEATURES.
+ * Change them there — this hook reads from that single source of truth.
  */
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect, useState } from "react";
 import { fetchProfile } from "@/services/dataService";
+import { PLAN_LIMITS, PRO_FEATURES } from "@/config/site";
 
 export interface PlanLimits {
   plan: string;
@@ -15,31 +19,13 @@ export interface PlanLimits {
 
 /** Feature flags derived from plan */
 export interface ProFeatures {
-  /** 4h recap timeframe */
   recap4h: boolean;
-  /** Weekly recap timeframe */
   recapWeekly: boolean;
-  /** Manual recap refresh */
   recapRefresh: boolean;
-  /** Unlimited widgets */
   unlimitedWidgets: boolean;
-  /** Advanced alert types */
   advancedAlerts: boolean;
-  /** Priority data refresh */
   priorityRefresh: boolean;
 }
-
-const FREE_LIMITS: Omit<PlanLimits, "plan" | "isPro"> = {
-  maxDashboards: 1,
-  maxAlerts: 10,
-  maxWidgets: 5,
-};
-
-const PRO_LIMITS: Omit<PlanLimits, "plan" | "isPro"> = {
-  maxDashboards: Infinity,
-  maxAlerts: Infinity,
-  maxWidgets: Infinity,
-};
 
 export function usePlanLimits(): PlanLimits & ProFeatures & { loading: boolean } {
   const { user } = useAuth();
@@ -56,15 +42,15 @@ export function usePlanLimits(): PlanLimits & ProFeatures & { loading: boolean }
   }, [user]);
 
   const isPro = plan === "pro";
-  const limits = isPro ? PRO_LIMITS : FREE_LIMITS;
+  const limits = isPro ? PLAN_LIMITS.pro : PLAN_LIMITS.free;
 
   const features: ProFeatures = {
-    recap4h: isPro,
-    recapWeekly: isPro,
-    recapRefresh: isPro,
-    unlimitedWidgets: isPro,
-    advancedAlerts: isPro,
-    priorityRefresh: isPro,
+    recap4h: isPro && PRO_FEATURES.recap4h,
+    recapWeekly: isPro && PRO_FEATURES.recapWeekly,
+    recapRefresh: isPro && PRO_FEATURES.recapRefresh,
+    unlimitedWidgets: isPro && PRO_FEATURES.unlimitedWidgets,
+    advancedAlerts: isPro && PRO_FEATURES.advancedAlerts,
+    priorityRefresh: isPro && PRO_FEATURES.priorityRefresh,
   };
 
   return { plan, isPro, ...limits, ...features, loading };

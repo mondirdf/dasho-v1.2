@@ -9,6 +9,39 @@
  * ╚═══════════════════════════════════════════════════════════════════╝
  */
 
+/* ═══════════════════════ PLAN LIMITS ═════════════════════════════ */
+/**
+ * ┌──────────────────────────────────────────────────────────────────┐
+ * │  CHANGE PLAN LIMITS HERE — both client-side AND database.       │
+ * │                                                                  │
+ * │  After editing these values, you MUST also update the matching   │
+ * │  PostgreSQL trigger functions to keep server-side enforcement    │
+ * │  in sync. See DEVELOPER_GUIDE.md → "Plan Limits" for details.  │
+ * └──────────────────────────────────────────────────────────────────┘
+ */
+export const PLAN_LIMITS = {
+  free: {
+    maxDashboards: 1,
+    maxWidgets: 10,
+    maxAlerts: 10,
+  },
+  pro: {
+    maxDashboards: Infinity,
+    maxWidgets: Infinity,
+    maxAlerts: Infinity,
+  },
+} as const;
+
+/** Pro-only feature flags — toggle individual features here */
+export const PRO_FEATURES = {
+  recap4h: true,
+  recapWeekly: true,
+  recapRefresh: true,
+  unlimitedWidgets: true,
+  advancedAlerts: true,
+  priorityRefresh: true,
+} as const;
+
 /* ══════════════════════════════ BRAND ══════════════════════════════ */
 
 export const BRAND = {
