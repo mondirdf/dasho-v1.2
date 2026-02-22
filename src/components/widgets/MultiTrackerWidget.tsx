@@ -5,11 +5,9 @@
 import { useEffect, useState, memo, useMemo, useCallback } from "react";
 import { fetchCryptoDataCompat } from "@/adapters/market";
 import type { CryptoData } from "@/services/dataService";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
-import { WidgetHeader, ChangeIndicator } from "./shared";
+import { WidgetHeader, DataRow, ListSkeleton, WidgetEmptyState } from "./shared";
 
 interface Props {
   config: {
@@ -68,59 +66,38 @@ const MultiTrackerWidget = memo(({ config }: Props) => {
   const showVolume = config.showVolume ?? false;
   const showMarketCap = (config.showMarketCap ?? false) && !isCompact;
 
-  if (loading) {
-    return (
-      <div ref={sizeRef} className="h-full space-y-1.5">
-        <Skeleton className="h-4 w-28" />
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-7 w-full" />)}
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center gap-2">
-        <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
-        <p className="text-muted-foreground text-xs">Failed to load data</p>
-        <button onClick={loadData} className="text-[10px] text-primary hover:underline">Retry</button>
-      </div>
-    );
-  }
+  if (loading) return <div ref={sizeRef}><ListSkeleton rows={4} /></div>;
+  if (error) return <div ref={sizeRef}><WidgetEmptyState error onRetry={loadData} /></div>;
 
   return (
     <div ref={sizeRef} className="h-full overflow-auto">
       <WidgetHeader title="Market Overview" status="live" compact={isCompact}>
-        <span className="text-[9px] text-muted-foreground/40 tabular-nums">{sorted.length} coins</span>
+        <span className="text-[8px] text-muted-foreground/35 tabular-nums font-medium">{sorted.length} coins</span>
       </WidgetHeader>
 
       <div className="space-y-0">
         {sorted.map((coin) => (
-          <div
+          <DataRow
             key={coin.symbol}
-            className={`flex items-center justify-between ${isCompact ? "py-1 px-0.5" : "py-1.5 px-1"} border-b border-border/20 last:border-0`}
-          >
-            <span className={`${isCompact ? "text-[10px]" : "text-xs"} font-semibold text-foreground w-12`}>
-              {coin.symbol}
-            </span>
-            <div className="flex items-center gap-2 ml-auto">
-              {showMarketCap && (
-                <span className="text-[9px] text-muted-foreground/50 tabular-nums hidden sm:inline">
-                  ${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B
-                </span>
-              )}
-              {showVolume && !isCompact && (
-                <span className="text-[9px] text-muted-foreground/50 tabular-nums">
-                  ${((coin.volume ?? 0) / 1e9).toFixed(1)}B
-                </span>
-              )}
-              <span className={`${isCompact ? "text-[10px]" : "text-xs"} text-foreground tabular-nums font-medium min-w-[60px] text-right`}>
-                ${(coin.price ?? 0).toLocaleString(undefined, { maximumFractionDigits: isCompact ? 0 : 2 })}
-              </span>
-              <span className="min-w-[52px] text-right">
-                <ChangeIndicator value={coin.change_24h ?? 0} compact={isCompact} />
-              </span>
-            </div>
-          </div>
+            label={coin.symbol}
+            price={coin.price ?? 0}
+            change={coin.change_24h ?? 0}
+            compact={isCompact}
+            extra={
+              <>
+                {showMarketCap && (
+                  <span className="text-[8px] text-muted-foreground/40 tabular-nums hidden sm:inline">
+                    ${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B
+                  </span>
+                )}
+                {showVolume && !isCompact && (
+                  <span className="text-[8px] text-muted-foreground/40 tabular-nums">
+                    ${((coin.volume ?? 0) / 1e9).toFixed(1)}B
+                  </span>
+                )}
+              </>
+            }
+          />
         ))}
       </div>
     </div>

@@ -5,10 +5,8 @@
 import { useEffect, useState, memo, useCallback } from "react";
 import { fetchMarketDataList } from "@/adapters/market";
 import type { UnifiedMarketData } from "@/adapters/market";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
-import { WidgetHeader, ChangeIndicator, SecondaryValue } from "./shared";
+import { WidgetHeader, DataRow, SecondaryValue, ListSkeleton, WidgetEmptyState } from "./shared";
 
 interface Props {
   config: {
@@ -45,27 +43,21 @@ const StockTrackerWidget = memo(({ config }: Props) => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  if (loading) {
-    return (
-      <div ref={sizeRef} className="h-full space-y-1.5">
-        <Skeleton className="h-4 w-20" />
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-7 w-full" />)}
-      </div>
-    );
-  }
+  const isCompact = mode === "compact";
 
+  if (loading) return <div ref={sizeRef}><ListSkeleton rows={4} /></div>;
   if (error || stocks.length === 0) {
     return (
-      <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center gap-2">
-        <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
-        <p className="text-muted-foreground text-xs">{error ? "Failed to load stock data" : "No stock data available"}</p>
-        <p className="text-muted-foreground/50 text-[10px]">Add ALPHA_VANTAGE_API_KEY to enable</p>
-        <button onClick={loadData} className="text-[10px] text-primary hover:underline">Retry</button>
+      <div ref={sizeRef}>
+        <WidgetEmptyState
+          error={error}
+          message={error ? "Failed to load stock data" : "No stock data available"}
+          hint="Add ALPHA_VANTAGE_API_KEY to enable"
+          onRetry={loadData}
+        />
       </div>
     );
   }
-
-  const isCompact = mode === "compact";
 
   return (
     <div ref={sizeRef} className="h-full flex flex-col overflow-auto">
@@ -73,22 +65,20 @@ const StockTrackerWidget = memo(({ config }: Props) => {
 
       <div className="space-y-0 flex-1">
         {stocks.map((stock) => (
-          <div key={stock.symbol} className={`flex items-center justify-between ${isCompact ? "py-1" : "py-1.5"} border-b border-border/20 last:border-0`}>
-            <span className={`${isCompact ? "text-[10px]" : "text-xs"} font-semibold text-foreground w-14`}>
-              {stock.symbol}
-            </span>
-            <div className="flex items-center gap-2 ml-auto">
-              {config.showVolume && !isCompact && stock.volume && (
-                <SecondaryValue label="Vol" value={`${(stock.volume / 1e6).toFixed(1)}M`} compact />
-              )}
-              <span className={`${isCompact ? "text-[10px]" : "text-xs"} font-medium text-foreground tabular-nums min-w-[60px] text-right`}>
-                ${stock.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </span>
-              <span className="min-w-[52px] text-right">
-                <ChangeIndicator value={stock.change24h} compact={isCompact} />
-              </span>
-            </div>
-          </div>
+          <DataRow
+            key={stock.symbol}
+            label={stock.symbol}
+            price={stock.price}
+            change={stock.change24h}
+            compact={isCompact}
+            extra={
+              config.showVolume && !isCompact && stock.volume ? (
+                <span className="text-[8px] text-muted-foreground/40 tabular-nums">
+                  Vol {(stock.volume / 1e6).toFixed(1)}M
+                </span>
+              ) : undefined
+            }
+          />
         ))}
       </div>
     </div>

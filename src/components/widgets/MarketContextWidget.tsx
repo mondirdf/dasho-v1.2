@@ -6,10 +6,9 @@ import { useEffect, useState, memo, useCallback } from "react";
 import { fetchCryptoDataCompat } from "@/adapters/market";
 import type { CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
-import { WidgetHeader, ChangeIndicator } from "./shared";
+import { WidgetHeader, ChangeIndicator, WidgetEmptyState } from "./shared";
 
 interface Props {
   config: {
@@ -40,24 +39,19 @@ const MarketContextWidget = memo(({ config }: Props) => {
 
   if (loading) {
     return (
-      <div ref={sizeRef} className="h-full space-y-2">
-        <Skeleton className="h-4 w-28" />
+      <div ref={sizeRef} className="h-full space-y-3">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-3 w-10 rounded-full" />
+        </div>
         <div className={`grid ${isCompact ? "grid-cols-1" : "grid-cols-2"} gap-2`}>
-          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-12 rounded-lg" />)}
+          {[1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-14 rounded-lg" />)}
         </div>
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center gap-2">
-        <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
-        <p className="text-muted-foreground text-xs">Failed to load data</p>
-        <button onClick={loadData} className="text-[10px] text-primary hover:underline">Retry</button>
-      </div>
-    );
-  }
+  if (error) return <div ref={sizeRef}><WidgetEmptyState error onRetry={loadData} /></div>;
 
   const totalMcap = data.reduce((s, c) => s + (c.market_cap ?? 0), 0);
   const totalVol = data.reduce((s, c) => s + (c.volume ?? 0), 0);
@@ -77,7 +71,7 @@ const MarketContextWidget = memo(({ config }: Props) => {
 
   const stats = [
     { label: "Total MCap", value: `$${(totalMcap / 1e12).toFixed(2)}T`, accent: true },
-    ...(showVolume ? [{ label: "24h Vol", value: `$${(totalVol / 1e9).toFixed(1)}B`, accent: false }] : []),
+    ...(showVolume ? [{ label: "24h Volume", value: `$${(totalVol / 1e9).toFixed(1)}B`, accent: false }] : []),
     ...(showDominance ? [{ label: "BTC Dom", value: `${btcDom.toFixed(1)}%`, accent: false }] : []),
     { label: "Tracked", value: `${data.length}`, accent: false },
   ];
@@ -88,9 +82,9 @@ const MarketContextWidget = memo(({ config }: Props) => {
 
       <div className={`grid ${isCompact ? "grid-cols-1 gap-1.5" : "grid-cols-2 gap-2"}`}>
         {stats.map((s) => (
-          <div key={s.label} className={`flex flex-col ${isCompact ? "p-1.5" : "p-2"} rounded-md bg-secondary/20`}>
-            <span className={`${isCompact ? "text-[8px]" : "text-[9px]"} text-muted-foreground/60 font-medium uppercase tracking-wider`}>{s.label}</span>
-            <span className={`${isCompact ? "text-sm" : "text-base"} font-bold tabular-nums ${s.accent ? "text-primary" : "text-foreground"}`}>
+          <div key={s.label} className={`flex flex-col ${isCompact ? "p-2" : "p-2.5"} rounded-lg bg-secondary/15 border border-border/10`}>
+            <span className={`${isCompact ? "text-[7px]" : "text-[8px]"} text-muted-foreground/50 font-medium uppercase tracking-widest`}>{s.label}</span>
+            <span className={`${isCompact ? "text-sm" : "text-lg"} font-bold tabular-nums leading-tight ${s.accent ? "text-primary" : "text-foreground"}`}>
               {s.value}
             </span>
           </div>
@@ -98,10 +92,10 @@ const MarketContextWidget = memo(({ config }: Props) => {
       </div>
 
       {(showTopMover || showGainersLosers) && (
-        <div className="mt-2 space-y-1">
+        <div className="mt-2.5 space-y-1.5">
           {showTopMover && topMover && (
-            <div className="flex items-center justify-between p-1.5 rounded-md bg-secondary/15">
-              <span className="text-[9px] text-muted-foreground/50 font-medium">Top Mover</span>
+            <div className="flex items-center justify-between p-2 rounded-lg bg-secondary/10 border border-border/10">
+              <span className="text-[8px] text-muted-foreground/45 font-medium uppercase tracking-wider">Top Mover</span>
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] font-bold text-foreground">{topMover.symbol}</span>
                 <ChangeIndicator value={topMover.change_24h ?? 0} compact />
@@ -109,11 +103,11 @@ const MarketContextWidget = memo(({ config }: Props) => {
             </div>
           )}
           {showGainersLosers && (
-            <div className="flex items-center justify-between p-1.5 rounded-md bg-secondary/15">
-              <span className="text-[9px] text-muted-foreground/50 font-medium">Gainers / Losers</span>
-              <div className="flex items-center gap-1.5">
+            <div className="flex items-center justify-between p-2 rounded-lg bg-secondary/10 border border-border/10">
+              <span className="text-[8px] text-muted-foreground/45 font-medium uppercase tracking-wider">Gainers / Losers</span>
+              <div className="flex items-center gap-2">
                 <span className="text-[10px] font-bold text-success">{gainers} ▲</span>
-                <span className="text-[8px] text-muted-foreground/30">/</span>
+                <span className="text-[7px] text-muted-foreground/25">/</span>
                 <span className="text-[10px] font-bold text-destructive">{losers} ▼</span>
               </div>
             </div>

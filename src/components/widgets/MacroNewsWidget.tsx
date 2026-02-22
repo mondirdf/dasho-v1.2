@@ -4,10 +4,9 @@
  */
 import { useEffect, useState, memo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
-import { WidgetHeader } from "./shared";
+import { WidgetHeader, ListSkeleton, WidgetEmptyState } from "./shared";
 
 interface MacroNewsItem {
   id: string;
@@ -51,26 +50,6 @@ const MacroNewsWidget = memo(({ config }: Props) => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  if (loading) {
-    return (
-      <div ref={sizeRef} className="h-full space-y-2">
-        <Skeleton className="h-4 w-24" />
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-8 w-full" />)}
-      </div>
-    );
-  }
-
-  if (error || news.length === 0) {
-    return (
-      <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center gap-2">
-        <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
-        <p className="text-muted-foreground text-xs">{error ? "Failed to load news" : "No macro news available"}</p>
-        <p className="text-muted-foreground/50 text-[10px]">Add NEWS_API_KEY to enable</p>
-        <button onClick={loadData} className="text-[10px] text-primary hover:underline">Retry</button>
-      </div>
-    );
-  }
-
   const isCompact = mode === "compact";
 
   const timeAgo = (dateStr: string | null) => {
@@ -83,6 +62,20 @@ const MacroNewsWidget = memo(({ config }: Props) => {
     return `${Math.floor(hrs / 24)}d`;
   };
 
+  if (loading) return <div ref={sizeRef}><ListSkeleton rows={4} /></div>;
+  if (error || news.length === 0) {
+    return (
+      <div ref={sizeRef}>
+        <WidgetEmptyState
+          error={error}
+          message={error ? "Failed to load news" : "No macro news available"}
+          hint="Add NEWS_API_KEY to enable"
+          onRetry={loadData}
+        />
+      </div>
+    );
+  }
+
   return (
     <div ref={sizeRef} className="h-full flex flex-col overflow-auto">
       <WidgetHeader title="Macro News" status="cached" compact={isCompact} />
@@ -94,18 +87,23 @@ const MacroNewsWidget = memo(({ config }: Props) => {
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            className={`flex items-start gap-2 ${isCompact ? "py-1.5" : "py-2"} border-b border-border/15 last:border-0 group`}
+            className={`flex items-start gap-2 ${isCompact ? "py-1.5" : "py-2.5"} border-b border-border/10 last:border-0 group rounded-sm transition-colors hover:bg-secondary/10 -mx-1 px-1`}
           >
             <div className="flex-1 min-w-0">
-              <p className={`${isCompact ? "text-[10px] line-clamp-1" : "text-xs line-clamp-2"} font-medium text-foreground group-hover:text-primary transition-colors leading-snug`}>
+              <p className={`${isCompact ? "text-[10px] line-clamp-1" : "text-[11px] line-clamp-2"} font-medium text-foreground/90 group-hover:text-primary transition-colors leading-snug`}>
                 {item.title}
               </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                {item.source && <span className="text-[9px] text-muted-foreground/50">{item.source}</span>}
-                {item.published_at && <span className="text-[9px] text-muted-foreground/30">{timeAgo(item.published_at)}</span>}
+              <div className="flex items-center gap-1.5 mt-1">
+                {item.source && <span className="text-[8px] text-muted-foreground/40 font-medium">{item.source}</span>}
+                {item.published_at && (
+                  <>
+                    <span className="text-[6px] text-muted-foreground/20">•</span>
+                    <span className="text-[8px] text-muted-foreground/30 tabular-nums">{timeAgo(item.published_at)}</span>
+                  </>
+                )}
               </div>
             </div>
-            <ExternalLink className="h-2.5 w-2.5 text-muted-foreground/30 shrink-0 mt-1 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <ExternalLink className="h-3 w-3 text-muted-foreground/20 shrink-0 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity" />
           </a>
         ))}
       </div>

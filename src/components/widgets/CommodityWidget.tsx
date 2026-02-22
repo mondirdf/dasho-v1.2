@@ -5,10 +5,8 @@
 import { useEffect, useState, memo, useCallback } from "react";
 import { fetchMarketDataList } from "@/adapters/market";
 import type { UnifiedMarketData } from "@/adapters/market";
-import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
-import { WidgetHeader, ChangeIndicator } from "./shared";
+import { WidgetHeader, DataRow, ListSkeleton, WidgetEmptyState } from "./shared";
 
 interface Props {
   config: Record<string, any>;
@@ -38,27 +36,21 @@ const CommodityWidget = memo(({ config }: Props) => {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  if (loading) {
-    return (
-      <div ref={sizeRef} className="h-full space-y-1.5">
-        <Skeleton className="h-4 w-24" />
-        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-7 w-full" />)}
-      </div>
-    );
-  }
+  const isCompact = mode === "compact";
 
+  if (loading) return <div ref={sizeRef}><ListSkeleton rows={3} /></div>;
   if (error || commodities.length === 0) {
     return (
-      <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center gap-2">
-        <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
-        <p className="text-muted-foreground text-xs">{error ? "Failed to load commodity data" : "No commodity data available"}</p>
-        <p className="text-muted-foreground/50 text-[10px]">Add TWELVE_DATA_API_KEY to enable</p>
-        <button onClick={loadData} className="text-[10px] text-primary hover:underline">Retry</button>
+      <div ref={sizeRef}>
+        <WidgetEmptyState
+          error={error}
+          message={error ? "Failed to load commodity data" : "No commodity data available"}
+          hint="Add TWELVE_DATA_API_KEY to enable"
+          onRetry={loadData}
+        />
       </div>
     );
   }
-
-  const isCompact = mode === "compact";
 
   return (
     <div ref={sizeRef} className="h-full flex flex-col overflow-auto">
@@ -66,19 +58,13 @@ const CommodityWidget = memo(({ config }: Props) => {
 
       <div className="space-y-0 flex-1">
         {commodities.map((c) => (
-          <div key={c.symbol} className={`flex items-center justify-between ${isCompact ? "py-1" : "py-1.5"} border-b border-border/20 last:border-0`}>
-            <span className={`${isCompact ? "text-[10px]" : "text-xs"} font-semibold text-foreground`}>
-              {c.symbol}
-            </span>
-            <div className="flex items-center gap-3">
-              <span className={`${isCompact ? "text-[10px]" : "text-xs"} font-mono text-foreground tabular-nums`}>
-                ${c.price.toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              </span>
-              <span className="min-w-[48px] text-right">
-                <ChangeIndicator value={c.change24h} compact={isCompact} />
-              </span>
-            </div>
-          </div>
+          <DataRow
+            key={c.symbol}
+            label={c.symbol}
+            price={c.price}
+            change={c.change24h}
+            compact={isCompact}
+          />
         ))}
       </div>
     </div>
