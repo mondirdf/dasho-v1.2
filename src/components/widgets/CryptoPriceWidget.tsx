@@ -6,10 +6,9 @@ import { useEffect, useState, memo, useCallback } from "react";
 import { fetchCryptoDataCompat } from "@/adapters/market";
 import type { CryptoData } from "@/services/dataService";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
 import { useRealtimeCrypto } from "@/hooks/useRealtimeData";
 import { useWidgetSize } from "@/hooks/useWidgetSize";
-import { WidgetHeader, ChangeIndicator, SecondaryValue } from "./shared";
+import { WidgetHeader, ChangeIndicator, SecondaryValue, WidgetEmptyState } from "./shared";
 
 interface Props {
   config: {
@@ -45,20 +44,22 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
 
   if (loading) {
     return (
-      <div ref={sizeRef} className="h-full space-y-2">
-        <Skeleton className="h-4 w-20" />
-        <Skeleton className="h-8 w-32" />
-        <Skeleton className="h-6 w-full" />
+      <div ref={sizeRef} className="h-full space-y-3">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-3 w-12 rounded-full" />
+        </div>
+        <Skeleton className="h-8 w-36" />
+        <Skeleton className="h-6 w-20 rounded-md" />
+        <Skeleton className="h-10 w-full rounded-md" />
       </div>
     );
   }
 
   if (error || !coin) {
     return (
-      <div ref={sizeRef} className="h-full flex flex-col items-center justify-center text-center gap-2">
-        <AlertCircle className="h-6 w-6 text-muted-foreground/40" />
-        <p className="text-muted-foreground text-xs">{error ? "Failed to load data" : "No data available"}</p>
-        <button onClick={loadData} className="text-[10px] text-primary hover:underline">Retry</button>
+      <div ref={sizeRef}>
+        <WidgetEmptyState error={error} onRetry={loadData} />
       </div>
     );
   }
@@ -86,8 +87,8 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
       />
 
       {/* Main price */}
-      <div className="flex items-baseline gap-2">
-        <span className={`${isCompact ? "text-xl" : "text-2xl"} font-bold text-foreground tabular-nums`}>
+      <div className="flex items-end gap-2.5">
+        <span className={`${isCompact ? "text-xl" : "text-[28px]"} font-bold text-foreground tabular-nums leading-none`}>
           ${(coin.price ?? 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
         </span>
         <ChangeIndicator value={coin.change_24h ?? 0} compact={isCompact} />
@@ -95,23 +96,27 @@ const CryptoPriceWidget = memo(({ config }: Props) => {
 
       {/* Sparkline */}
       {showChart && (
-        <svg viewBox="0 0 100 60" className="w-full h-8 shrink-0 opacity-60" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id={`grad-${coin.symbol}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} stopOpacity="0.2" />
-              <stop offset="100%" stopColor={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path d={fillPath} fill={`url(#grad-${coin.symbol})`} />
-          <path d={sparkPath} fill="none" stroke={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-        </svg>
+        <div className="relative mt-1">
+          <svg viewBox="0 0 100 60" className="w-full h-10 shrink-0" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id={`grad-${coin.symbol}`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} stopOpacity="0.25" />
+                <stop offset="100%" stopColor={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            <path d={fillPath} fill={`url(#grad-${coin.symbol})`} />
+            <path d={sparkPath} fill="none" stroke={positive ? "hsl(var(--success))" : "hsl(var(--destructive))"} strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+          </svg>
+        </div>
       )}
 
       {/* Secondary metrics */}
-      <div className="flex items-center gap-3 flex-wrap">
-        {showMarketCap && <SecondaryValue label="MCap" value={`$${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B`} compact={isCompact} />}
-        {showVolume && <SecondaryValue label="Vol" value={`$${((coin.volume ?? 0) / 1e9).toFixed(2)}B`} compact={isCompact} />}
-      </div>
+      {(showMarketCap || showVolume) && (
+        <div className="flex items-center gap-4 pt-1">
+          {showMarketCap && <SecondaryValue label="MCap" value={`$${((coin.market_cap ?? 0) / 1e9).toFixed(1)}B`} compact={isCompact} />}
+          {showVolume && <SecondaryValue label="Vol" value={`$${((coin.volume ?? 0) / 1e9).toFixed(2)}B`} compact={isCompact} />}
+        </div>
+      )}
     </div>
   );
 });

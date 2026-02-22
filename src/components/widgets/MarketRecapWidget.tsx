@@ -21,12 +21,13 @@ const TIMEFRAME_LABELS: Record<Timeframe, string> = {
 };
 
 const RecapSkeleton = () => (
-  <div className="space-y-2">
+  <div className="space-y-2.5">
     <Skeleton className="h-2.5 w-full" />
     <Skeleton className="h-2.5 w-[92%]" />
     <Skeleton className="h-2.5 w-[78%]" />
     <Skeleton className="h-2.5 w-full" />
     <Skeleton className="h-2.5 w-[85%]" />
+    <Skeleton className="h-2.5 w-[60%]" />
   </div>
 );
 
@@ -62,7 +63,6 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
   }, [preferences.recapDetailLevel, preferences.selectedCoins]);
 
   useEffect(() => {
-    // Skip fetch if we already have cached data from a previous mount
     if (!_cachedRecap) {
       fetchRecap();
     }
@@ -75,29 +75,31 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
   const timeAgo = recap?.generatedAt ? formatTimeAgo(recap.generatedAt) : null;
 
   return (
-    <div ref={ref} className="h-full flex flex-col gap-2">
+    <div ref={ref} className="h-full flex flex-col gap-2.5">
       {/* Header */}
       <div className="flex items-center justify-between shrink-0">
         <div className="flex items-center gap-2">
-          <Sparkles className="h-3.5 w-3.5 text-primary" />
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            AI Market Recap — Last 24h
+          <div className="p-1 rounded-md bg-primary/10">
+            <Sparkles className="h-3 w-3 text-primary" />
+          </div>
+          <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
+            AI Recap
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           {/* Timeframe pills */}
-          <div className="flex gap-0.5">
+          <div className="flex gap-0.5 bg-secondary/20 rounded-md p-0.5">
             {(["24h", "4h", "weekly"] as Timeframe[]).map((tf) => {
               const isActive = timeframe === tf;
               const isProOnly = tf !== "24h";
               return (
                 <span
                   key={tf}
-                  className={`text-[9px] px-1 py-0.5 rounded ${
+                  className={`text-[8px] px-1.5 py-0.5 rounded transition-colors ${
                     isActive
-                      ? "bg-primary/15 text-primary font-medium"
-                      : "text-muted-foreground/40"
-                  } ${isProOnly && !isPro ? "opacity-30" : ""}`}
+                      ? "bg-primary/15 text-primary font-semibold"
+                      : "text-muted-foreground/35 hover:text-muted-foreground/50"
+                  } ${isProOnly && !isPro ? "opacity-25" : ""}`}
                 >
                   {TIMEFRAME_LABELS[tf]}
                   {isProOnly && !isPro && <Crown className="inline h-2 w-2 ml-0.5" />}
@@ -110,13 +112,13 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
             <button
               onClick={fetchRecap}
               disabled={!canRefresh || loading}
-              className="p-0.5 rounded hover:bg-secondary/40 disabled:opacity-20 transition-colors"
+              className="p-1 rounded-md hover:bg-secondary/30 disabled:opacity-15 transition-all"
               aria-label="Refresh recap"
             >
-              <RefreshCw className={`h-3 w-3 text-muted-foreground/50 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw className={`h-3 w-3 text-muted-foreground/40 ${loading ? "animate-spin" : ""}`} />
             </button>
           ) : (
-            <div className="p-0.5 opacity-20" title="Pro feature">
+            <div className="p-1 opacity-15" title="Pro feature">
               <RefreshCw className="h-3 w-3 text-muted-foreground" />
             </div>
           )}
@@ -126,8 +128,8 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
       {/* Timestamp */}
       {timeAgo && !loading && !recap?.error && (
         <div className="flex items-center gap-1">
-          <Clock className="h-2 w-2 text-muted-foreground/30" />
-          <span className="text-[8px] text-muted-foreground/30 tabular-nums">
+          <Clock className="h-2 w-2 text-muted-foreground/25" />
+          <span className="text-[7px] text-muted-foreground/25 tabular-nums font-medium">
             Updated {timeAgo}
             {recap?.cached && " · cached"}
           </span>
@@ -139,13 +141,15 @@ const MarketRecapWidget = ({ config }: { config: any }) => {
         {loading && !recap ? (
           <RecapSkeleton />
         ) : recap?.error && recap.text === "Market recap temporarily unavailable." ? (
-          <div className="flex flex-col items-center justify-center h-full gap-2 text-muted-foreground py-4">
-            <Sparkles className="h-6 w-6 opacity-20" />
-            <p className="text-[10px]">Market recap temporarily unavailable.</p>
-            <p className="text-[9px] text-muted-foreground/40">Data will refresh automatically.</p>
+          <div className="flex flex-col items-center justify-center h-full gap-2.5 text-muted-foreground py-6">
+            <div className="p-3 rounded-xl bg-secondary/20">
+              <Sparkles className="h-6 w-6 opacity-20" />
+            </div>
+            <p className="text-[10px] font-medium">Market recap temporarily unavailable.</p>
+            <p className="text-[8px] text-muted-foreground/30">Data will refresh automatically.</p>
           </div>
         ) : (
-          <p className="text-xs leading-relaxed text-foreground/80 whitespace-pre-line">
+          <p className="text-[11px] leading-[1.7] text-foreground/75 whitespace-pre-line">
             {recap?.text}
           </p>
         )}
