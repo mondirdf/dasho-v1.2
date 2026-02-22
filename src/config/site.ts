@@ -115,6 +115,7 @@ export const ASSET_TYPES: { id: AssetType; label: string; active: boolean }[] = 
 
 export const WIDGET_CATEGORIES = [
   { id: "all", label: "All", available: true },
+  { id: "pro", label: "Pro Trading", available: true },
   { id: "crypto", label: "Crypto", available: true },
   { id: "market", label: "Market", available: true },
   { id: "news", label: "News", available: true },

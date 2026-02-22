@@ -259,6 +259,48 @@ export type Database = {
         }
         Relationships: []
       }
+      cache_ohlc_data: {
+        Row: {
+          close: number
+          close_time: number
+          fetched_at: string
+          high: number
+          id: string
+          low: number
+          open: number
+          open_time: number
+          symbol: string
+          timeframe: string
+          volume: number
+        }
+        Insert: {
+          close: number
+          close_time: number
+          fetched_at?: string
+          high: number
+          id?: string
+          low: number
+          open: number
+          open_time: number
+          symbol: string
+          timeframe: string
+          volume?: number
+        }
+        Update: {
+          close?: number
+          close_time?: number
+          fetched_at?: string
+          high?: number
+          id?: string
+          low?: number
+          open?: number
+          open_time?: number
+          symbol?: string
+          timeframe?: string
+          volume?: number
+        }
+        Relationships: []
+      }
       cache_stock_data: {
         Row: {
           change_24h: number | null
