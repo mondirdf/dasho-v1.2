@@ -20,3 +20,6 @@ verify_jwt = false
 
 [functions.fetch-macro-news]
 verify_jwt = false
+
+[functions.fetch-binance-klines]
+verify_jwt = false

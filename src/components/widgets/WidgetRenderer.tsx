@@ -53,7 +53,10 @@ import ForexRatesWidget from "./ForexRatesWidget";
 import CommodityWidget from "./CommodityWidget";
 import GlobalIndicesWidget from "./GlobalIndicesWidget";
 import MacroNewsWidget from "./MacroNewsWidget";
-
+import StructureScannerWidget from "./StructureScannerWidget";
+import VolatilityRegimeWidget from "./VolatilityRegimeWidget";
+import MTFConfluenceWidget from "./MTFConfluenceWidget";
+import SessionMonitorWidget from "./SessionMonitorWidget";
 interface Props {
   widget: Widget;
   editMode: boolean;
@@ -76,6 +79,10 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   commodities_tracker: CommodityWidget,
   global_indices: GlobalIndicesWidget,
   macro_news: MacroNewsWidget,
+  structure_scanner: StructureScannerWidget,
+  volatility_regime: VolatilityRegimeWidget,
+  mtf_confluence: MTFConfluenceWidget,
+  session_monitor: SessionMonitorWidget,
 };
 
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {

@@ -17,6 +17,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   LineChart, BarChart3, Gauge, Globe, Newspaper,
   TrendingUp, Cloud, Gamepad2, Clock, Lock,
+  Activity, Zap, Grid3X3,
 } from "lucide-react";
 
 /* ──────────────────────────── Visual Presets ──────────────────────────── */
@@ -297,8 +298,85 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
       { key: "maxArticles", label: "Max Articles", type: "number" as const, defaultValue: 5 },
     ],
   },
+  // ── PRO: Market Structure Scanner ──
+  {
+    type: "structure_scanner",
+    category: "pro",
+    assetType: "crypto",
+    label: "Structure Scanner",
+    desc: "BOS, ChoCH, HH/HL/LH/LL detection",
+    icon: Activity,
+    iconColor: "text-primary",
+    available: true,
+    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
+    defaultSize: { w: 4, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 8, maxH: 8 },
+    configFields: [
+      { key: "symbol", label: "Symbol", type: "select" as const, defaultValue: "BTC", options: [
+        { label: "BTC", value: "BTC" }, { label: "ETH", value: "ETH" }, { label: "SOL", value: "SOL" },
+      ]},
+      { key: "timeframe", label: "Timeframe", type: "select" as const, defaultValue: "1h", options: [
+        { label: "5m", value: "5m" }, { label: "15m", value: "15m" }, { label: "1h", value: "1h" }, { label: "4h", value: "4h" }, { label: "1d", value: "1d" },
+      ]},
+    ],
+  },
+  // ── PRO: Volatility Regime ──
+  {
+    type: "volatility_regime",
+    category: "pro",
+    assetType: "crypto",
+    label: "Volatility Regime",
+    desc: "Compression/Expansion/Trending classifier",
+    icon: Zap,
+    iconColor: "text-warning",
+    available: true,
+    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
+    defaultSize: { w: 4, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 8, maxH: 8 },
+    configFields: [
+      { key: "symbol", label: "Symbol", type: "select" as const, defaultValue: "BTC", options: [
+        { label: "BTC", value: "BTC" }, { label: "ETH", value: "ETH" }, { label: "SOL", value: "SOL" },
+      ]},
+      { key: "timeframe", label: "Timeframe", type: "select" as const, defaultValue: "1h", options: [
+        { label: "5m", value: "5m" }, { label: "15m", value: "15m" }, { label: "1h", value: "1h" }, { label: "4h", value: "4h" }, { label: "1d", value: "1d" },
+      ]},
+    ],
+  },
+  // ── PRO: MTF Confluence Grid ──
+  {
+    type: "mtf_confluence",
+    category: "pro",
+    assetType: "crypto",
+    label: "MTF Confluence",
+    desc: "Multi-timeframe bias alignment matrix",
+    icon: Grid3X3,
+    iconColor: "text-accent",
+    available: true,
+    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
+    defaultSize: { w: 5, h: 4 },
+    constraints: { minW: 4, minH: 3, maxW: 8, maxH: 8 },
+    configFields: [
+      { key: "symbol", label: "Symbol", type: "select" as const, defaultValue: "BTC", options: [
+        { label: "BTC", value: "BTC" }, { label: "ETH", value: "ETH" }, { label: "SOL", value: "SOL" },
+      ]},
+    ],
+  },
+  // ── PRO: Session & Killzone Monitor ──
+  {
+    type: "session_monitor",
+    category: "pro",
+    assetType: "crypto",
+    label: "Session Monitor",
+    desc: "Trading sessions & killzone tracker",
+    icon: Clock,
+    iconColor: "text-success",
+    available: true,
+    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
+    defaultSize: { w: 3, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 6, maxH: 8 },
+    configFields: [],
+  },
 ];
-
 /* ──────────────────────────── Helpers ──────────────────────────── */
 
 export function getWidgetDef(type: string): WidgetRegistryEntry | undefined {
