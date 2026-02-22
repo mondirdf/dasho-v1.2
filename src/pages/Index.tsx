@@ -54,7 +54,7 @@ const Index = () => {
       <nav className="sticky top-0 z-50 glass-nav border-b border-border/40">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <img src={logoDasho} alt={BRAND.name} className="h-14 sm:h-9" />
+            <img src={logoDasho} alt={BRAND.name} className="h-20 sm:h-9" />
           </Link>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <a href="#features" className="hidden sm:inline-flex">
