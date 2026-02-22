@@ -30,6 +30,7 @@ export interface ProFeatures {
 export function usePlanLimits(): PlanLimits & ProFeatures & { loading: boolean } {
   const { user } = useAuth();
   const [plan, setPlan] = useState("free");
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,11 +38,14 @@ export function usePlanLimits(): PlanLimits & ProFeatures & { loading: boolean }
     fetchProfile(user.id)
       .then((p) => {
         setPlan(p?.plan || "free");
+        setTrialEndsAt(p?.trial_ends_at || null);
       })
       .finally(() => setLoading(false));
   }, [user]);
 
-  const isPro = plan === "pro";
+  // Trial counts as Pro if still active
+  const isTrialActive = trialEndsAt ? new Date(trialEndsAt).getTime() > Date.now() : false;
+  const isPro = plan === "pro" || (plan === "free" && isTrialActive);
   const limits = isPro ? PLAN_LIMITS.pro : PLAN_LIMITS.free;
 
   const features: ProFeatures = {
