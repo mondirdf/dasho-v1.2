@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDefaultTheme } from "@/hooks/useDefaultTheme";
 import {
   BRAND, HERO, FEATURES, HOW_IT_WORKS, USE_CASES,
   PRICING, FAQ, CTA, FOOTER, MOCK_WIDGETS,
@@ -40,6 +41,7 @@ const FaqItem = ({ q, a }: { q: string; a: string }) => {
 
 const Index = () => {
   const { user, loading } = useAuth();
+  useDefaultTheme();
   if (!loading && user) return <Navigate to="/dashboard" replace />;
 
   return (
