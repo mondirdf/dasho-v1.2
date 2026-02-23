@@ -65,11 +65,13 @@ import DailyBriefWidget from "./DailyBriefWidget";
 import CorrelationWidget from "./CorrelationWidget";
 import JournalWidget from "./JournalWidget";
 import BacktesterWidget from "./BacktesterWidget";
+import WeeklyReportWidget from "./WeeklyReportWidget";
 
 /** Pro-only widget types that get gated for free users */
 const PRO_WIDGET_TYPES = new Set([
   "structure_scanner", "volatility_regime", "mtf_confluence",
   "session_monitor", "correlation_matrix", "journal", "backtester",
+  "weekly_report",
 ]);
 interface Props {
   widget: Widget;
@@ -102,6 +104,7 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   correlation_matrix: CorrelationWidget,
   journal: JournalWidget,
   backtester: BacktesterWidget,
+  weekly_report: WeeklyReportWidget,
 };
 
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
