@@ -17,7 +17,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   LineChart, BarChart3, Gauge, Globe, Newspaper,
   TrendingUp, Cloud, Gamepad2, Clock, Lock,
-  Activity, Zap, Grid3X3, Eye, BookOpen,
+  Activity, Zap, Grid3X3, Eye, BookOpen, Target,
 } from "lucide-react";
 
 /* ──────────────────────────── Visual Presets ──────────────────────────── */
@@ -437,6 +437,33 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     defaultSize: { w: 3, h: 4 },
     constraints: { minW: 3, minH: 3, maxW: 6, maxH: 8 },
     configFields: [],
+  },
+  // ── PRO: Mini Backtester ──
+  {
+    type: "backtester",
+    category: "pro",
+    assetType: "crypto",
+    label: "Mini Backtester",
+    desc: "Test strategies on historical data",
+    icon: Target,
+    iconColor: "text-primary",
+    available: true,
+    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
+    defaultSize: { w: 4, h: 6 },
+    constraints: { minW: 4, minH: 5, maxW: 8, maxH: 10 },
+    configFields: [
+      { key: "symbol", label: "Symbol", type: "select" as const, defaultValue: "BTC", options: [
+        { label: "BTC", value: "BTC" }, { label: "ETH", value: "ETH" }, { label: "SOL", value: "SOL" },
+      ]},
+      { key: "timeframe", label: "Timeframe", type: "select" as const, defaultValue: "1h", options: [
+        { label: "5m", value: "5m" }, { label: "15m", value: "15m" }, { label: "1h", value: "1h" }, { label: "4h", value: "4h" }, { label: "1d", value: "1d" },
+      ]},
+      { key: "strategy", label: "Strategy", type: "select" as const, defaultValue: "bos_entry", options: [
+        { label: "BOS Entry", value: "bos_entry" }, { label: "ChoCH Reversal", value: "choch_reversal" },
+        { label: "RSI Bounce", value: "rsi_oversold" }, { label: "EMA Cross", value: "ema_cross" },
+        { label: "Breakout", value: "breakout" },
+      ]},
+    ],
   },
 ];
 /* ──────────────────────────── Helpers ──────────────────────────── */

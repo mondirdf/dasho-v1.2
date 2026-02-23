@@ -6,11 +6,28 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const COINS = ["bitcoin", "ethereum", "solana", "cardano", "dogecoin", "ripple", "polkadot", "avalanche-2", "chainlink", "polygon"];
+/**
+ * Symbols to track — Binance ticker format
+ * Primary source: Binance (no API key, no rate limit for public endpoints)
+ * Fallback: CoinGecko → CoinCap
+ */
+const BINANCE_SYMBOLS = [
+  "BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT", "XRPUSDT",
+  "ADAUSDT", "DOGEUSDT", "DOTUSDT", "AVAXUSDT", "LINKUSDT",
+];
+
 const SYMBOL_MAP: Record<string, string> = {
-  bitcoin: "BTC", ethereum: "ETH", solana: "SOL", cardano: "ADA",
-  dogecoin: "DOGE", ripple: "XRP", polkadot: "DOT",
-  "avalanche-2": "AVAX", chainlink: "LINK", polygon: "MATIC",
+  BTCUSDT: "BTC", ETHUSDT: "ETH", SOLUSDT: "SOL", BNBUSDT: "BNB",
+  XRPUSDT: "XRP", ADAUSDT: "ADA", DOGEUSDT: "DOGE", DOTUSDT: "DOT",
+  AVAXUSDT: "AVAX", LINKUSDT: "LINK",
+};
+
+// CoinGecko fallback mapping
+const COINGECKO_IDS = ["bitcoin", "ethereum", "solana", "binancecoin", "ripple", "cardano", "dogecoin", "polkadot", "avalanche-2", "chainlink"];
+const CG_SYMBOL_MAP: Record<string, string> = {
+  bitcoin: "BTC", ethereum: "ETH", solana: "SOL", binancecoin: "BNB",
+  ripple: "XRP", cardano: "ADA", dogecoin: "DOGE", polkadot: "DOT",
+  "avalanche-2": "AVAX", chainlink: "LINK",
 };
 
 interface CryptoData {
@@ -27,15 +44,40 @@ async function logEvent(supabase: any, type: string, status: string, message: st
   } catch (_) { /* logging must never break pipeline */ }
 }
 
+/**
+ * PRIMARY: Fetch from Binance — no API key needed, generous rate limits
+ * Uses /api/v3/ticker/24hr for price + 24h change + volume
+ */
+async function fetchFromBinance(): Promise<CryptoData[]> {
+  const symbolsParam = JSON.stringify(BINANCE_SYMBOLS);
+  const url = `https://api.binance.com/api/v3/ticker/24hr?symbols=${encodeURIComponent(symbolsParam)}`;
+  
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Binance ${res.status}: ${await res.text()}`);
+  
+  const data = await res.json();
+  
+  return data.map((t: any) => ({
+    symbol: SYMBOL_MAP[t.symbol] || t.symbol.replace("USDT", ""),
+    price: parseFloat(t.lastPrice) || 0,
+    change_24h: parseFloat(t.priceChangePercent) || 0,
+    volume: parseFloat(t.quoteVolume) || 0, // Volume in USDT
+    market_cap: 0, // Binance doesn't provide mcap, will be enriched if needed
+  }));
+}
+
+/**
+ * FALLBACK 1: CoinGecko (has mcap but rate limited)
+ */
 async function fetchFromCoinGecko(): Promise<CryptoData[]> {
-  const ids = COINS.join(",");
+  const ids = COINGECKO_IDS.join(",");
   const res = await fetch(
     `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&sparkline=false`
   );
   if (!res.ok) throw new Error(`CoinGecko ${res.status}`);
   const data = await res.json();
   return data.map((c: any) => ({
-    symbol: (SYMBOL_MAP[c.id] || c.symbol).toUpperCase(),
+    symbol: (CG_SYMBOL_MAP[c.id] || c.symbol).toUpperCase(),
     price: c.current_price ?? 0,
     change_24h: c.price_change_percentage_24h ?? 0,
     market_cap: c.market_cap ?? 0,
@@ -43,6 +85,9 @@ async function fetchFromCoinGecko(): Promise<CryptoData[]> {
   }));
 }
 
+/**
+ * FALLBACK 2: CoinCap
+ */
 async function fetchFromCoinCap(): Promise<CryptoData[]> {
   const res = await fetch("https://api.coincap.io/v2/assets?limit=20");
   if (!res.ok) throw new Error(`CoinCap ${res.status}`);
@@ -93,14 +138,21 @@ Deno.serve(async (req) => {
     await logEvent(supabase, "fetch-crypto-data", "started", "Execution started");
 
     let coins: CryptoData[];
-    let source = "coingecko";
+    let source = "binance";
 
+    // Binance → CoinGecko → CoinCap fallback chain
     try {
-      coins = await fetchFromCoinGecko();
-    } catch (e) {
-      console.warn("CoinGecko failed, falling back to CoinCap:", e);
-      coins = await fetchFromCoinCap();
-      source = "coincap";
+      coins = await fetchFromBinance();
+    } catch (binanceErr) {
+      console.warn("Binance failed, trying CoinGecko:", binanceErr);
+      source = "coingecko";
+      try {
+        coins = await fetchFromCoinGecko();
+      } catch (cgErr) {
+        console.warn("CoinGecko failed, falling back to CoinCap:", cgErr);
+        coins = await fetchFromCoinCap();
+        source = "coincap";
+      }
     }
 
     for (const coin of coins) {
