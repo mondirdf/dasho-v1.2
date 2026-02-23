@@ -1,6 +1,8 @@
-# Widget Development Guide — PulseBoard
+# Dasho — Widget Development Guide
 
-This guide explains how to add a new widget to PulseBoard's dashboard system.
+> How to add, customize, and extend widgets in Dasho.
+
+---
 
 ## Architecture Overview
 
@@ -9,6 +11,7 @@ widgetRegistry.ts    → Single source of truth (meta + visual + config fields)
 WidgetContainer.tsx  → Applies ALL visual styling from registry
 WidgetRenderer.tsx   → Maps type → component, wraps in WidgetContainer
 YourWidget.tsx       → Pure content component (NO styling)
+shared.tsx           → Shared sub-components (WidgetHeader, ChangeIndicator, DataRow)
 ```
 
 **Key Principle:** Widget components render **content only** — no backgrounds, borders, shadows, or padding. The `WidgetContainer` reads visual definitions from the registry and applies everything automatically.
@@ -23,6 +26,7 @@ Create `src/components/widgets/MyWidget.tsx`:
 
 ```tsx
 import { memo } from "react";
+import { WidgetHeader, WidgetEmptyState } from "./shared";
 
 interface Props {
   config: {
@@ -31,12 +35,9 @@ interface Props {
 }
 
 const MyWidget = memo(({ config }: Props) => {
-  // Fetch data, manage state...
-
   return (
-    <div className="h-full">
-      {/* Render content ONLY — no p-4, no bg, no border */}
-      <h3 className="text-sm font-semibold text-foreground mb-3">My Widget</h3>
+    <div className="h-full flex flex-col overflow-y-auto">
+      <WidgetHeader title="My Widget" status="live" />
       <p className="text-muted-foreground text-sm">Content here</p>
     </div>
   );
@@ -46,44 +47,32 @@ MyWidget.displayName = "MyWidget";
 export default MyWidget;
 ```
 
-> ⚠️ **Do NOT add** `p-4`, `bg-*`, `border`, `rounded-*`, `shadow-*`, or `overflow-hidden` to your widget. The `WidgetContainer` handles all of this.
+> ⚠️ **Do NOT add** `p-4`, `bg-*`, `border`, `rounded-*`, `shadow-*`, or `overflow-hidden` to your root element. The `WidgetContainer` handles all of this.
 
 ### 2. Register in the Widget Registry
 
-Open `src/components/widgets/widgetRegistry.ts` and add an entry to `WIDGET_REGISTRY`:
+Open `src/components/widgets/widgetRegistry.ts` and add:
 
 ```ts
 {
-  type: "my_widget",             // Unique key — used in DB
-  category: "productivity",      // Category for filtering
-  label: "My Widget",            // Display name
-  desc: "Short description",     // Shown in add-widget sheet
-  icon: Clock,                   // Lucide icon
-  iconColor: "text-primary",     // Icon color class
-  available: true,               // false = "Coming Soon"
-
+  type: "my_widget",
+  category: "crypto",
+  label: "My Widget",
+  desc: "Short description",
+  icon: Clock,
+  iconColor: "text-primary",
+  available: true,
   visual: {
-    bg: "glass",                 // "glass" | "solid" | "gradient" | "subtle"
-    shadow: "md",                // "none" | "sm" | "md" | "lg" | "glow"
-    layout: "default",           // "default" (p-4) | "compact" (p-2) | "padded" (p-6) | "fullbleed" (p-0)
-    animation: "fadeIn",         // "none" | "fadeIn" | "slideUp" | "pulse"
-    accentHsl: "263 70% 60%",    // Optional accent color for decorative elements
-    decorative: true,            // Show subtle background accent blob
-    hoverLift: true,             // Lift on hover
+    bg: "glass",           // "glass" | "solid" | "gradient" | "subtle"
+    shadow: "md",          // "none" | "sm" | "md" | "lg" | "glow"
+    layout: "default",     // "default" (p-4) | "compact" (p-2) | "padded" (p-6)
+    animation: "fadeIn",   // "none" | "fadeIn" | "slideUp" | "pulse"
+    hoverLift: true,
   },
-
-  defaultSize: { w: 4, h: 3 },  // Grid columns × rows
-
-  configFields: [                // Settings modal fields
-    {
-      key: "myOption",
-      label: "My Option",
-      type: "text",              // "text" | "number" | "toggle" | "select"
-      defaultValue: "hello",
-      placeholder: "Enter value",
-    },
-  ],
-},
+  defaultSize: { w: 4, h: 3 },
+  constraints: { minW: 3, minH: 2, maxW: 8, maxH: 6 },
+  configFields: [],
+}
 ```
 
 ### 3. Register the Component
@@ -92,66 +81,98 @@ Open `src/components/widgets/WidgetRenderer.tsx` and add to `WIDGET_MAP`:
 
 ```ts
 import MyWidget from "./MyWidget";
-
-const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
-  // ...existing entries
+const WIDGET_MAP = {
+  // ...existing
   my_widget: MyWidget,
 };
 ```
 
 ### 4. Done!
 
-That's it. The widget will automatically:
+The widget will automatically:
 - Appear in the **Add Widget** sheet with the correct icon and category
 - Have **settings modal** fields generated from `configFields`
-- Receive **visual styling** from `WidgetContainer` (background, shadow, animation, hover)
-- Support **user customization** (colors, border radius, shadow intensity)
-- Work with **drag & resize** in edit mode
+- Receive **visual styling** from `WidgetContainer`
+- Support **user customization** (colors, radius, shadow)
+- Work with **drag & resize** (desktop) and **drag reorder** (mobile)
+
+---
+
+## Mobile Optimization Checklist
+
+When building widgets, ensure they work on 360px screens:
+
+- [ ] Root element has `overflow-y-auto` for scrollable content
+- [ ] Button groups use `overflow-x-auto scrollbar-none` for horizontal scroll
+- [ ] Interactive elements have `min-h-[36px] min-w-[36px]` touch targets
+- [ ] Use `shrink-0` on fixed-height sections to prevent compression
+- [ ] Use `flex-wrap` on rows that might overflow on narrow screens
+- [ ] Text uses `truncate` or `leading-tight` to prevent overflow
+- [ ] Use `text-[11px]` minimum for readable text (not `text-[7px]` or `text-[8px]`)
+- [ ] Icons have `shrink-0` to prevent squishing
+
+---
+
+## Shared Components (`shared.tsx`)
+
+| Component | Usage |
+|-----------|-------|
+| `WidgetHeader` | Title + status badge (Live/Cached) + optional children |
+| `ChangeIndicator` | Colored pill with arrow (▲/▼) and percentage |
+| `SecondaryValue` | Label + value pair (MCap, Volume, etc.) |
+| `DataRow` | Full row with label, price, change — for list widgets |
+| `WidgetEmptyState` | Error/empty state with retry button |
+| `ListSkeleton` | Loading placeholder for list-style widgets |
 
 ---
 
 ## Visual Preset Reference
 
 ### Background (`bg`)
-| Value      | Effect                                         |
-|------------|-------------------------------------------------|
-| `glass`    | Blurred glass with subtle border (default)      |
-| `solid`    | Opaque card background                          |
-| `gradient` | Surface gradient with blur                      |
-| `subtle`   | Very light, minimal background                  |
+| Value | Effect |
+|-------|--------|
+| `glass` | Blurred glass with subtle border (default) |
+| `solid` | Opaque card background |
+| `gradient` | Surface gradient with blur |
+| `subtle` | Very light, minimal |
 
 ### Shadow (`shadow`)
-| Value  | Effect                                |
-|--------|---------------------------------------|
-| `none` | No shadow                             |
-| `sm`   | Light shadow                          |
-| `md`   | Standard depth (default)              |
-| `lg`   | Deep shadow                           |
-| `glow` | Primary-colored glow effect           |
+| Value | Effect |
+|-------|--------|
+| `none` | No shadow |
+| `sm` | Light |
+| `md` | Standard (default) |
+| `lg` | Deep |
+| `glow` | Primary-colored glow |
 
 ### Layout (`layout`)
-| Value       | Padding  |
-|-------------|----------|
-| `default`   | `p-4`    |
-| `compact`   | `p-2`    |
-| `padded`    | `p-6`    |
-| `fullbleed` | `p-0`    |
+| Value | Padding |
+|-------|---------|
+| `default` | `p-4` |
+| `compact` | `p-2` |
+| `padded` | `p-6` |
+| `fullbleed` | `p-0` |
 
 ### Animation (`animation`)
-| Value     | Effect                        |
-|-----------|-------------------------------|
-| `none`    | No animation                  |
-| `fadeIn`  | Fade in + slide up (default)  |
-| `slideUp` | Larger slide up               |
-| `pulse`   | Pulsing glow                  |
+| Value | Effect |
+|-------|--------|
+| `none` | No animation |
+| `fadeIn` | Fade in + slide up (default) |
+| `slideUp` | Larger slide up |
+| `pulse` | Pulsing glow |
 
 ---
 
 ## Rules
 
 1. **No styling in widget components** — only content markup
-2. **Use semantic tokens** — `text-foreground`, `text-muted-foreground`, `bg-secondary/30`, etc.
+2. **Use semantic tokens** — `text-foreground`, `bg-secondary/30`, `text-success`, etc.
 3. **Always use `memo`** — widgets re-render on layout changes
-4. **Handle loading/error states** — use `<Skeleton>` and error UI
-5. **Config via `config` prop** — all settings come from `config_json` in the DB
-6. **One registry entry = one widget** — everything about the widget lives in `widgetRegistry.ts`
+4. **Handle loading/error states** — use `WidgetSkeleton` and `WidgetEmptyState`
+5. **Config via `config` prop** — settings come from `config_json` in the DB
+6. **Mobile-first** — test on 360px viewport width
+7. **Use design system colors** — never hardcode `text-green-400`, use `text-success`
+
+---
+
+*Last updated: February 2026*
