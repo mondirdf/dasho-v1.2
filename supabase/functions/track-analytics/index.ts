@@ -16,6 +16,7 @@ const ALLOWED_EVENTS = new Set([
   "recap_view",
   "widget_add",
   "upgrade_click",
+  "payment_created",
   "login",
 ]);
 
