@@ -19,7 +19,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft, User, Shield, Trash2, LogOut, Crown,
-  BarChart3, Sparkles, SlidersHorizontal, Check, Palette, Download,
+  BarChart3, Sparkles, SlidersHorizontal, Check, Palette, Download, Wallet,
 } from "lucide-react";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { useNavigate } from "react-router-dom";
@@ -31,6 +31,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import UpgradeDialog from "@/components/UpgradeDialog";
 
 /* ── Sub-sections ── */
 
@@ -259,6 +260,7 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [changingPw, setChangingPw] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   const {
     preferences,
@@ -396,9 +398,18 @@ const Settings = () => {
             </Badge>
           </div>
           {!isPro && (
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p>Free plan: 1 dashboard · 5 widgets · 10 alerts</p>
-              <p className="text-xs">Upgrade to Pro for unlimited access.</p>
+            <div className="space-y-3">
+              <div className="text-sm text-muted-foreground space-y-1">
+                <p>Free plan: 1 dashboard · 10 widgets · 10 alerts</p>
+                <p className="text-xs">Upgrade to Pro for unlimited access.</p>
+              </div>
+              <Button
+                className="w-full sm:w-auto glow-button gap-2"
+                onClick={() => setUpgradeOpen(true)}
+              >
+                <Wallet className="h-4 w-4" />
+                Upgrade to Pro — $9 USDT
+              </Button>
             </div>
           )}
           {isPro && (
@@ -499,6 +510,7 @@ const Settings = () => {
           </AlertDialog>
         </section>
       </div>
+      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
     </div>
   );
 };
