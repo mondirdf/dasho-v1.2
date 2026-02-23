@@ -106,7 +106,7 @@ const SessionMonitorWidget = ({ config }: Props) => {
   const { sessions, killzones, activeKillzones, nextKillzone, utcTime, currentHourUTC } = sessionResult;
 
   return (
-    <div className="h-full flex flex-col gap-2 p-3">
+    <div className="h-full flex flex-col gap-2 p-3 overflow-y-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
