@@ -234,83 +234,105 @@ export const WIDGET_CONFIG_FIELDS: Record<string, Array<{
 /* ═══════════════════════ LANDING PAGE COPY ═══════════════════════ */
 
 export const HERO = {
-  heading: "Your Market",
-  headingHighlight: "Command Center.",
+  heading: "Open. Glance.",
+  headingHighlight: "Decide.",
   subheading:
-    "Real-time data, AI-powered recaps, and customizable widgets for modern traders.",
-  ctaPrimary: "Open Crypto Dashboard",
-  ctaSecondary: "Explore Widgets",
+    "Dasho isn't a replacement for TradingView — it's what you open first. One screen, 30 seconds, full market clarity.",
+  ctaPrimary: "Start Free",
+  ctaSecondary: "See How It Works",
 } as const;
 
 export const VALUE_PROPS = [
   {
-    title: "Real-Time Market Data",
-    desc: "Live prices, volume, market cap — updated every minute across major digital assets.",
-    icon: "BarChart3" as const,
-  },
-  {
-    title: "AI-Powered Market Recap",
-    desc: "Get instant sentiment analysis and market context powered by AI.",
+    title: "30 Seconds to Clarity",
+    desc: "Everything you need to know about the market — sentiment, structure, key levels — in one glance.",
     icon: "Zap" as const,
   },
   {
-    title: "Customizable Trading Widgets",
-    desc: "Build your ideal trading view with drag-and-drop widgets designed for financial markets.",
+    title: "Not Another Charting Tool",
+    desc: "TradingView is for analysis. Dasho is for decisions. We filter the noise so you don't have to.",
     icon: "Layout" as const,
+  },
+  {
+    title: "Your Morning Market Ritual",
+    desc: "Open Dasho with your coffee. See what moved, what's trending, and what needs your attention.",
+    icon: "BarChart3" as const,
   },
 ] as const;
 
+export const BEFORE_AFTER = {
+  title: "From Chaos to Clarity",
+  before: {
+    label: "Without Dasho",
+    items: [
+      "10+ browser tabs open",
+      "30 min scanning charts",
+      "Missed signals buried in noise",
+      "Decision fatigue before your first trade",
+    ],
+  },
+  after: {
+    label: "With Dasho",
+    items: [
+      "1 screen, everything you need",
+      "30 seconds to full market context",
+      "AI highlights what actually matters",
+      "Trade with clarity, not confusion",
+    ],
+  },
+} as const;
+
 export const FEATURES = [
   {
-    title: "Price Tracking",
-    desc: "Track any asset with real-time sparkline charts and instant price alerts.",
-    icon: "LineChart" as const,
+    title: "AI Market Recap",
+    desc: "Wake up to an AI-generated summary of what happened overnight and what to watch today.",
+    icon: "Zap" as const,
   },
   {
-    title: "Smart Alerts",
-    desc: "Set triggers on price levels. Get notified the instant your conditions are met.",
-    icon: "Bell" as const,
-  },
-  {
-    title: "Market Sentiment",
-    desc: "Fear & Greed index and market context at a glance for smarter decisions.",
+    title: "Sentiment at a Glance",
+    desc: "Fear & Greed, market structure, and momentum — no chart-reading required.",
     icon: "Gauge" as const,
   },
   {
-    title: "Market News Feed",
-    desc: "Curated market news with keyword filtering and source control.",
+    title: "Smart Alerts",
+    desc: "Set it once, forget it. Get notified only when something actually matters.",
+    icon: "Bell" as const,
+  },
+  {
+    title: "Structure Scanner",
+    desc: "Auto-detect BOS & ChoCH across timeframes. See market shifts before they happen.",
+    icon: "LineChart" as const,
+  },
+  {
+    title: "Curated News Feed",
+    desc: "No clickbait. Only market-moving news, filtered and ranked by relevance.",
     icon: "Newspaper" as const,
   },
   {
-    title: "Multi-Asset Tracker",
-    desc: "Monitor multiple assets side-by-side, sorted by performance or market cap.",
+    title: "Multi-Asset Overview",
+    desc: "Crypto, stocks, forex, commodities — track everything from one dashboard.",
     icon: "BarChart3" as const,
-  },
-  {
-    title: "Secure by Default",
-    desc: "Row-level security, encrypted auth, zero data exposure. Your data stays yours.",
-    icon: "Shield" as const,
   },
 ] as const;
 
 export const HOW_IT_WORKS = [
-  { step: "1", title: "Sign Up Free", desc: "Create your account in seconds. No credit card required." },
-  { step: "2", title: "Build Your Board", desc: "Add market widgets, drag to arrange, resize to fit your trading style." },
-  { step: "3", title: "Stay Sharp", desc: "Set price alerts, monitor sentiment, and never miss a market move." },
+  { step: "1", title: "Sign Up in 10 Seconds", desc: "No credit card. No setup wizard. Just your email and you're in." },
+  { step: "2", title: "Pick Your Widgets", desc: "Choose what matters to you — prices, news, sentiment, alerts. Drag and done." },
+  { step: "3", title: "Open Every Morning", desc: "Make Dasho your first tab. 30 seconds of clarity before every trading session." },
 ] as const;
 
 export const USE_CASES = [
   {
-    title: "Day Traders",
-    desc: "Real-time price tracking, breakout alerts, and multi-asset monitoring for fast execution.",
+    title: "The Morning Glancer",
+    desc: "You don't need 10 charts. You need to know: what moved, what's hot, and should I act? Dasho tells you in seconds.",
   },
   {
-    title: "Market Analysts",
-    desc: "Market sentiment, Fear & Greed index, and curated news feeds for informed analysis.",
+    title: "The Busy Trader",
+    desc: "You have a job, a life, and a portfolio. Dasho gives you market intelligence without the time commitment.",
   },
   {
-    title: "Portfolio Managers",
-    desc: "Share market dashboards with your team. Clone templates and collaborate on market views.",
+    title: "The Signal Hunter",
+    desc: "BOS/ChoCH detection, MTF confluence, volatility regime — the analysis TradingView can't automate.",
   },
 ] as const;
 
@@ -355,39 +377,39 @@ export const PRICING = {
 
 export const FAQ = [
   {
-    q: "Is Dasho free to use?",
-    a: "Yes! The free plan includes 1 dashboard with up to 5 widgets, real-time data, and price alerts. Upgrade to Pro for unlimited dashboards and advanced features.",
+    q: "Is Dasho a replacement for TradingView?",
+    a: "No — and that's the point. TradingView is for deep chart analysis. Dasho is the screen you check first: market sentiment, structure shifts, and AI recaps in 30 seconds flat.",
   },
   {
-    q: "What market data can I track?",
-    a: "Currently you can track crypto prices, volume, market cap, 24h changes, Fear & Greed index, market sentiment, and curated news — all in real time. Stocks, forex, and commodities are on the roadmap.",
+    q: "Is it free?",
+    a: "Yes! The free plan includes a dashboard with up to 5 widgets, real-time data, and price alerts. Upgrade to Pro for unlimited dashboards and advanced analysis tools.",
   },
   {
-    q: "Can I share my dashboard?",
-    a: "Absolutely. Save any dashboard as a template and share it with a public link. Others can clone it into their own account with one click.",
+    q: "What kind of data does Dasho show?",
+    a: "Live prices, Fear & Greed index, AI market recaps, curated news, structure scans (BOS/ChoCH), MTF confluence, and more — across crypto, stocks, forex, and commodities.",
   },
   {
     q: "How fast is the data?",
     a: "Market data refreshes every 60 seconds and news every 5 minutes. All data is cached server-side for instant loading.",
   },
   {
-    q: "Is my data secure?",
-    a: "Yes. All data is protected with Row Level Security. Your dashboards, alerts, and settings are completely private to your account.",
+    q: "Can I use it on mobile?",
+    a: "Absolutely. Dasho is fully responsive and works beautifully on any device — perfect for a quick morning check on your phone.",
   },
   {
-    q: "Will you support stocks and forex?",
-    a: "Yes — multi-asset support for stocks, forex, and commodities is on our roadmap. Crypto is the first fully supported vertical.",
+    q: "Is my data secure?",
+    a: "Yes. All data is protected with Row Level Security. Your dashboards, alerts, and settings are completely private.",
   },
 ] as const;
 
 export const CTA = {
-  heading: "Ready to trade smarter?",
-  subheading: "Build your market command center today — free forever.",
-  button: "Open Dashboard",
+  heading: "Your morning just got smarter.",
+  subheading: "Stop scrolling 10 tabs. Start with one screen that tells you everything.",
+  button: "Start Free",
 } as const;
 
 export const FOOTER = {
-  tagline: "Dasho is a market intelligence dashboard designed for digital and financial assets. Start with crypto — expand to global markets.",
+  tagline: "Dasho — the smart add-on for traders who value their time. Open, glance, decide.",
   productLinks: [
     { label: "Features", href: "#features" },
     { label: "Dashboard", to: "/dashboard" },

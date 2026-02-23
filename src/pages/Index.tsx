@@ -3,6 +3,7 @@ import {
   BarChart3, Bell, Layout, Zap, Shield, Globe,
   ArrowRight, Check, ChevronDown, TrendingUp, TrendingDown,
   Newspaper, LineChart, Gauge, Target, PieChart, Users,
+  Coffee, Clock, Eye, X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -11,7 +12,7 @@ import {
   BRAND, HERO, FEATURES, HOW_IT_WORKS, USE_CASES,
   PRICING, FAQ, CTA, FOOTER, MOCK_WIDGETS,
 } from "@/config/site";
-import { VALUE_PROPS } from "@/config/site";
+import { VALUE_PROPS, BEFORE_AFTER } from "@/config/site";
 import logoDasho from "@/assets/logo-dasho.png";
 
 /* Icon map for features */
@@ -20,7 +21,7 @@ const ICON_MAP: Record<string, any> = {
 };
 
 /* Use case icons */
-const USE_CASE_ICONS = [Target, PieChart, Users];
+const USE_CASE_ICONS = [Coffee, Clock, Target];
 
 const FaqItem = ({ q, a }: { q: string; a: string }) => {
   const [open, setOpen] = useState(false);
@@ -50,7 +51,7 @@ const Index = () => {
         <div className="orb orb-3" />
       </div>
 
-      {/* Nav — Fix #1: better logo size, #2: mobile logo visible, #3: shorter CTA text on mobile, #13: Sign In more visible, #18: more distinct navbar */}
+      {/* Nav */}
       <nav className="sticky top-0 z-50 glass-nav border-b border-border/40">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 shrink-0">
@@ -59,7 +60,7 @@ const Index = () => {
           <div className="flex items-center gap-1.5 sm:gap-3">
             <a href="#features" className="hidden sm:inline-flex">
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs">
-                Widgets
+                Features
               </Button>
             </a>
             <Link to="/pricing" className="hidden sm:inline-flex">
@@ -90,25 +91,36 @@ const Index = () => {
       </nav>
 
       <main className="relative z-10">
-        {/* Hero — Fix #4: reduced padding on mobile, #19: bigger subtitle text */}
+        {/* Hero — Morning ritual narrative */}
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsla(263,70%,66%,0.15),transparent_55%)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsla(220,70%,55%,0.08),transparent_50%)]" />
-          <div className="relative max-w-6xl mx-auto px-4 pt-10 sm:pt-20 pb-10 sm:pb-16 text-center">
+          <div className="relative max-w-6xl mx-auto px-4 pt-12 sm:pt-24 pb-10 sm:pb-16 text-center">
+            {/* Tagline chip */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
+              <Coffee className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">Your morning market ritual</span>
+            </div>
+
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1] max-w-4xl mx-auto">
-              {HERO.heading}{" "}<span className="text-primary">{HERO.headingHighlight}</span>
+              {HERO.heading}{" "}<span className="gradient-text">{HERO.headingHighlight}</span>
             </h1>
-            <p className="mt-4 sm:mt-5 text-sm sm:text-lg text-foreground/70 max-w-xl mx-auto leading-relaxed">
+            <p className="mt-4 sm:mt-6 text-sm sm:text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
               {HERO.subheading}
             </p>
-            {/* Fix #16: Explore Widgets button more visible */}
-            <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-center gap-3">
+
+            {/* Companion badge */}
+            <p className="mt-3 text-xs text-muted-foreground/60 flex items-center justify-center gap-1.5">
+              <Eye className="h-3 w-3" /> Works alongside TradingView, not against it
+            </p>
+
+            <div className="mt-7 sm:mt-9 flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link to="/signup" className="w-full sm:w-auto">
                 <Button size="lg" className="gap-2 text-base px-8 glow-button w-full sm:w-auto">
                   {HERO.ctaPrimary} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <a href="#features" className="w-full sm:w-auto">
+              <a href="#how-it-works" className="w-full sm:w-auto">
                 <Button variant="outline" size="lg" className="text-base px-8 w-full sm:w-auto border-border/60 hover:border-primary/40 hover:bg-primary/5">
                   {HERO.ctaSecondary}
                 </Button>
@@ -117,7 +129,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Value Props — Fix #5: consistent border glow with hover effect */}
+        {/* Value Props */}
         <section className="max-w-4xl mx-auto px-4 pb-12 sm:pb-16">
           <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
             {VALUE_PROPS.map((v) => {
@@ -133,9 +145,48 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Crypto Preview — Fix #6: better spacing on mobile */}
-        <section className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-20" aria-label="Crypto dashboard preview">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-5 sm:mb-8">Your Market Overview</h2>
+        {/* Before / After Comparison */}
+        <section className="max-w-4xl mx-auto px-3 sm:px-4 pb-12 sm:pb-20">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-2">{BEFORE_AFTER.title}</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground text-center mb-6 sm:mb-10">See how Dasho changes your morning routine</p>
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+            {/* Before */}
+            <div className="glass-card p-5 sm:p-6 border-destructive/20">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-1.5 rounded-lg bg-destructive/10"><X className="h-4 w-4 text-destructive" /></div>
+                <h3 className="text-sm sm:text-base font-semibold text-foreground">{BEFORE_AFTER.before.label}</h3>
+              </div>
+              <ul className="space-y-2.5">
+                {BEFORE_AFTER.before.items.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-xs sm:text-sm text-muted-foreground">
+                    <span className="mt-0.5 h-1.5 w-1.5 rounded-full bg-destructive/50 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            {/* After */}
+            <div className="glass-card-enhanced p-5 sm:p-6 border-success/20">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-1.5 rounded-lg bg-success/10"><Check className="h-4 w-4 text-success" /></div>
+                <h3 className="text-sm sm:text-base font-semibold text-foreground">{BEFORE_AFTER.after.label}</h3>
+              </div>
+              <ul className="space-y-2.5">
+                {BEFORE_AFTER.after.items.map((item) => (
+                  <li key={item} className="flex items-start gap-2.5 text-xs sm:text-sm text-foreground/80">
+                    <Check className="h-3.5 w-3.5 mt-0.5 text-success shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        {/* Dashboard Preview */}
+        <section className="max-w-5xl mx-auto px-3 sm:px-4 pb-12 sm:pb-20" aria-label="Dashboard preview">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-2">One Screen. Full Context.</h2>
+          <p className="text-xs sm:text-sm text-muted-foreground text-center mb-5 sm:mb-8">Everything a trader needs — nothing they don't</p>
           <div className="glass-card-enhanced p-3 sm:p-6">
             <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
               {MOCK_WIDGETS.map((w) => (
@@ -157,28 +208,27 @@ const Index = () => {
                 <p className="text-xs text-success font-medium">Greed</p>
               </div>
               <div className="rounded-lg bg-secondary/40 p-3 sm:p-4 space-y-1.5 sm:space-y-2 border border-border/20">
-                <p className="text-xs text-muted-foreground">Crypto News</p>
+                <p className="text-xs text-muted-foreground">Top Headlines</p>
                 <p className="text-xs sm:text-sm text-foreground line-clamp-1">Bitcoin breaks $97K as institutional buying surges</p>
                 <p className="text-xs sm:text-sm text-foreground line-clamp-1">Ethereum staking hits record high ahead of upgrade</p>
               </div>
               <div className="rounded-lg bg-secondary/40 p-3 sm:p-4 space-y-1.5 sm:space-y-2 border border-border/20">
                 <div className="flex items-center gap-2 mb-1">
                   <Zap className="h-3.5 w-3.5 text-warning" />
-                  <p className="text-xs text-muted-foreground">AI Market Recap</p>
+                  <p className="text-xs text-muted-foreground">AI Morning Brief</p>
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground italic leading-relaxed">
-                  "Bullish momentum continues with BTC leading the rally. Market sentiment shifts to Greed territory..."
+                  "Bullish momentum continues. BTC reclaimed $97K with strong volume. Watch for resistance at $98.5K..."
                 </p>
-                <span className="text-[10px] text-primary/70 font-medium">Free with 24h • Pro: 4h & Weekly</span>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Features — Fix #17: hover effects on feature cards */}
+        {/* Features */}
         <section id="features" className="max-w-6xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Market Trading Widgets</h2>
-          <p className="mt-2 sm:mt-3 text-xs sm:text-base text-muted-foreground text-center max-w-lg mx-auto">Professional-grade market tools, zero complexity.</p>
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Intelligence You Can't Build Yourself</h2>
+          <p className="mt-2 sm:mt-3 text-xs sm:text-base text-muted-foreground text-center max-w-lg mx-auto">Automated analysis that would take you hours — delivered in seconds.</p>
           <div className="mt-6 sm:mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {FEATURES.map((f) => {
               const FIcon = ICON_MAP[f.icon] || Globe;
@@ -193,13 +243,12 @@ const Index = () => {
           </div>
         </section>
 
-        {/* How it Works — Fix #7: reduced spacing */}
-        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">How It Works</h2>
+        {/* How it Works */}
+        <section id="how-it-works" className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Up and Running in 60 Seconds</h2>
           <div className="mt-6 sm:mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
             {HOW_IT_WORKS.map((s, i) => (
               <div key={s.step} className="text-center space-y-3 relative">
-                {/* Connector line on desktop */}
                 {i < HOW_IT_WORKS.length - 1 && (
                   <div className="hidden sm:block absolute top-5 left-[calc(50%+24px)] w-[calc(100%-48px)] h-px bg-gradient-to-r from-primary/30 to-transparent" />
                 )}
@@ -213,9 +262,9 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Use Cases — Fix #15: added icons to each card */}
+        {/* Use Cases */}
         <section className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Built For Traders</h2>
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Who Is Dasho For?</h2>
           <div className="mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
             {USE_CASES.map((u, i) => {
               const UIcon = USE_CASE_ICONS[i] || Target;
@@ -234,13 +283,13 @@ const Index = () => {
 
         {/* Testimonials */}
         <section className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Trusted by Traders</h2>
-          <p className="mt-2 text-xs sm:text-sm text-muted-foreground text-center">Join 2,400+ active traders using Dasho daily</p>
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Traders Love It</h2>
+          <p className="mt-2 text-xs sm:text-sm text-muted-foreground text-center">Join 2,400+ traders who simplified their routine</p>
           <div className="mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
             {[
-              { name: "Alex M.", role: "Day Trader", quote: "Dasho replaced 3 tabs I had open. The AI recap alone saves me 30 minutes every morning." },
-              { name: "Sarah K.", role: "Swing Trader", quote: "The structure scanner and MTF confluence are game changers. Worth every penny of the Pro plan." },
-              { name: "Omar R.", role: "Portfolio Manager", quote: "Clean, fast, and exactly what I need. No bloat, just actionable market intelligence." },
+              { name: "Alex M.", role: "Day Trader", quote: "I used to spend 30 minutes every morning scanning charts. Now I open Dasho, glance, and I'm ready to trade." },
+              { name: "Sarah K.", role: "Swing Trader", quote: "It's not a TradingView replacement — it's the missing piece. The AI recap alone is worth it." },
+              { name: "Omar R.", role: "Portfolio Manager", quote: "Finally, a tool that respects my time. One screen, full context, zero noise." },
             ].map((t) => (
               <div key={t.name} className="glass-card-enhanced p-5 sm:p-6 space-y-3">
                 <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
@@ -256,7 +305,7 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Pricing — Fix #14: more visual distinction between plans */}
+        {/* Pricing */}
         <section id="pricing" className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
           <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Simple Pricing</h2>
           <p className="mt-2 sm:mt-3 text-xs sm:text-base text-muted-foreground text-center">Start free, upgrade when you need more.</p>
@@ -293,13 +342,13 @@ const Index = () => {
           </div>
         </section>
 
-        {/* FAQ — Fix #8: cards instead of flat list */}
+        {/* FAQ */}
         <section className="max-w-2xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
           <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center mb-6 sm:mb-8">FAQ</h2>
           <div className="space-y-0">{FAQ.map((f) => <FaqItem key={f.q} q={f.q} a={f.a} />)}</div>
         </section>
 
-        {/* CTA — Fix #9: less whitespace on mobile */}
+        {/* CTA */}
         <section className="max-w-4xl mx-auto px-3 sm:px-4 py-6 sm:py-16 text-center">
           <div className="glass-card-enhanced p-6 sm:p-14 relative overflow-hidden">
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,hsla(263,70%,66%,0.12),transparent_70%)]" />
@@ -314,7 +363,7 @@ const Index = () => {
         </section>
       </main>
 
-      {/* Footer — Fix #10: tighter logo-text gap, #11: roadmap note integrated, #20: better column alignment */}
+      {/* Footer */}
       <footer className="relative z-10 border-t border-border/50 bg-background/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
           <div className="flex flex-col sm:grid sm:grid-cols-4 gap-6 sm:gap-8">
