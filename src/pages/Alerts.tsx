@@ -441,7 +441,7 @@ const Alerts = () => {
                       </button>
                     ))}
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex flex-wrap gap-3">
                     <Select value={smartSymbol} onValueChange={setSmartSymbol}>
                       <SelectTrigger className="w-28">
                         <SelectValue />
@@ -452,15 +452,68 @@ const Alerts = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    {(smartEventType === "mtf_confluence") && (
-                      <Input
-                        type="number"
-                        placeholder="Min score (e.g. 80)"
-                        className="w-36"
-                        onChange={(e) => setSmartCondition({ min_score: Number(e.target.value) })}
-                      />
+
+                    {/* Timeframe for BOS/ChoCH */}
+                    {(smartEventType === "bos" || smartEventType === "choch") && (
+                      <Select
+                        value={smartCondition.timeframe || "1h"}
+                        onValueChange={(v) => setSmartCondition((prev: any) => ({ ...prev, timeframe: v }))}
+                      >
+                        <SelectTrigger className="w-24">
+                          <SelectValue placeholder="Timeframe" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {["5m", "15m", "1h", "4h", "1d"].map((tf) => (
+                            <SelectItem key={tf} value={tf}>{tf}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     )}
-                    {(smartEventType === "regime_change") && (
+
+                    {/* Direction for BOS/ChoCH */}
+                    {(smartEventType === "bos" || smartEventType === "choch") && (
+                      <Select
+                        value={smartCondition.direction || "any"}
+                        onValueChange={(v) => setSmartCondition((prev: any) => ({ ...prev, direction: v === "any" ? undefined : v }))}
+                      >
+                        <SelectTrigger className="w-28">
+                          <SelectValue placeholder="Direction" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="any">Any</SelectItem>
+                          <SelectItem value="bullish">Bullish ↑</SelectItem>
+                          <SelectItem value="bearish">Bearish ↓</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+
+                    {/* MTF Confluence config */}
+                    {smartEventType === "mtf_confluence" && (
+                      <>
+                        <Input
+                          type="number"
+                          placeholder="Min score (e.g. 80)"
+                          className="w-36"
+                          onChange={(e) => setSmartCondition((prev: any) => ({ ...prev, min_score: Number(e.target.value) }))}
+                        />
+                        <Select
+                          value={smartCondition.bias || "any"}
+                          onValueChange={(v) => setSmartCondition((prev: any) => ({ ...prev, bias: v === "any" ? undefined : v }))}
+                        >
+                          <SelectTrigger className="w-28">
+                            <SelectValue placeholder="Bias" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="any">Any</SelectItem>
+                            <SelectItem value="bullish">Bullish</SelectItem>
+                            <SelectItem value="bearish">Bearish</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </>
+                    )}
+
+                    {/* Regime change config */}
+                    {smartEventType === "regime_change" && (
                       <Select onValueChange={(v) => setSmartCondition({ target_regime: v })}>
                         <SelectTrigger className="w-40">
                           <SelectValue placeholder="Target regime" />
