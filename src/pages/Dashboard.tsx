@@ -4,7 +4,7 @@ import { DashboardProvider, useDashboard } from "@/contexts/DashboardContext";
 import { trackEvent } from "@/analytics/behaviorTracker";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardGrid from "@/components/dashboard/DashboardGrid";
-import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
+
 import RenameDialog from "@/components/dashboard/RenameDialog";
 import MorningSummary from "@/components/dashboard/MorningSummary";
 import PersonalBiasPanel from "@/components/dashboard/PersonalBiasPanel";
@@ -45,7 +45,7 @@ const DashboardContent = () => {
       <DashboardHeader />
       <PersonalBiasPanel />
       <DashboardGrid />
-      {isMobile && <MobileBottomNav />}
+      
       <RenameDialog />
       <MorningSummary />
     </div>
