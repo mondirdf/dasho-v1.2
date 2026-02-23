@@ -418,11 +418,10 @@
     -webkit-backdrop-filter: blur(40px);
     border-radius: calc(var(--radius) + 4px);
     box-shadow:
-      0 0 0 1px hsla(var(--glass-border) / 0.12),
-      0 0 40px -12px hsla(var(--glass-glow) / 0.15),
-      0 8px 32px -8px hsla(228, 40%, 4%, 0.6),
-      inset 0 1px 0 hsla(0, 0%, 100%, 0.06),
-      inset 0 -1px 0 hsla(0, 0%, 0%, 0.1);
+      0 0 0 1px hsla(var(--glass-border) / 0.08),
+      0 0 20px -12px hsla(var(--glass-glow) / 0.08),
+      0 6px 24px -8px hsla(228, 40%, 4%, 0.4),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.03);
     overflow: hidden;
     transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
   }
@@ -451,23 +450,23 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      hsla(var(--glass-glow) / 0.06) 45%,
-      hsla(var(--glass-glow) / 0.1) 50%,
-      hsla(var(--glass-glow) / 0.06) 55%,
+      hsla(var(--glass-glow) / 0.03) 45%,
+      hsla(var(--glass-glow) / 0.05) 50%,
+      hsla(var(--glass-glow) / 0.03) 55%,
       transparent 100%
     );
-    animation: shimmer 4s ease-in-out infinite;
+    animation: shimmer 6s ease-in-out infinite;
     pointer-events: none;
     z-index: 0;
   }
   .glass-card-enhanced:hover {
-    border-color: hsla(var(--glass-glow) / 0.4);
+    border-color: hsla(var(--glass-glow) / 0.25);
     box-shadow:
-      0 0 0 1px hsla(var(--glass-border) / 0.15),
-      0 0 50px -10px hsla(var(--glass-glow) / 0.25),
-      0 12px 40px -8px hsla(228, 40%, 4%, 0.5),
-      inset 0 1px 0 hsla(0, 0%, 100%, 0.08);
-    transform: translateY(-2px);
+      0 0 0 1px hsla(var(--glass-border) / 0.1),
+      0 0 25px -10px hsla(var(--glass-glow) / 0.12),
+      0 8px 30px -8px hsla(228, 40%, 4%, 0.4),
+      inset 0 1px 0 hsla(0, 0%, 100%, 0.05);
+    transform: translateY(-1px);
   }
 
   /* ── Glass Input ── */
@@ -488,11 +487,11 @@
   .glow-button {
     position: relative;
     overflow: hidden;
-    box-shadow: 0 0 20px -6px hsla(var(--glass-glow) / 0.3);
+    box-shadow: 0 0 12px -6px hsla(var(--glass-glow) / 0.2);
     transition: box-shadow 0.3s ease, transform 0.2s ease !important;
   }
   .glow-button:hover {
-    box-shadow: 0 0 30px -4px hsla(var(--glass-glow) / 0.5), 0 0 60px -12px hsla(var(--glass-glow) / 0.25);
+    box-shadow: 0 0 18px -4px hsla(var(--glass-glow) / 0.3), 0 0 35px -12px hsla(var(--glass-glow) / 0.15);
     transform: translateY(-1px);
   }
   .glow-button::after {
@@ -505,12 +504,12 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      hsla(0, 0%, 100%, 0.1) 45%,
-      hsla(0, 0%, 100%, 0.15) 50%,
-      hsla(0, 0%, 100%, 0.1) 55%,
+      hsla(0, 0%, 100%, 0.05) 45%,
+      hsla(0, 0%, 100%, 0.08) 50%,
+      hsla(0, 0%, 100%, 0.05) 55%,
       transparent 100%
     );
-    animation: shimmer 3s ease-in-out infinite;
+    animation: shimmer 5s ease-in-out infinite;
     pointer-events: none;
   }
 
@@ -525,9 +524,9 @@
   .animated-bg .orb {
     position: absolute;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.15;
-    animation: float 8s ease-in-out infinite;
+    filter: blur(100px);
+    opacity: 0.08;
+    animation: float 10s ease-in-out infinite;
   }
   .animated-bg .orb-1 {
     width: 400px;
@@ -554,7 +553,7 @@
     left: 50%;
     animation-duration: 11s;
     animation-delay: -5s;
-    opacity: 0.08;
+    opacity: 0.04;
   }
 
   /* ── Keyframes ── */
