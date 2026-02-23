@@ -45,9 +45,11 @@ Deno.serve(async (req) => {
   try {
     const { supabaseAdmin } = await verifyAdmin(req);
 
-    // ── PATCH: Update user plan ──
-    if (req.method === "PATCH") {
-      const { email, plan, pro_days } = await req.json();
+    const body = await req.json().catch(() => ({}));
+
+    // ── Update user plan (action: update_plan) ──
+    if (body.action === "update_plan") {
+      const { email, plan, pro_days } = body;
       
       if (!email) {
         return new Response(JSON.stringify({ error: "Email is required" }), {
@@ -109,11 +111,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    // ── POST: Search users ──
-    if (req.method === "POST") {
-      const { action, query } = await req.json();
-      
-      if (action === "search_users") {
+    // ── Search users (action: search_users) ──
+    if (body.action === "search_users") {
+      const { query } = body;
+      if (query) {
         const { data: users } = await supabaseAdmin
           .from("profiles")
           .select("id, email, display_name, plan, trial_ends_at, created_at")
@@ -128,13 +129,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ── GET: Stats (existing logic) ──
-    if (req.method !== "GET") {
-      return new Response(JSON.stringify({ error: "Method not allowed" }), {
-        status: 405,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    // ── Stats (default — no action specified) ──
 
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();

@@ -383,7 +383,6 @@ const ProManagementSection = () => {
     setSearching(true);
     try {
       const { data, error } = await supabase.functions.invoke("admin-stats", {
-        method: "POST",
         body: { action: "search_users", query: searchQuery },
       });
       if (error) throw error;
@@ -399,8 +398,7 @@ const ProManagementSection = () => {
     setUpdating(email);
     try {
       const { data, error } = await supabase.functions.invoke("admin-stats", {
-        method: "PATCH",
-        body: { email, plan, pro_days: plan === "pro" ? Number(proDays) : undefined },
+        body: { action: "update_plan", email, plan, pro_days: plan === "pro" ? Number(proDays) : undefined },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -425,7 +423,7 @@ const ProManagementSection = () => {
         {/* Search */}
         <div className="flex gap-2">
           <Input
-            placeholder="Search by email or name..."
+            placeholder="Search by email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && searchUsers()}
