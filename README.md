@@ -1,73 +1,96 @@
-# Welcome to your Lovable project
+# Dasho — Market Intelligence Dashboard
 
-## Project info
+> **Your Market Command Center.**
+> Real-time data, AI-powered recaps, and pro trading widgets.
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## What is Dasho?
 
-There are several ways of editing your application.
+Dasho is a **professional-grade market intelligence dashboard** for crypto traders and analysts. It combines real-time price tracking, AI-powered market analysis, and institutional-level trading tools into a customizable, drag-and-drop interface.
 
-**Use Lovable**
+**Live URL**: [dashooo.vercel.app](https://dashooo.vercel.app)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## Tech Stack
 
-**Use your preferred IDE**
+| Layer | Technology |
+|-------|-----------|
+| Frontend | React 18 + TypeScript + Vite |
+| Styling | Tailwind CSS + shadcn/ui + Custom Glass Design System |
+| State | React Context + TanStack Query |
+| Grid | react-grid-layout (desktop) + dnd-kit (mobile) |
+| Backend | Supabase (Postgres + Auth + Edge Functions + Realtime) |
+| Data Sources | Binance API (primary), CoinGecko, CoinCap (fallback) |
+| AI | Lovable AI Gateway / Google Gemini |
+| Payments | NOWPayments (USDT TRC20) |
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+## Quick Start
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd dasho
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## Project Structure
 
-**Use GitHub Codespaces**
+```
+src/
+├── config/site.ts          ← Central config (brand, SEO, pricing, colors, widgets)
+├── pages/                  ← Route pages (Index, Dashboard, Login, etc.)
+├── components/
+│   ├── dashboard/          ← Dashboard grid, header, mobile nav
+│   ├── widgets/            ← 19 widget components + registry + renderer
+│   └── ui/                 ← shadcn/ui primitives
+├── contexts/               ← Auth + Dashboard state providers
+├── hooks/                  ← Custom hooks (mobile, plans, realtime, OHLC)
+├── engines/                ← Trading analysis engines (structure, volatility, etc.)
+├── adapters/market/        ← Multi-source data adapters
+├── services/               ← Supabase queries
+└── analytics/              ← User behavior tracking
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+supabase/functions/         ← 15 Edge Functions (data fetching, AI, payments, admin)
+```
 
-## What technologies are used for this project?
+---
 
-This project is built with:
+## Documentation
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+| File | Description |
+|------|-------------|
+| [`PLATFORM_OVERVIEW.md`](./PLATFORM_OVERVIEW.md) | Complete platform guide — features, design, pricing |
+| [`ARCHITECTURE.md`](./ARCHITECTURE.md) | File structure, database schema, routes |
+| [`DEVELOPER_GUIDE.md`](./DEVELOPER_GUIDE.md) | How to add widgets, change limits, extend the platform |
+| [`WIDGET_GUIDE.md`](./WIDGET_GUIDE.md) | Widget development patterns and visual presets |
 
-## How can I deploy this project?
+---
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+## Key Features
 
-## Can I connect a custom domain to my Lovable project?
+- 🔴 **Real-time crypto data** via Binance API (no rate limiting)
+- 🤖 **AI Market Recap** with 6h-cached daily summaries
+- 📊 **19 widgets** across crypto, stocks, forex, commodities, indices
+- 🔬 **Pro trading tools**: Structure Scanner (BOS/ChoCH), Mini Backtester, MTF Confluence, Volatility Regime
+- 🎯 **Smart Alerts** with multi-condition rules
+- 🎨 **4 visual themes**: Default, Midnight Blue, Terminal Green, Light Mode
+- 📱 **Mobile-optimized** with touch-friendly drag-and-drop
+- 🔐 **Row Level Security** on all user data
+- 💰 **Crypto payments** ($15/2 months Pro via USDT TRC20)
 
-Yes, you can!
+---
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+## License
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+Private project. All rights reserved.
