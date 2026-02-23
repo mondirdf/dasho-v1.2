@@ -351,13 +351,9 @@
   /* Mobile bottom nav */
   .mobile-bottom-nav {
     @apply fixed bottom-0 left-0 right-0 z-40;
-    background: hsla(var(--secondary) / 0.95);
-    border-radius: 24px 24px 0 0;
-    backdrop-filter: blur(24px) saturate(1.2);
-    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    height: calc(68px + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
-    box-shadow: 0 -8px 32px -8px hsla(0, 0%, 0%, 0.4);
-    border-top: 1px solid hsla(var(--glass-border) / 0.3);
+    background: transparent;
   }
 
   /* ── Mobile widget optimizations ── */
