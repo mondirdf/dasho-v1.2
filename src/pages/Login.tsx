@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import logoDasho from "@/assets/logo-dasho.png";
+import SEOHead from "@/components/SEOHead";
+import { SEO } from "@/config/site";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -38,6 +40,7 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-8 sm:py-0 relative">
+      <SEOHead title={SEO.login.title} description={SEO.login.description} path="/login" />
       {/* Animated background orbs */}
       <div className="animated-bg">
         <div className="orb orb-1" />

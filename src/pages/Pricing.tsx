@@ -6,7 +6,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { BRAND, PRICING, FAQ } from "@/config/site";
+import { BRAND, PRICING, FAQ, SEO } from "@/config/site";
+import SEOHead from "@/components/SEOHead";
 import { useDefaultTheme } from "@/hooks/useDefaultTheme";
 import UpgradeDialog, { useUpgradeDialog } from "@/components/UpgradeDialog";
 import logoDasho from "@/assets/logo-dasho.png";
@@ -93,6 +94,7 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen relative">
+      <SEOHead title={`Pricing — ${BRAND.name}`} description="Compare Free and Pro plans. Upgrade for unlimited dashboards, smart alerts, and AI-powered trading tools." path="/pricing" />
       {/* Background */}
       <div className="animated-bg">
         <div className="orb orb-1" />

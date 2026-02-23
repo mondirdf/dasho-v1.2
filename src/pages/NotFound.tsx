@@ -2,7 +2,8 @@ import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, ArrowLeft, Search } from "lucide-react";
-import { NOT_FOUND } from "@/config/site";
+import { NOT_FOUND, SEO } from "@/config/site";
+import SEOHead from "@/components/SEOHead";
 
 const NotFound = () => {
   const location = useLocation();
@@ -25,6 +26,7 @@ const NotFound = () => {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center px-4 overflow-hidden bg-background">
+      <SEOHead title={SEO.notFound.title} description={SEO.notFound.description} noindex />
       {/* Animated gradient orbs */}
       <div
         className="pointer-events-none absolute inset-0 transition-all duration-[2000ms] ease-out"

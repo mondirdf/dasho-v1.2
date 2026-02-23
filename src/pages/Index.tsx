@@ -11,10 +11,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useDefaultTheme } from "@/hooks/useDefaultTheme";
 import {
   BRAND, HERO, FEATURES, HOW_IT_WORKS, USE_CASES,
-  PRICING, FAQ, CTA, FOOTER, MOCK_WIDGETS,
+  PRICING, FAQ, CTA, FOOTER, MOCK_WIDGETS, SEO,
 } from "@/config/site";
 import { VALUE_PROPS, BEFORE_AFTER } from "@/config/site";
 import logoDasho from "@/assets/logo-dasho-dark-bg.png";
+import SEOHead from "@/components/SEOHead";
 
 /* Icon map for features */
 const ICON_MAP: Record<string, any> = {
@@ -46,6 +47,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative">
+      <SEOHead title={SEO.home.title} description={SEO.home.description} path="/" />
       {/* Animated background */}
       <div className="animated-bg">
         <div className="orb orb-1" />
