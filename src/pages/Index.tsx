@@ -57,7 +57,7 @@ const Index = () => {
       <nav className="sticky top-0 z-50 glass-nav border-b border-border/40">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <img src={logoDasho} alt={BRAND.name} className="h-20 sm:h-9" />
+            <img src={logoDasho} alt={BRAND.name} className="h-8 sm:h-9" />
           </Link>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <a href="#features" className="hidden sm:inline-flex">
@@ -384,7 +384,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
           <div className="flex flex-col sm:grid sm:grid-cols-4 gap-6 sm:gap-8">
             <div className="sm:col-span-2">
-              <img src={logoDasho} alt={BRAND.name} className="h-16 sm:h-18" />
+              <img src={logoDasho} alt={BRAND.name} className="h-10 sm:h-14" />
               <p className="text-xs text-muted-foreground mt-3 leading-relaxed max-w-xs">{FOOTER.tagline}</p>
               <p className="text-[11px] text-primary/60 font-medium mt-2">{FOOTER.roadmapNote}</p>
             </div>
