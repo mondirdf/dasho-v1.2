@@ -6,7 +6,7 @@ import ConfirmDialog from "@/components/ConfirmDialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
   Pencil, Check, LogOut, Share2, Plus, Trash2, Copy,
-  RotateCcw, LayoutGrid, ChevronDown, Bell
+  RotateCcw, LayoutGrid, ChevronDown, Bell, Settings
 } from "lucide-react";
 import SavedLayoutsMenu from "@/components/dashboard/SavedLayoutsMenu";
 import {
@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
 import { useCallback, useState } from "react";
-import logoDasho from "@/assets/logo-dasho.png";
+import logoDasho from "@/assets/logo-dasho-new.png";
 import { shareTemplate } from "@/services/dataService";
 import { useToast } from "@/hooks/use-toast";
 import StreakCounter from "@/components/dashboard/StreakCounter";
@@ -140,7 +140,9 @@ const DashboardHeader = () => {
                 <Button size="sm" variant="ghost" className="h-8 w-8 p-0" aria-label="Alerts"><Bell className="h-4 w-4" /></Button>
               </Link>
               <Link to="/settings">
-                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" aria-label="Settings">⚙️</Button>
+                <Button size="sm" variant="ghost" className="h-8 w-8 p-0" aria-label="Settings">
+                  <Settings className="h-4 w-4" />
+                </Button>
               </Link>
               <Button size="sm" variant="ghost" onClick={signOut} className="h-8 w-8 p-0" aria-label="Sign out">
                 <LogOut className="h-3.5 w-3.5" />
