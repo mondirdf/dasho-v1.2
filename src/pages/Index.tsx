@@ -126,6 +126,20 @@ const Index = () => {
                 </Button>
               </a>
             </div>
+
+            {/* Social proof stats — subtle strip */}
+            <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+              {[
+                { value: "2,503", label: "Active traders" },
+                { value: "18K+", label: "Recaps generated" },
+                { value: "30s", label: "Avg. decision time" },
+              ].map((s) => (
+                <div key={s.label} className="text-center">
+                  <p className="text-lg sm:text-2xl font-bold text-foreground">{s.value}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground">{s.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
