@@ -3,6 +3,7 @@ import { Link, useNavigate, Navigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { trackEvent } from "@/analytics/behaviorTracker";
 import { useAuth } from "@/contexts/AuthContext";
+import { useDefaultTheme } from "@/hooks/useDefaultTheme";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import logoDasho from "@/assets/logo-dasho.png";
 const Login = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  useDefaultTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

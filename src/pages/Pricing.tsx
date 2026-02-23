@@ -7,6 +7,7 @@ import {
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { BRAND, PRICING, FAQ } from "@/config/site";
+import { useDefaultTheme } from "@/hooks/useDefaultTheme";
 import UpgradeDialog, { useUpgradeDialog } from "@/components/UpgradeDialog";
 import logoDasho from "@/assets/logo-dasho.png";
 
@@ -88,6 +89,7 @@ const CellValue = ({ value }: { value: boolean | string }) => {
 
 const Pricing = () => {
   const { open, setOpen, openUpgrade } = useUpgradeDialog();
+  useDefaultTheme();
 
   return (
     <div className="min-h-screen relative">
