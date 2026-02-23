@@ -62,11 +62,11 @@ const Index = () => {
                 Widgets
               </Button>
             </a>
-            <a href="#pricing" className="hidden sm:inline-flex">
+            <Link to="/pricing" className="hidden sm:inline-flex">
               <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground text-xs">
                 Pricing
               </Button>
-            </a>
+            </Link>
             {loading ? null : user ? (
               <Link to="/dashboard"><Button size="sm" className="gap-1.5 glow-button text-xs sm:text-sm">Dashboard <ArrowRight className="h-3.5 w-3.5" /></Button></Link>
             ) : (
