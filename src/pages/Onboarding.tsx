@@ -75,7 +75,7 @@ function clearProgress() {
 
 /* ── Component ── */
 
-const Onboarding = () => {
+const Onboarding = ({ onComplete }: { onComplete?: () => void }) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -127,7 +127,7 @@ const Onboarding = () => {
 
       clearProgress();
       toast({ title: "Dashboard created! 🎉" });
-      navigate("/dashboard");
+      if (onComplete) onComplete(); else navigate("/dashboard");
     } catch (e: any) {
       toast({ title: "Error", description: e?.message ?? "Failed", variant: "destructive" });
     } finally {
@@ -158,7 +158,7 @@ const Onboarding = () => {
       } as any).eq("id", user.id);
       clearProgress();
       toast({ title: "Dashboard created!" });
-      navigate("/dashboard");
+      if (onComplete) onComplete(); else navigate("/dashboard");
     } catch (e: any) {
       toast({ title: "Error", description: e?.message ?? "Failed", variant: "destructive" });
     } finally {
