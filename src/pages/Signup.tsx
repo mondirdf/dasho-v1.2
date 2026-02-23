@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import logoDasho from "@/assets/logo-dasho.png";
+import SEOHead from "@/components/SEOHead";
+import { SEO } from "@/config/site";
 
 const Signup = () => {
   const { user, loading: authLoading } = useAuth();
@@ -40,6 +42,7 @@ const Signup = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-3 sm:px-4 py-8 sm:py-0 relative">
+      <SEOHead title={SEO.signup.title} description={SEO.signup.description} path="/signup" />
       {/* Animated background orbs */}
       <div className="animated-bg">
         <div className="orb orb-1" />
