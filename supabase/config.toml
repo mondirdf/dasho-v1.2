@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.fetch-binance-klines]
 verify_jwt = false
+
+[functions.generate-daily-brief]
+verify_jwt = false

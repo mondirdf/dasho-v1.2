@@ -57,6 +57,10 @@ import StructureScannerWidget from "./StructureScannerWidget";
 import VolatilityRegimeWidget from "./VolatilityRegimeWidget";
 import MTFConfluenceWidget from "./MTFConfluenceWidget";
 import SessionMonitorWidget from "./SessionMonitorWidget";
+import WatchlistWidget from "./WatchlistWidget";
+import DailyBriefWidget from "./DailyBriefWidget";
+import CorrelationWidget from "./CorrelationWidget";
+import JournalWidget from "./JournalWidget";
 interface Props {
   widget: Widget;
   editMode: boolean;
@@ -83,6 +87,10 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   volatility_regime: VolatilityRegimeWidget,
   mtf_confluence: MTFConfluenceWidget,
   session_monitor: SessionMonitorWidget,
+  watchlist: WatchlistWidget,
+  daily_brief: DailyBriefWidget,
+  correlation_matrix: CorrelationWidget,
+  journal: JournalWidget,
 };
 
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {

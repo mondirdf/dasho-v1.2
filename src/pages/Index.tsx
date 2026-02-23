@@ -232,6 +232,30 @@ const Index = () => {
           </div>
         </section>
 
+        {/* Testimonials */}
+        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Trusted by Traders</h2>
+          <p className="mt-2 text-xs sm:text-sm text-muted-foreground text-center">Join 2,400+ active traders using Dasho daily</p>
+          <div className="mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+            {[
+              { name: "Alex M.", role: "Day Trader", quote: "Dasho replaced 3 tabs I had open. The AI recap alone saves me 30 minutes every morning." },
+              { name: "Sarah K.", role: "Swing Trader", quote: "The structure scanner and MTF confluence are game changers. Worth every penny of the Pro plan." },
+              { name: "Omar R.", role: "Portfolio Manager", quote: "Clean, fast, and exactly what I need. No bloat, just actionable market intelligence." },
+            ].map((t) => (
+              <div key={t.name} className="glass-card-enhanced p-5 sm:p-6 space-y-3">
+                <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
+                <div className="relative z-10 flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">{t.name[0]}</div>
+                  <div>
+                    <p className="text-xs font-medium text-foreground">{t.name}</p>
+                    <p className="text-[10px] text-muted-foreground">{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Pricing — Fix #14: more visual distinction between plans */}
         <section id="pricing" className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
           <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Simple Pricing</h2>
