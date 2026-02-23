@@ -62,6 +62,7 @@ import WatchlistWidget from "./WatchlistWidget";
 import DailyBriefWidget from "./DailyBriefWidget";
 import CorrelationWidget from "./CorrelationWidget";
 import JournalWidget from "./JournalWidget";
+import BacktesterWidget from "./BacktesterWidget";
 interface Props {
   widget: Widget;
   editMode: boolean;
@@ -92,6 +93,7 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   daily_brief: DailyBriefWidget,
   correlation_matrix: CorrelationWidget,
   journal: JournalWidget,
+  backtester: BacktesterWidget,
 };
 
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
