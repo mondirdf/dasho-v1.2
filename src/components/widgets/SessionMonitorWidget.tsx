@@ -1,11 +1,12 @@
 /**
  * Session & Killzone Monitor Widget
- * Tracks active trading sessions and killzone windows.
+ * Tracks active trading sessions, killzone windows, and volume heatmap.
  * Updates every minute.
  */
 import { useState, useEffect, useMemo } from "react";
 import { analyzeSession, type SessionResult, type SessionName } from "@/engines/sessionEngine";
-import { Clock } from "lucide-react";
+import { useOHLCData } from "@/hooks/useOHLCData";
+import { Clock, BarChart3 } from "lucide-react";
 
 interface Props {
   config: any;
@@ -23,8 +24,76 @@ const SESSION_BAR_COLORS: Record<SessionName, string> = {
   new_york: "bg-success/50",
 };
 
+/** Build a 24-slot hourly volume heatmap from 1h OHLC data */
+function buildVolumeHeatmap(candles: { openTime: number; volume: number }[]): number[] {
+  const hourlyVol = new Array(24).fill(0);
+  const hourlyCounts = new Array(24).fill(0);
+
+  for (const c of candles) {
+    const hour = new Date(c.openTime).getUTCHours();
+    hourlyVol[hour] += c.volume;
+    hourlyCounts[hour]++;
+  }
+
+  // Average volume per hour
+  for (let i = 0; i < 24; i++) {
+    if (hourlyCounts[i] > 0) hourlyVol[i] /= hourlyCounts[i];
+  }
+  return hourlyVol;
+}
+
+const VolumeHeatmap = ({ volumes, currentHour }: { volumes: number[]; currentHour: number }) => {
+  const maxVol = Math.max(...volumes, 1);
+  
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center gap-1.5">
+        <BarChart3 className="h-3 w-3 text-muted-foreground/50" />
+        <span className="text-[8px] text-muted-foreground/40 uppercase tracking-wider">Volume Heatmap (UTC)</span>
+      </div>
+      <div className="flex gap-px h-6">
+        {volumes.map((vol, hour) => {
+          const intensity = maxVol > 0 ? vol / maxVol : 0;
+          const isCurrentHour = hour === currentHour;
+          // Color based on intensity
+          const bg = intensity > 0.8 ? "bg-primary/70"
+            : intensity > 0.6 ? "bg-primary/50"
+            : intensity > 0.4 ? "bg-primary/30"
+            : intensity > 0.2 ? "bg-primary/15"
+            : "bg-secondary/20";
+          
+          return (
+            <div
+              key={hour}
+              className={`flex-1 rounded-sm transition-all relative ${bg} ${isCurrentHour ? "ring-1 ring-foreground/40" : ""}`}
+              title={`${String(hour).padStart(2, "0")}:00 — Vol: ${vol > 1000 ? (vol / 1000).toFixed(0) + "K" : vol.toFixed(0)}`}
+              style={{ minHeight: `${Math.max(15, intensity * 100)}%` }}
+            />
+          );
+        })}
+      </div>
+      <div className="flex justify-between">
+        <span className="text-[7px] text-muted-foreground/30">00</span>
+        <span className="text-[7px] text-muted-foreground/30">06</span>
+        <span className="text-[7px] text-muted-foreground/30">12</span>
+        <span className="text-[7px] text-muted-foreground/30">18</span>
+        <span className="text-[7px] text-muted-foreground/30">23</span>
+      </div>
+    </div>
+  );
+};
+
 const SessionMonitorWidget = ({ config }: Props) => {
   const [sessionResult, setSessionResult] = useState<SessionResult>(() => analyzeSession());
+  const symbol = config?.symbol || "BTC";
+
+  // Fetch 1h candles for volume heatmap
+  const { data: candles } = useOHLCData({ symbol, timeframe: "1h", limit: 100 });
+
+  const volumeHeatmap = useMemo(() => {
+    if (!candles || candles.length < 10) return new Array(24).fill(0);
+    return buildVolumeHeatmap(candles);
+  }, [candles]);
 
   // Update every 30 seconds
   useEffect(() => {
@@ -34,7 +103,7 @@ const SessionMonitorWidget = ({ config }: Props) => {
     return () => clearInterval(interval);
   }, []);
 
-  const { sessions, killzones, activeKillzones, nextKillzone, utcTime } = sessionResult;
+  const { sessions, killzones, activeKillzones, nextKillzone, utcTime, currentHourUTC } = sessionResult;
 
   return (
     <div className="h-full flex flex-col gap-2 p-3">
@@ -86,7 +155,6 @@ const SessionMonitorWidget = ({ config }: Props) => {
                   : `in ${session.minutesUntilStart}m`}
               </span>
             </div>
-            {/* Progress bar */}
             {session.active && (
               <div className="mt-1 h-1 bg-secondary/30 rounded-full overflow-hidden">
                 <div
@@ -120,11 +188,13 @@ const SessionMonitorWidget = ({ config }: Props) => {
         </div>
       )}
 
+      {/* Volume Heatmap */}
+      <VolumeHeatmap volumes={volumeHeatmap} currentHour={currentHourUTC} />
+
       {/* 24h session timeline */}
       <div className="mt-auto">
         <span className="text-[8px] text-muted-foreground/40 uppercase tracking-wider">24H Timeline</span>
         <div className="relative h-4 bg-secondary/20 rounded-full mt-1 overflow-hidden">
-          {/* Session bars */}
           {sessions.map((s) => (
             <div
               key={s.name}
@@ -135,10 +205,9 @@ const SessionMonitorWidget = ({ config }: Props) => {
               }}
             />
           ))}
-          {/* Current time marker */}
           <div
             className="absolute top-0 h-full w-0.5 bg-foreground z-10"
-            style={{ left: `${(sessionResult.currentHourUTC / 24) * 100}%` }}
+            style={{ left: `${(currentHourUTC / 24) * 100}%` }}
           />
         </div>
         <div className="flex justify-between mt-0.5">

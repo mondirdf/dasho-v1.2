@@ -1,17 +1,16 @@
 /**
  * Market Structure Scanner Widget
- * Detects BOS, ChoCH, HH/HL/LH/LL in real-time.
+ * Detects BOS, ChoCH, HH/HL/LH/LL with RSI confirmation.
  * Professional-grade — zero decoration.
  */
 import { useMemo, useState } from "react";
 import { useOHLCData } from "@/hooks/useOHLCData";
-import { analyzeMarketStructure, type StructureSignal, type SwingPoint } from "@/engines/marketStructureEngine";
+import { analyzeMarketStructure, type StructureSignal } from "@/engines/marketStructureEngine";
 import { WidgetHeader } from "./shared";
 import WidgetSkeleton from "./WidgetSkeleton";
-import { TrendingUp, TrendingDown, Minus, Activity } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Activity, ShieldCheck, Volume2 } from "lucide-react";
 
 const TIMEFRAMES = ["5m", "15m", "1h", "4h", "1d"];
-const SYMBOLS = ["BTC", "ETH", "SOL"];
 
 interface Props {
   config: any;
@@ -34,6 +33,25 @@ const SignalBadge = ({ signal }: { signal: StructureSignal }) => {
     }`}>
       {signal.event}
       <span className="opacity-60">{isBullish ? "↑" : "↓"}</span>
+      {signal.rsiConfirmed && <ShieldCheck className="h-2.5 w-2.5 opacity-70" />}
+      {signal.volumeSpike && <Volume2 className="h-2.5 w-2.5 opacity-70" />}
+    </div>
+  );
+};
+
+const RSIGauge = ({ value }: { value: number }) => {
+  const color = value > 70 ? "text-destructive" : value < 30 ? "text-success" : "text-foreground";
+  const label = value > 70 ? "OB" : value < 30 ? "OS" : "";
+  const width = Math.min(100, Math.max(0, value));
+  const barColor = value > 70 ? "bg-destructive/50" : value < 30 ? "bg-success/50" : "bg-primary/40";
+  
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className={`text-[10px] font-mono font-bold ${color}`}>{value.toFixed(0)}</span>
+      <div className="w-12 h-1.5 bg-secondary/30 rounded-full overflow-hidden">
+        <div className={`h-full rounded-full transition-all ${barColor}`} style={{ width: `${width}%` }} />
+      </div>
+      {label && <span className={`text-[8px] font-semibold ${color}`}>{label}</span>}
     </div>
   );
 };
@@ -73,13 +91,14 @@ const StructureScannerWidget = ({ config }: Props) => {
 
   return (
     <div className="h-full flex flex-col gap-2 p-3">
-      {/* Header with bias */}
+      {/* Header with bias + RSI */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Activity className="h-3.5 w-3.5 text-primary" />
           <span className="text-xs font-semibold text-foreground">{symbol} Structure</span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
+          {analysis.currentRSI !== null && <RSIGauge value={analysis.currentRSI} />}
           <BiasIcon bias={analysis.currentBias} />
           <span className={`text-[10px] font-semibold uppercase tracking-wider ${
             analysis.currentBias === "bullish" ? "text-success" :
@@ -123,6 +142,25 @@ const StructureScannerWidget = ({ config }: Props) => {
         </div>
       </div>
 
+      {/* Key S/R Levels */}
+      {analysis.keyLevels.length > 0 && (
+        <div className="space-y-0.5">
+          <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">Key Levels</span>
+          <div className="flex gap-1 flex-wrap">
+            {analysis.keyLevels.slice(0, 4).map((lvl, i) => (
+              <span key={i} className={`text-[8px] font-mono px-1.5 py-0.5 rounded ${
+                lvl.type === "resistance" 
+                  ? "bg-destructive/10 text-destructive/80" 
+                  : "bg-success/10 text-success/80"
+              }`}>
+                {lvl.type === "resistance" ? "R" : "S"} ${lvl.price.toLocaleString()}
+                {lvl.strength > 1 && <span className="opacity-50"> ×{lvl.strength}</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Recent structure events */}
       <div className="flex-1 overflow-y-auto space-y-1">
         <span className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">Recent Events</span>
@@ -133,9 +171,18 @@ const StructureScannerWidget = ({ config }: Props) => {
               <span className="text-[10px] font-mono text-muted-foreground">
                 ${s.brokenLevel.toLocaleString()}
               </span>
-              <span className="text-[9px] text-muted-foreground/50">
-                {new Date(s.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-              </span>
+              <div className="flex items-center gap-1">
+                {s.rsi !== undefined && (
+                  <span className={`text-[8px] font-mono ${
+                    s.rsi > 70 ? "text-destructive/60" : s.rsi < 30 ? "text-success/60" : "text-muted-foreground/40"
+                  }`}>
+                    RSI {s.rsi.toFixed(0)}
+                  </span>
+                )}
+                <span className="text-[9px] text-muted-foreground/50">
+                  {new Date(s.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </div>
             </div>
           ))
         ) : (
