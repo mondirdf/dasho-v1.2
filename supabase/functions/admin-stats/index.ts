@@ -6,54 +6,132 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+async function verifyAdmin(req: Request) {
+  const authHeader = req.headers.get("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) throw new Error("Unauthorized");
+
+  const supabaseAdmin = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+  );
+
+  const supabaseUser = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_ANON_KEY")!,
+    { global: { headers: { Authorization: authHeader } } }
+  );
+
+  const token = authHeader.replace("Bearer ", "");
+  const { data: { user }, error: userError } = await supabaseUser.auth.getUser(token);
+  if (userError || !user) throw new Error("Unauthorized");
+
+  const { data: roleData } = await supabaseAdmin
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", user.id)
+    .eq("role", "admin")
+    .maybeSingle();
+
+  if (!roleData) throw new Error("Forbidden");
+
+  return { supabaseAdmin, userId: user.id };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const { supabaseAdmin } = await verifyAdmin(req);
+
+    // ── PATCH: Update user plan ──
+    if (req.method === "PATCH") {
+      const { email, plan, pro_days } = await req.json();
+      
+      if (!email) {
+        return new Response(JSON.stringify({ error: "Email is required" }), {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      // Find user by email
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from("profiles")
+        .select("id, plan, trial_ends_at, email")
+        .eq("email", email)
+        .maybeSingle();
+
+      if (profileError || !profile) {
+        return new Response(JSON.stringify({ error: "User not found" }), {
+          status: 404,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const updates: Record<string, unknown> = {};
+
+      if (plan === "pro") {
+        updates.plan = "pro";
+        const days = pro_days || 60;
+        const expiresAt = new Date();
+        
+        // Extend if already pro
+        if (profile.plan === "pro" && profile.trial_ends_at) {
+          const currentExpiry = new Date(profile.trial_ends_at);
+          if (currentExpiry > new Date()) {
+            expiresAt.setTime(currentExpiry.getTime());
+          }
+        }
+        expiresAt.setDate(expiresAt.getDate() + days);
+        updates.trial_ends_at = expiresAt.toISOString();
+      } else if (plan === "free") {
+        updates.plan = "free";
+        updates.trial_ends_at = null;
+      }
+
+      const { error: updateError } = await supabaseAdmin
+        .from("profiles")
+        .update(updates)
+        .eq("id", profile.id);
+
+      if (updateError) {
+        return new Response(JSON.stringify({ error: updateError.message }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      return new Response(
+        JSON.stringify({ success: true, user_id: profile.id, plan: updates.plan, trial_ends_at: updates.trial_ends_at }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
-    );
+    // ── POST: Search users ──
+    if (req.method === "POST") {
+      const { action, query } = await req.json();
+      
+      if (action === "search_users") {
+        const { data: users } = await supabaseAdmin
+          .from("profiles")
+          .select("id, email, display_name, plan, trial_ends_at, created_at")
+          .or(`email.ilike.%${query}%,display_name.ilike.%${query}%`)
+          .limit(10)
+          .order("created_at", { ascending: false });
 
-    const supabaseUser = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
-
-    const token = authHeader.replace("Bearer ", "");
-    const { data: { user }, error: userError } =
-      await supabaseUser.auth.getUser(token);
-    if (userError || !user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+        return new Response(
+          JSON.stringify({ users: users ?? [] }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
-    const userId = user.id;
-
-    // Verify admin role
-    const { data: roleData } = await supabaseAdmin
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (!roleData) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
-        status: 403,
+    // ── GET: Stats (existing logic) ──
+    if (req.method !== "GET") {
+      return new Response(JSON.stringify({ error: "Method not allowed" }), {
+        status: 405,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -109,7 +187,7 @@ Deno.serve(async (req) => {
       ? ((paidUsers / totalUsers) * 100).toFixed(2)
       : "0.00";
 
-    // Churn rate: users with cancelled subscriptions / total paid
+    // Churn rate
     const { count: churnedCount } = await supabaseAdmin
       .from("payments")
       .select("*", { count: "exact", head: true })
@@ -147,8 +225,6 @@ Deno.serve(async (req) => {
     }
 
     // ── BEHAVIOR ANALYTICS ──
-
-    // DAU from analytics_events (last 24h)
     const { data: analyticsDauRaw } = await supabaseAdmin
       .from("analytics_events")
       .select("user_id")
@@ -156,28 +232,25 @@ Deno.serve(async (req) => {
       .not("user_id", "is", null);
     const analyticsDau = new Set(analyticsDauRaw?.map((e) => e.user_id)).size;
 
-    // Recap views today
     const { count: recapViewsToday } = await supabaseAdmin
       .from("analytics_events")
       .select("*", { count: "exact", head: true })
       .eq("event_name", "recap_view")
       .gte("created_at", todayStart);
 
-    // Widgets added today
     const { count: widgetsAddedToday } = await supabaseAdmin
       .from("analytics_events")
       .select("*", { count: "exact", head: true })
       .eq("event_name", "widget_add")
       .gte("created_at", todayStart);
 
-    // Upgrade clicks this week
     const { count: upgradeClicksWeek } = await supabaseAdmin
       .from("analytics_events")
       .select("*", { count: "exact", head: true })
       .eq("event_name", "upgrade_click")
       .gte("created_at", weekAgo);
 
-    // 7-day retention: users active today AND 7 days ago
+    // 7-day retention
     const sevenDaysAgoStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const sevenDaysAgoEnd = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
     const { data: activeSevenDaysAgoRaw } = await supabaseAdmin
@@ -203,7 +276,7 @@ Deno.serve(async (req) => {
       ? ((retainedCount / activeSevenDaysAgo.size) * 100).toFixed(1)
       : "0.0";
 
-    // 7-day trend: dashboard_open and recap_view per day
+    // 7-day trend
     const behaviorTrend: { date: string; dashboard_opens: number; recap_views: number }[] = [];
     const { data: trendRaw } = await supabaseAdmin
       .from("analytics_events")
@@ -222,7 +295,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Top 5 widget types by widget_add events
+    // Top 5 widget types
     const { data: widgetAddEvents } = await supabaseAdmin
       .from("analytics_events")
       .select("metadata")
@@ -250,7 +323,6 @@ Deno.serve(async (req) => {
         churnRate: parseFloat(churnRate),
         revenueOverTime,
         userGrowth,
-        // Behavior analytics
         analytics: {
           dau: analyticsDau,
           recapViewsToday: recapViewsToday ?? 0,
@@ -264,8 +336,9 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err) {
+    const status = err.message === "Unauthorized" ? 401 : err.message === "Forbidden" ? 403 : 500;
     return new Response(JSON.stringify({ error: err.message }), {
-      status: 500,
+      status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }

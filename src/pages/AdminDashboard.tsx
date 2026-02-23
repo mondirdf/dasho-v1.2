@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminAuth, useAdminStats, useAdminPromos } from "@/hooks/useAdmin";
 import { Navigate } from "react-router-dom";
@@ -15,6 +16,7 @@ import {
   Users, DollarSign, TrendingUp, TrendingDown,
   Activity, ShieldCheck, Tag, Plus, Lock,
   BarChart3, Eye, MousePointerClick, Sparkles, Repeat,
+  Crown, Search,
 } from "lucide-react";
 import {
   LineChart, Line, AreaChart, Area,
@@ -368,6 +370,141 @@ const PromoSection = () => {
   );
 };
 
+// ── Pro Management Section ──
+const ProManagementSection = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [updating, setUpdating] = useState<string | null>(null);
+  const [proDays, setProDays] = useState("60");
+
+  const searchUsers = async () => {
+    if (!searchQuery.trim()) return;
+    setSearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-stats", {
+        method: "POST",
+        body: { action: "search_users", query: searchQuery },
+      });
+      if (error) throw error;
+      setSearchResults(data.users ?? []);
+    } catch (e: any) {
+      toast.error(e.message || "Search failed");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const updatePlan = async (email: string, plan: "pro" | "free") => {
+    setUpdating(email);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-stats", {
+        method: "PATCH",
+        body: { email, plan, pro_days: plan === "pro" ? Number(proDays) : undefined },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast.success(`${email} → ${plan.toUpperCase()}${plan === "pro" ? ` (${proDays} days)` : ""}`);
+      // Refresh results
+      searchUsers();
+    } catch (e: any) {
+      toast.error(e.message || "Update failed");
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  return (
+    <Card className="glass-card col-span-full">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+          <Crown className="h-4 w-4 text-warning" /> Pro Management
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Search */}
+        <div className="flex gap-2">
+          <Input
+            placeholder="Search by email or name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && searchUsers()}
+            className="flex-1"
+          />
+          <Input
+            type="number"
+            placeholder="Days"
+            value={proDays}
+            onChange={(e) => setProDays(e.target.value)}
+            className="w-20"
+            min="1"
+          />
+          <Button onClick={searchUsers} disabled={searching} size="sm" variant="outline">
+            <Search className="h-3 w-3 mr-1" /> {searching ? "..." : "Search"}
+          </Button>
+        </div>
+
+        {/* Results */}
+        {searchResults.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-muted-foreground text-xs border-b border-border">
+                  <th className="text-left py-2 px-2">Email</th>
+                  <th className="text-left py-2 px-2">Name</th>
+                  <th className="text-left py-2 px-2">Plan</th>
+                  <th className="text-left py-2 px-2">Expires</th>
+                  <th className="text-left py-2 px-2">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {searchResults.map((u) => {
+                  const isExpired = u.trial_ends_at && new Date(u.trial_ends_at) < new Date();
+                  const isPro = u.plan === "pro" && !isExpired;
+                  return (
+                    <tr key={u.id} className="border-b border-border/50">
+                      <td className="py-2 px-2 text-xs">{u.email}</td>
+                      <td className="py-2 px-2 text-xs">{u.display_name || "—"}</td>
+                      <td className="py-2 px-2">
+                        <Badge variant={isPro ? "default" : "secondary"} className="text-[10px]">
+                          {isPro ? "PRO" : "FREE"}
+                        </Badge>
+                      </td>
+                      <td className="py-2 px-2 text-xs text-muted-foreground">
+                        {u.trial_ends_at ? new Date(u.trial_ends_at).toLocaleDateString() : "—"}
+                      </td>
+                      <td className="py-2 px-2">
+                        {isPro ? (
+                          <Button size="sm" variant="ghost" className="text-xs"
+                            disabled={updating === u.email}
+                            onClick={() => updatePlan(u.email, "free")}>
+                            {updating === u.email ? "..." : "Revoke"}
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="default" className="text-xs gap-1"
+                            disabled={updating === u.email}
+                            onClick={() => updatePlan(u.email, "pro")}>
+                            <Crown className="h-3 w-3" />
+                            {updating === u.email ? "..." : `Give Pro (${proDays}d)`}
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {searchResults.length === 0 && searchQuery && !searching && (
+          <p className="text-sm text-muted-foreground text-center py-4">No users found</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+};
+
 // ── Main Admin Page ──
 const AdminDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -459,6 +596,9 @@ const AdminDashboard = () => {
       ) : (
         <p className="text-destructive text-sm">Failed to load stats</p>
       )}
+
+      {/* Pro Management */}
+      <ProManagementSection />
 
       {/* Promo Engine */}
       <PromoSection />
