@@ -12,6 +12,25 @@ async function logEvent(supabase: any, type: string, status: string, message: st
   } catch (_) { /* logging must never break pipeline */ }
 }
 
+async function sendAlertEmail(
+  email: string,
+  data: { displayName?: string; symbol: string; price: number; conditionType: string; targetPrice: number; alertType?: string }
+) {
+  try {
+    await fetch(
+      `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+        },
+        body: JSON.stringify({ to: email, template: "alert_triggered", data }),
+      }
+    );
+  } catch (_) { /* email must never break alert pipeline */ }
+}
+
 /* ─── Lightweight structure analysis for smart alerts ─── */
 
 interface Candle {
@@ -165,6 +184,16 @@ Deno.serve(async (req) => {
 
     let triggered = 0;
 
+    // Pre-fetch user profiles for email notifications
+    const userProfileCache = new Map<string, { email: string; display_name: string | null }>();
+
+    async function getUserProfile(userId: string) {
+      if (userProfileCache.has(userId)) return userProfileCache.get(userId)!;
+      const { data } = await supabase.from("profiles").select("email, display_name").eq("id", userId).single();
+      if (data) userProfileCache.set(userId, data);
+      return data;
+    }
+
     if (alerts && alerts.length > 0) {
       const validAlerts = alerts.filter((a: any) => {
         if (!a.coin_symbol || typeof a.coin_symbol !== "string") return false;
@@ -195,6 +224,18 @@ Deno.serve(async (req) => {
           });
           await supabase.from("alerts").update({ is_active: false, triggered_at: new Date().toISOString() }).eq("id", alert.id);
           triggered++;
+
+          // Send email notification
+          const profile = await getUserProfile(alert.user_id);
+          if (profile?.email) {
+            sendAlertEmail(profile.email, {
+              displayName: profile.display_name || undefined,
+              symbol: alert.coin_symbol,
+              price: currentPrice,
+              conditionType: alert.condition_type,
+              targetPrice: alert.target_price,
+            });
+          }
         }
       }
     }
@@ -310,6 +351,19 @@ Deno.serve(async (req) => {
             .update({ last_triggered_at: new Date().toISOString() })
             .eq("id", rule.id);
           smartTriggered++;
+
+          // Send email notification for smart alert
+          const profile = await getUserProfile(rule.user_id);
+          if (profile?.email) {
+            sendAlertEmail(profile.email, {
+              displayName: profile.display_name || undefined,
+              symbol: rule.symbol,
+              price: currentPrice,
+              conditionType: rule.event_type,
+              targetPrice: currentPrice,
+              alertType: "smart",
+            });
+          }
         }
       }
     }

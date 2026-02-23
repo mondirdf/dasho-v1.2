@@ -163,6 +163,40 @@ Deno.serve(async (req) => {
           },
         })
         .eq("subscription_id", String(payment_id));
+
+      // Send Pro activation email
+      try {
+        const { data: userProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("email, display_name")
+          .eq("id", userId)
+          .single();
+
+        if (userProfile?.email) {
+          await fetch(
+            `${Deno.env.get("SUPABASE_URL")}/functions/v1/send-email`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${Deno.env.get("SUPABASE_ANON_KEY")}`,
+              },
+              body: JSON.stringify({
+                to: userProfile.email,
+                template: "pro_activated",
+                data: {
+                  displayName: userProfile.display_name,
+                  expiresAt: finalExpiry.toISOString(),
+                },
+              }),
+            }
+          );
+          console.log(`Pro activation email sent to ${userProfile.email}`);
+        }
+      } catch (emailErr) {
+        console.error("Failed to send Pro activation email:", emailErr);
+        // Don't fail the webhook over email
+      }
     }
 
     return new Response("OK", { status: 200, headers: corsHeaders });
