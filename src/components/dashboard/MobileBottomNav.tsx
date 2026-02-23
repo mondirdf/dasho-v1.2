@@ -15,7 +15,7 @@ const ITEM_COUNT = NAV_ITEMS.length;
 const BAR_W = 400;
 const BAR_H = 68;
 const DIP_RADIUS = 34;
-const DIP_DEPTH = 20;
+const DIP_DEPTH = 14;
 
 /** Build SVG path with a concave dip centered at `cx` */
 function buildBarPath(cx: number): string {
@@ -80,19 +80,19 @@ const MobileBottomNav = () => {
       <motion.div
         className="absolute z-10 flex items-center justify-center"
         style={{
-          width: 52,
-          height: 52,
+          width: 44,
+          height: 44,
           borderRadius: "50%",
-          top: -4,
+          top: 2,
         }}
         initial={false}
         animate={{
-          left: `calc(${(safeIndex / ITEM_COUNT) * 100}% + ${100 / ITEM_COUNT / 2}% - 26px)`,
+          left: `calc(${(safeIndex / ITEM_COUNT) * 100}% + ${100 / ITEM_COUNT / 2}% - 22px)`,
         }}
         transition={{ type: "spring", stiffness: 350, damping: 35, mass: 0.8 }}
       >
-        <div className="w-[48px] h-[48px] rounded-full bg-primary/20 flex items-center justify-center">
-          <div className="w-[40px] h-[40px] rounded-full bg-primary flex items-center justify-center shadow-[0_0_16px_4px_hsla(263,70%,60%,0.35)]">
+        <div className="w-[42px] h-[42px] rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="w-[36px] h-[36px] rounded-full bg-primary/80 flex items-center justify-center">
             <AnimatePresence mode="wait">
               {NAV_ITEMS.map(
                 (item, i) =>
