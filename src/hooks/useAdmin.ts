@@ -89,7 +89,7 @@ export function useAdminStats(enabled = true) {
     enabled,
     queryFn: async () => {
       const { data, error } = await supabase.functions.invoke("admin-stats", {
-        method: "GET",
+        body: {},
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
