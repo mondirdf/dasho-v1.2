@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Dasho <notifications@dasho.app>",
+        from: "Dasho <onboarding@resend.dev>",
         to: [payload.to],
         subject,
         html,
