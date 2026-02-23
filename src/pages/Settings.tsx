@@ -19,8 +19,9 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft, User, Shield, Trash2, LogOut, Crown,
-  BarChart3, Sparkles, SlidersHorizontal, Check,
+  BarChart3, Sparkles, SlidersHorizontal, Check, Palette, Download,
 } from "lucide-react";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { useNavigate } from "react-router-dom";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -157,38 +158,94 @@ const DisplaySettingsSection = ({
 }: {
   prefs: UserPreferences;
   onChange: (p: UserPreferences) => void;
-}) => (
-  <section className="glass-card p-6 space-y-4">
-    <div className="flex items-center gap-2">
-      <SlidersHorizontal className="h-5 w-5 text-primary" />
-      <h2 className="text-base font-semibold text-foreground">Display Settings</h2>
-    </div>
+}) => {
+  const { isPro } = usePlanLimits();
+  const currentTheme = (typeof document !== "undefined" && document.documentElement.getAttribute("data-theme")) || "dark";
 
-    <div className="flex items-center justify-between">
-      <div className="space-y-0.5">
-        <Label>Compact Mode</Label>
-        <p className="text-[11px] text-muted-foreground">Reduce widget spacing and font sizes.</p>
-      </div>
-      <Switch
-        checked={prefs.compactMode}
-        onCheckedChange={(v) => onChange({ ...prefs, compactMode: v })}
-      />
-    </div>
+  const themes = [
+    { id: "dark", label: "Dark", desc: "Default dark theme", free: true },
+    { id: "midnight", label: "Midnight Blue", desc: "Deep blue tones", free: false },
+    { id: "terminal", label: "Terminal", desc: "Hacker style", free: false },
+    { id: "light", label: "Light", desc: "Light mode", free: false },
+  ];
 
-    <div className="flex items-center justify-between">
-      <div className="space-y-0.5">
-        <Label>Highlight Top Movers</Label>
-        <p className="text-[11px] text-muted-foreground">
-          Visually emphasize assets with largest price changes.
-        </p>
+  const setTheme = (id: string) => {
+    if (!isPro && !themes.find((t) => t.id === id)?.free) return;
+    if (id === "dark") {
+      document.documentElement.removeAttribute("data-theme");
+    } else {
+      document.documentElement.setAttribute("data-theme", id);
+    }
+    localStorage.setItem("dasho-theme", id);
+  };
+
+  return (
+    <section className="glass-card p-6 space-y-4">
+      <div className="flex items-center gap-2">
+        <SlidersHorizontal className="h-5 w-5 text-primary" />
+        <h2 className="text-base font-semibold text-foreground">Display Settings</h2>
       </div>
-      <Switch
-        checked={prefs.highlightTopMovers}
-        onCheckedChange={(v) => onChange({ ...prefs, highlightTopMovers: v })}
-      />
-    </div>
-  </section>
-);
+
+      {/* Themes */}
+      <div className="space-y-2">
+        <div className="flex items-center gap-2">
+          <Palette className="h-4 w-4 text-muted-foreground" />
+          <Label>Theme</Label>
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          {themes.map((t) => {
+            const locked = !t.free && !isPro;
+            const active = currentTheme === t.id || (t.id === "dark" && !currentTheme);
+            return (
+              <button
+                key={t.id}
+                onClick={() => !locked && setTheme(t.id)}
+                className={`p-3 rounded-xl text-left border transition-all ${
+                  active
+                    ? "bg-primary/10 border-primary/30 ring-1 ring-primary/20"
+                    : locked
+                    ? "opacity-40 cursor-not-allowed border-border/30"
+                    : "border-border/40 hover:bg-secondary/60"
+                }`}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-medium text-foreground">{t.label}</span>
+                  {locked && <Crown className="h-3 w-3 text-primary" />}
+                  {active && <Check className="h-3 w-3 text-primary ml-auto" />}
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-0.5">{t.desc}</p>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <Label>Compact Mode</Label>
+          <p className="text-[11px] text-muted-foreground">Reduce widget spacing and font sizes.</p>
+        </div>
+        <Switch
+          checked={prefs.compactMode}
+          onCheckedChange={(v) => onChange({ ...prefs, compactMode: v })}
+        />
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className="space-y-0.5">
+          <Label>Highlight Top Movers</Label>
+          <p className="text-[11px] text-muted-foreground">
+            Visually emphasize assets with largest price changes.
+          </p>
+        </div>
+        <Switch
+          checked={prefs.highlightTopMovers}
+          onCheckedChange={(v) => onChange({ ...prefs, highlightTopMovers: v })}
+        />
+      </div>
+    </section>
+  );
+};
 
 /* ── Main Settings Page ── */
 

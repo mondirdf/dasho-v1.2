@@ -17,7 +17,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   LineChart, BarChart3, Gauge, Globe, Newspaper,
   TrendingUp, Cloud, Gamepad2, Clock, Lock,
-  Activity, Zap, Grid3X3,
+  Activity, Zap, Grid3X3, Eye, BookOpen,
 } from "lucide-react";
 
 /* ──────────────────────────── Visual Presets ──────────────────────────── */
@@ -370,6 +370,68 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     desc: "Trading sessions & killzone tracker",
     icon: Clock,
     iconColor: "text-success",
+    available: true,
+    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
+    defaultSize: { w: 3, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 6, maxH: 8 },
+    configFields: [],
+  },
+  // ── Watchlist ──
+  {
+    type: "watchlist",
+    category: "market",
+    assetType: "crypto",
+    label: "Watchlist",
+    desc: "Personal watchlist with notes",
+    icon: Eye,
+    iconColor: "text-accent",
+    available: true,
+    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
+    defaultSize: { w: 3, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 6, maxH: 8 },
+    configFields: [],
+  },
+  // ── Daily Brief ──
+  {
+    type: "daily_brief",
+    category: "market",
+    assetType: "crypto",
+    label: "Daily Brief",
+    desc: "AI-powered daily trading brief",
+    icon: Newspaper,
+    iconColor: "text-primary",
+    available: true,
+    visual: { bg: "gradient", shadow: "glow", layout: "default", animation: "fadeIn", decorative: true, hoverLift: true },
+    defaultSize: { w: 4, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 8, maxH: 8 },
+    configFields: [],
+  },
+  // ── PRO: Correlation Matrix ──
+  {
+    type: "correlation_matrix",
+    category: "pro",
+    assetType: "crypto",
+    label: "Correlation Matrix",
+    desc: "Asset correlation heatmap",
+    icon: Grid3X3,
+    iconColor: "text-warning",
+    available: true,
+    visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
+    defaultSize: { w: 4, h: 4 },
+    constraints: { minW: 3, minH: 3, maxW: 8, maxH: 8 },
+    configFields: [
+      { key: "symbols", label: "Symbols (comma-separated)", type: "text" as const, defaultValue: "BTC,ETH,SOL,XRP", placeholder: "BTC,ETH,SOL" },
+    ],
+  },
+  // ── PRO: Performance Journal ──
+  {
+    type: "journal",
+    category: "pro",
+    assetType: "crypto",
+    label: "Journal",
+    desc: "Daily market journal with notes",
+    icon: BookOpen,
+    iconColor: "text-warning",
     available: true,
     visual: { bg: "glass", shadow: "md", layout: "default", animation: "fadeIn", hoverLift: true },
     defaultSize: { w: 3, h: 4 },

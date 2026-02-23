@@ -328,6 +328,36 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_briefs: {
+        Row: {
+          brief_date: string
+          content: string
+          created_at: string
+          id: string
+          metadata: Json
+          summary: string | null
+          title: string
+        }
+        Insert: {
+          brief_date?: string
+          content: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          summary?: string | null
+          title: string
+        }
+        Update: {
+          brief_date?: string
+          content?: string
+          created_at?: string
+          id?: string
+          metadata?: Json
+          summary?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       dashboards: {
         Row: {
           created_at: string
@@ -699,6 +729,36 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      watchlist_items: {
+        Row: {
+          asset_type: string
+          created_at: string
+          id: string
+          notes: string | null
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asset_type?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          symbol: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asset_type?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          symbol?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
