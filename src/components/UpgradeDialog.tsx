@@ -1,9 +1,11 @@
 /**
- * UpgradeDialog — Shows Pro plan benefits + triggers crypto payment.
- * Displays USDT TRC20 payment address after calling create-payment edge function.
+ * UpgradeDialog — Premium upgrade flow with crypto payment.
  */
 import { useState, useCallback } from "react";
-import { Crown, Copy, Check, Loader2, Wallet, ExternalLink } from "lucide-react";
+import {
+  Crown, Copy, Check, Loader2, Wallet, Zap, Shield, BarChart3,
+  Layout, Bell, FileDown, Sparkles
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -29,11 +31,11 @@ interface UpgradeDialogProps {
 }
 
 const PRO_FEATURES = [
-  "4h & Weekly AI Recaps",
-  "Unlimited widgets & dashboards",
-  "Smart Alerts (BOS, ChoCH, MTF)",
-  "Custom themes & layout profiles",
-  "CSV exports & priority refresh",
+  { icon: BarChart3, label: "4h & Weekly AI Recaps", desc: "Stay ahead of every move" },
+  { icon: Layout, label: "Unlimited widgets & dashboards", desc: "Build your perfect setup" },
+  { icon: Bell, label: "Smart Alerts (BOS, ChoCH, MTF)", desc: "Never miss a breakout" },
+  { icon: Sparkles, label: "Custom themes & layout profiles", desc: "Make it truly yours" },
+  { icon: FileDown, label: "CSV exports & priority refresh", desc: "Faster data, anywhere" },
 ];
 
 const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
@@ -47,13 +49,11 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
     trackEvent("upgrade_click");
     try {
       const { data, error } = await supabase.functions.invoke("create-payment");
-
       if (error) throw error;
       if (data?.error) {
         toast({ title: data.error, variant: "destructive" });
         return;
       }
-
       setPayment(data as PaymentInfo);
       trackEvent("payment_created");
     } catch (e: any) {
@@ -85,107 +85,146 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md bg-card border-border/60">
+      <DialogContent className="sm:max-w-[440px] bg-card border-border/60 p-0 overflow-hidden">
         {!payment ? (
-          <>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-foreground">
-                <Crown className="h-5 w-5 text-primary" />
-                Unlock Pro Market Intelligence
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                One-time payment — lifetime Pro access.
-              </DialogDescription>
-            </DialogHeader>
+          <div className="flex flex-col">
+            {/* Hero Banner */}
+            <div className="relative px-6 pt-7 pb-5 bg-gradient-to-br from-primary/20 via-primary/5 to-transparent">
+              <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_left,hsl(var(--primary)/0.15),transparent_60%)]" />
+              <DialogHeader className="relative z-10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="h-10 w-10 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center">
+                    <Crown className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex flex-col">
+                    <DialogTitle className="text-foreground text-lg">
+                      Upgrade to Pro
+                    </DialogTitle>
+                    <DialogDescription className="text-muted-foreground text-xs mt-0.5">
+                      One-time payment · Lifetime access
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
 
-            <div className="space-y-2.5 py-2">
+              {/* Price badge */}
+              <div className="relative z-10 mt-3 inline-flex items-baseline gap-1.5 bg-background/60 backdrop-blur-sm border border-border/50 rounded-xl px-4 py-2">
+                <span className="text-3xl font-bold text-foreground tabular-nums">$15</span>
+                <span className="text-sm text-muted-foreground">USDT</span>
+                <span className="ml-2 text-[10px] text-muted-foreground bg-secondary/80 rounded-md px-1.5 py-0.5">
+                  one-time
+                </span>
+              </div>
+            </div>
+
+            {/* Features */}
+            <div className="px-6 py-5 space-y-3">
               {PRO_FEATURES.map((f) => (
-                <div key={f} className="flex items-center gap-2.5 text-sm text-foreground">
-                  <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />
-                  {f}
+                <div key={f.label} className="flex items-start gap-3 group">
+                  <div className="mt-0.5 h-8 w-8 rounded-lg bg-primary/10 border border-primary/15 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                    <f.icon className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-sm font-medium text-foreground">{f.label}</span>
+                    <span className="text-[11px] text-muted-foreground">{f.desc}</span>
+                  </div>
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-col gap-2 pt-2">
+            {/* CTA */}
+            <div className="px-6 pb-6 space-y-2.5">
               <Button
-                className="w-full glow-button gap-2"
+                className="w-full h-12 text-base font-semibold glow-button gap-2.5"
                 onClick={handleUpgrade}
                 disabled={loading}
               >
                 {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
-                  <Wallet className="h-4 w-4" />
+                  <Zap className="h-5 w-5" />
                 )}
-                {loading ? "Creating payment…" : "Pay $15 with USDT (TRC20)"}
+                {loading ? "Creating payment…" : "Unlock Pro Now"}
               </Button>
-              <Button
-                variant="ghost"
-                className="w-full text-muted-foreground text-sm"
+
+              <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+                <Shield className="h-3 w-3" />
+                Secure crypto payment · Instant activation
+              </div>
+
+              <button
+                className="w-full text-center text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors py-1"
                 onClick={() => handleClose(false)}
               >
-                Continue with Free
-              </Button>
+                Maybe later
+              </button>
             </div>
-          </>
+          </div>
         ) : (
-          <>
+          <div className="flex flex-col p-6 space-y-5">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-foreground">
-                <Wallet className="h-5 w-5 text-success" />
-                Send USDT to activate Pro
-              </DialogTitle>
-              <DialogDescription className="text-muted-foreground">
-                Send exactly the amount below to this TRC20 address.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-2">
-              {/* Amount */}
-              <div className="glass-card p-4 text-center space-y-1">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider">Amount</p>
-                <p className="text-2xl font-bold text-foreground tabular-nums-animate">
-                  {payment.pay_amount} <span className="text-sm text-muted-foreground">USDT</span>
-                </p>
-                <p className="text-[11px] text-muted-foreground">TRC20 Network</p>
-              </div>
-
-              {/* Address */}
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Payment Address</p>
-                <div className="flex items-center gap-2">
-                  <code className="flex-1 text-xs bg-secondary/60 rounded-lg px-3 py-2.5 text-foreground break-all font-mono border border-border/40">
-                    {payment.pay_address}
-                  </code>
-                  <Button
-                    size="icon"
-                    variant="outline"
-                    className="shrink-0 h-10 w-10"
-                    onClick={copyAddress}
-                  >
-                    {copied ? (
-                      <Check className="h-4 w-4 text-success" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                  </Button>
+              <div className="flex items-center gap-2">
+                <div className="h-10 w-10 rounded-xl bg-success/15 border border-success/25 flex items-center justify-center">
+                  <Wallet className="h-5 w-5 text-success" />
+                </div>
+                <div>
+                  <DialogTitle className="text-foreground text-base">
+                    Complete Payment
+                  </DialogTitle>
+                  <DialogDescription className="text-muted-foreground text-xs">
+                    Send the exact amount below
+                  </DialogDescription>
                 </div>
               </div>
+            </DialogHeader>
 
-              {/* Info */}
-              <div className="rounded-lg bg-primary/5 border border-primary/15 p-3 space-y-1.5">
-                <p className="text-xs text-foreground font-medium">⚡ After payment:</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Your plan will upgrade to Pro automatically within a few minutes once the transaction is confirmed on the blockchain.
-                </p>
+            {/* Amount Card */}
+            <div className="rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-5 text-center space-y-1">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Send exactly</p>
+              <p className="text-3xl font-bold text-foreground tabular-nums">
+                {payment.pay_amount} <span className="text-sm font-normal text-muted-foreground">USDT</span>
+              </p>
+              <p className="text-[11px] text-primary/80 font-medium">TRC20 Network</p>
+            </div>
+
+            {/* Address */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-foreground">Wallet Address</p>
+              <div
+                className="flex items-center gap-2 bg-secondary/50 rounded-xl border border-border/50 p-3 cursor-pointer hover:bg-secondary/70 transition-colors group"
+                onClick={copyAddress}
+              >
+                <code className="flex-1 text-xs text-foreground break-all font-mono leading-relaxed">
+                  {payment.pay_address}
+                </code>
+                <div className="shrink-0 h-9 w-9 rounded-lg bg-background/80 border border-border/40 flex items-center justify-center group-hover:border-primary/30 transition-colors">
+                  {copied ? (
+                    <Check className="h-4 w-4 text-success" />
+                  ) : (
+                    <Copy className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </div>
               </div>
-
               <p className="text-[10px] text-muted-foreground text-center">
-                Payment ID: {payment.payment_id}
+                Tap to copy address
               </p>
             </div>
-          </>
+
+            {/* Status note */}
+            <div className="rounded-xl bg-success/5 border border-success/15 p-4 flex items-start gap-3">
+              <Zap className="h-4 w-4 text-success shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-foreground">Auto-activation</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Your Pro plan activates automatically within minutes after blockchain confirmation.
+                </p>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-muted-foreground/50 text-center">
+              Reference: {payment.payment_id}
+            </p>
+          </div>
         )}
       </DialogContent>
     </Dialog>
