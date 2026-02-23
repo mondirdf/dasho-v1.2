@@ -359,6 +359,33 @@
     box-shadow: 0 -4px 20px -4px hsla(0, 0%, 0%, 0.3);
   }
 
+  /* ── Mobile widget optimizations ── */
+  @media (max-width: 480px) {
+    /* Ensure widgets don't overflow horizontally */
+    .widget-container {
+      max-width: 100vw;
+    }
+
+    /* Larger touch targets for all interactive elements inside widgets */
+    .widget-container button {
+      min-height: 36px;
+      min-width: 36px;
+    }
+
+    /* Better text readability on small screens */
+    .widget-container .text-\[8px\] {
+      font-size: 9px;
+    }
+    .widget-container .text-\[7px\] {
+      font-size: 8px;
+    }
+
+    /* Prevent recharts tooltips from going offscreen */
+    .recharts-tooltip-wrapper {
+      max-width: 200px !important;
+    }
+  }
+
   /* Hide scrollbar utility */
   .scrollbar-none {
     -ms-overflow-style: none;

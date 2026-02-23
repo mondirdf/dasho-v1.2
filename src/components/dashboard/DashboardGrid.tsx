@@ -62,7 +62,7 @@ const SortableWidget = ({ widget, editMode, onRemove, onSettings, onConfirmRemov
           dragListeners={listeners}
         />
       )}
-      <div className={`min-h-[200px] ${editMode ? "rounded-b-[var(--radius)] overflow-hidden ring-1 ring-primary/20" : ""}`}>
+      <div className={`min-h-[220px] ${editMode ? "rounded-b-[var(--radius)] overflow-hidden ring-1 ring-primary/20" : ""}`}>
         <WidgetRenderer widget={widget} editMode={false} onRemove={onRemove} />
       </div>
     </div>
@@ -158,7 +158,7 @@ const DashboardGrid = () => {
   /* ── Mobile layout: DnD sortable ── */
   if (isMobile) {
     return (
-      <div className="p-3 space-y-3 animate-fade-in">
+      <div className="px-3 py-2 space-y-3 pb-24 animate-fade-in">
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
