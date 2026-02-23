@@ -57,6 +57,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Reset theme to default dark on logout
+    localStorage.removeItem("dasho-theme");
+    document.documentElement.removeAttribute("data-theme");
     window.location.href = "/";
   };
 

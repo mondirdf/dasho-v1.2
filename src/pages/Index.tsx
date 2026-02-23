@@ -13,7 +13,7 @@ import {
   PRICING, FAQ, CTA, FOOTER, MOCK_WIDGETS,
 } from "@/config/site";
 import { VALUE_PROPS, BEFORE_AFTER } from "@/config/site";
-import logoDasho from "@/assets/logo-dasho.png";
+import logoDasho from "@/assets/logo-dasho-light.png";
 
 /* Icon map for features */
 const ICON_MAP: Record<string, any> = {
