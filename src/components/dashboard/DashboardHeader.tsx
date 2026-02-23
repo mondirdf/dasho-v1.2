@@ -18,7 +18,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Link } from "react-router-dom";
 import { useCallback, useState } from "react";
-import logoDasho from "@/assets/logo-dasho-new.png";
+import { useTheme } from "next-themes";
+import logoDashoDark from "@/assets/logo-dasho-new.png";
+import logoDashoLight from "@/assets/logo-dasho-light.png";
 import { shareTemplate } from "@/services/dataService";
 import { useToast } from "@/hooks/use-toast";
 import StreakCounter from "@/components/dashboard/StreakCounter";
@@ -32,6 +34,8 @@ const DashboardHeader = () => {
   } = useDashboard();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const { resolvedTheme } = useTheme();
+  const logoDasho = resolvedTheme === "light" ? logoDashoLight : logoDashoDark;
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [resetOpen, setResetOpen] = useState(false);
   const [sharing, setSharing] = useState(false);
