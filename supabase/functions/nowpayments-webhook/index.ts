@@ -108,28 +108,42 @@ Deno.serve(async (req) => {
         return new Response("Missing order_id", { status: 400, headers: corsHeaders });
       }
 
-      // Prevent duplicate activation — check if already pro
+      // $15 crypto payment = 2 months (60 days) of Pro
+      const PRO_DAYS = 60;
+      const proExpiresAt = new Date();
+      proExpiresAt.setDate(proExpiresAt.getDate() + PRO_DAYS);
+
+      // Check current profile — extend if already pro
       const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .select("plan")
+        .select("plan, trial_ends_at")
         .eq("id", userId)
         .single();
 
-      if (profile?.plan !== "pro") {
-        const { error: updateError } = await supabaseAdmin
-          .from("profiles")
-          .update({ plan: "pro" })
-          .eq("id", userId);
-
-        if (updateError) {
-          console.error("Failed to update plan:", updateError);
-          return new Response("Update failed", { status: 500, headers: corsHeaders });
+      let finalExpiry = proExpiresAt;
+      if (profile?.plan === "pro" && profile?.trial_ends_at) {
+        const currentExpiry = new Date(profile.trial_ends_at);
+        if (currentExpiry > new Date()) {
+          // Extend from current expiry
+          finalExpiry = new Date(currentExpiry);
+          finalExpiry.setDate(finalExpiry.getDate() + PRO_DAYS);
         }
-
-        console.log(`User ${userId} upgraded to Pro via payment ${payment_id}`);
-      } else {
-        console.log(`User ${userId} already Pro, skipping`);
       }
+
+      const { error: updateError } = await supabaseAdmin
+        .from("profiles")
+        .update({ 
+          plan: "pro",
+          trial_ends_at: finalExpiry.toISOString(),
+        })
+        .eq("id", userId);
+
+      if (updateError) {
+        console.error("Failed to update plan:", updateError);
+        return new Response("Update failed", { status: 500, headers: corsHeaders });
+      }
+
+      console.log(`User ${userId} upgraded to Pro for ${PRO_DAYS} days (expires ${finalExpiry.toISOString()}) via payment ${payment_id}`);
 
       // Mark payment completed
       await supabaseAdmin
@@ -137,6 +151,16 @@ Deno.serve(async (req) => {
         .update({
           status: "completed",
           subscription_status: "active",
+          metadata: {
+            nowpayments_id: payment_id,
+            pay_amount,
+            pay_currency,
+            actually_paid,
+            payment_status,
+            pro_days: PRO_DAYS,
+            pro_expires_at: finalExpiry.toISOString(),
+            updated_at: new Date().toISOString(),
+          },
         })
         .eq("subscription_id", String(payment_id));
     }
