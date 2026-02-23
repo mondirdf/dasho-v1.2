@@ -8,6 +8,7 @@ import {
   Pencil, Check, LogOut, Share2, Plus, Trash2, Copy,
   RotateCcw, LayoutGrid, ChevronDown, Bell
 } from "lucide-react";
+import SavedLayoutsMenu from "@/components/dashboard/SavedLayoutsMenu";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -110,6 +111,7 @@ const DashboardHeader = () => {
 
         <div className="flex items-center gap-1 sm:gap-1.5">
           {!isMobile && <AddWidgetSheet />}
+          {!isMobile && <SavedLayoutsMenu />}
           <Button
             size="sm"
             variant={editMode ? "default" : "outline"}

@@ -102,7 +102,7 @@ const WidgetContainer = memo(({ type, editMode, userStyle, children, className }
   const overrideStyle = useMemo(() => getUserStyleOverrides(userStyle), [userStyle]);
 
   return (
-    <div className={containerClasses} style={overrideStyle} role="region">
+    <div className={containerClasses} style={overrideStyle} role="region" data-widget-type={type}>
       {/* Decorative accent blob */}
       {visual.decorative && visual.accentHsl && (
         <div
