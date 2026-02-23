@@ -60,7 +60,7 @@ const DashboardHeader = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-20 border-b border-border/60 glass-nav px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+      <header className="sticky top-0 z-20 border-b border-border/60 glass-nav px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2 max-w-full overflow-x-hidden">
         <div className="flex items-center gap-2 min-w-0">
           {!isMobile && (
             <Link to="/" className="mr-1">
