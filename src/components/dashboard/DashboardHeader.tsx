@@ -21,6 +21,7 @@ import { useCallback, useState } from "react";
 import logoDasho from "@/assets/logo-dasho.png";
 import { shareTemplate } from "@/services/dataService";
 import { useToast } from "@/hooks/use-toast";
+import StreakCounter from "@/components/dashboard/StreakCounter";
 
 const DashboardHeader = () => {
   const { signOut, user } = useAuth();
@@ -110,6 +111,7 @@ const DashboardHeader = () => {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-1.5">
+          <StreakCounter />
           {!isMobile && <AddWidgetSheet />}
           {!isMobile && <SavedLayoutsMenu />}
           <Button

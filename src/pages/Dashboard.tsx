@@ -6,6 +6,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import DashboardGrid from "@/components/dashboard/DashboardGrid";
 import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import RenameDialog from "@/components/dashboard/RenameDialog";
+import MorningSummary from "@/components/dashboard/MorningSummary";
 
 import Onboarding from "@/pages/Onboarding";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,11 +41,11 @@ const DashboardContent = () => {
 
   return (
     <div className={`min-h-screen ${isMobile ? "pb-24" : ""}`}>
-      
       <DashboardHeader />
       <DashboardGrid />
       {isMobile && <MobileBottomNav />}
       <RenameDialog />
+      <MorningSummary />
     </div>
   );
 };
