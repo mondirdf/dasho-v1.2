@@ -479,9 +479,14 @@ export type Database = {
           created_at: string
           display_name: string | null
           email: string | null
+          experience_level: string | null
           id: string
+          onboarding_completed: boolean
           plan: string
           preferences_json: Json
+          preferred_assets: string[] | null
+          priority_focus: string | null
+          trading_style: string | null
           trial_ends_at: string | null
         }
         Insert: {
@@ -489,9 +494,14 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          experience_level?: string | null
           id: string
+          onboarding_completed?: boolean
           plan?: string
           preferences_json?: Json
+          preferred_assets?: string[] | null
+          priority_focus?: string | null
+          trading_style?: string | null
           trial_ends_at?: string | null
         }
         Update: {
@@ -499,9 +509,14 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           email?: string | null
+          experience_level?: string | null
           id?: string
+          onboarding_completed?: boolean
           plan?: string
           preferences_json?: Json
+          preferred_assets?: string[] | null
+          priority_focus?: string | null
+          trading_style?: string | null
           trial_ends_at?: string | null
         }
         Relationships: []
