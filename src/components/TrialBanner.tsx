@@ -6,10 +6,12 @@ import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { Clock, Zap, AlertTriangle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import UpgradeDialog from "@/components/UpgradeDialog";
 
 const TrialBanner = () => {
   const { showReminder, daysRemaining, urgency, isTrialExpired, isTrialActive, isPaidPro, loading } = useTrialStatus();
   const [dismissed, setDismissed] = useState(false);
+  const [upgradeOpen, setUpgradeOpen] = useState(false);
 
   if (loading || isPaidPro || !showReminder || dismissed) return null;
 
@@ -52,22 +54,29 @@ const TrialBanner = () => {
   const Icon = config.icon;
 
   return (
-    <div className={`relative flex items-center justify-center gap-3 px-4 py-2.5 border-b text-sm ${config.bg} animate-fade-in`}>
-      <Icon className={`h-4 w-4 shrink-0 ${config.iconColor}`} />
-      <span className="text-foreground/90">{config.message}</span>
-      <Button size="sm" className={`h-7 px-3 text-xs font-medium ${config.ctaClass}`}>
-        {config.cta}
-      </Button>
-      {!isTrialExpired && (
-        <button
-          onClick={() => setDismissed(true)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
-          aria-label="إغلاق"
+    <>
+      <div className={`relative flex items-center justify-center gap-3 px-4 py-2.5 border-b text-sm ${config.bg} animate-fade-in`}>
+        <Icon className={`h-4 w-4 shrink-0 ${config.iconColor}`} />
+        <span className="text-foreground/90">{config.message}</span>
+        <Button
+          size="sm"
+          className={`h-7 px-3 text-xs font-medium ${config.ctaClass}`}
+          onClick={() => setUpgradeOpen(true)}
         >
-          <X className="h-3.5 w-3.5" />
-        </button>
-      )}
-    </div>
+          {config.cta}
+        </Button>
+        {!isTrialExpired && (
+          <button
+            onClick={() => setDismissed(true)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-secondary/60 text-muted-foreground hover:text-foreground transition-colors"
+            aria-label="إغلاق"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+      <UpgradeDialog open={upgradeOpen} onOpenChange={setUpgradeOpen} />
+    </>
   );
 };
 
