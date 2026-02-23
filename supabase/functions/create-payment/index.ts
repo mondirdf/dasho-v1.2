@@ -26,16 +26,15 @@ Deno.serve(async (req) => {
       { global: { headers: { Authorization: authHeader } } }
     );
 
-    const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    const userId = claimsData.claims.sub as string;
+    const userId = user.id;
 
     // Check if user is already pro
     const { data: profile } = await supabase
@@ -65,7 +64,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        price_amount: 9,
+        price_amount: 15,
         price_currency: "usd",
         pay_currency: "usdttrc20",
         order_id: userId,
@@ -91,7 +90,7 @@ Deno.serve(async (req) => {
 
     await supabaseAdmin.from("payments").insert({
       user_id: userId,
-      amount: 9,
+      amount: 15,
       currency: "USD",
       status: "pending",
       payment_method: "nowpayments_usdttrc20",
