@@ -8,6 +8,7 @@ import { getWidgetDef } from "./widgetRegistry";
 import WidgetContainer from "./WidgetContainer";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import WidgetSettingsModal, { type WidgetStyle } from "./WidgetSettingsModal";
+import CsvExportButton from "./CsvExportButton";
 
 /** Per-widget error boundary — prevents one broken widget from crashing the dashboard */
 class WidgetErrorBoundary extends Component<
@@ -133,6 +134,9 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
             >
               <Settings2 className="h-3 w-3" />
             </button>
+            <div className="absolute top-1.5 left-10 z-20 opacity-0 group-hover:opacity-100 transition-all">
+              <CsvExportButton widgetType={widget.type} />
+            </div>
           </>
         )}
 

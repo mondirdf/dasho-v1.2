@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 import {
   fetchAlerts,
   createAlert,
@@ -16,13 +17,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { Bell, Plus, Trash2, ArrowLeft, History, AlertTriangle } from "lucide-react";
+import { Bell, Plus, Trash2, ArrowLeft, History, AlertTriangle, Zap } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { useRealtimeTriggeredAlerts } from "@/hooks/useRealtimeData";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
+import ProGate from "@/components/ProGate";
 
 /** Source type definitions — add new data sources here */
 const SOURCE_TYPES = [
@@ -35,6 +37,14 @@ const CONDITION_TYPES = [
   { value: "below", label: "Below" },
   { value: "equals", label: "Equals" },
   { value: "contains", label: "Contains" },
+] as const;
+
+/** Smart alert event types (Pro) */
+const SMART_EVENT_TYPES = [
+  { id: "bos", label: "Break of Structure (BOS)", desc: "Alert when BOS is detected" },
+  { id: "choch", label: "Change of Character (ChoCH)", desc: "Alert on trend reversal signal" },
+  { id: "regime_change", label: "Regime Change", desc: "Alert when volatility regime changes" },
+  { id: "mtf_confluence", label: "MTF Confluence", desc: "Alert when multi-TF alignment is high" },
 ] as const;
 
 const Alerts = () => {
@@ -56,6 +66,25 @@ const Alerts = () => {
 
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
+  // Smart Alerts state
+  const [smartRules, setSmartRules] = useState<any[]>([]);
+  const [smartEventType, setSmartEventType] = useState("bos");
+  const [smartSymbol, setSmartSymbol] = useState("BTC");
+  const [smartRuleName, setSmartRuleName] = useState("");
+  const [smartCondition, setSmartCondition] = useState<any>({});
+  const [creatingSmart, setCreatingSmart] = useState(false);
+  const [deleteSmartTarget, setDeleteSmartTarget] = useState<string | null>(null);
+
+  const loadSmartRules = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("smart_alert_rules")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false });
+    setSmartRules(data ?? []);
+  }, [user]);
+
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
@@ -68,12 +97,13 @@ const Alerts = () => {
       setAlerts(a);
       setTriggered(t);
       setCoins(c);
+      await loadSmartRules();
     } catch {
       toast({ title: "Error loading alerts", variant: "destructive" });
     } finally {
       setLoading(false);
     }
-  }, [user, toast]);
+  }, [user, toast, loadSmartRules]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -153,6 +183,46 @@ const Alerts = () => {
       load();
     }
   };
+
+  // ── Smart Alert CRUD ──
+  const handleCreateSmartRule = async () => {
+    if (!user || !smartRuleName.trim()) return;
+    if (!isPro) {
+      toast({ title: "Pro feature", description: "Smart alerts require Pro plan.", variant: "destructive" });
+      return;
+    }
+    setCreatingSmart(true);
+    try {
+      await supabase.from("smart_alert_rules").insert({
+        user_id: user.id,
+        rule_name: smartRuleName.trim(),
+        event_type: smartEventType,
+        symbol: smartSymbol,
+        condition_json: smartCondition,
+      });
+      setSmartRuleName("");
+      toast({ title: "Smart alert created" });
+      loadSmartRules();
+    } catch {
+      toast({ title: "Error creating smart alert", variant: "destructive" });
+    } finally {
+      setCreatingSmart(false);
+    }
+  };
+
+  const handleToggleSmartRule = async (id: string, active: boolean) => {
+    setSmartRules((prev) => prev.map((r) => r.id === id ? { ...r, is_active: active } : r));
+    await supabase.from("smart_alert_rules").update({ is_active: active }).eq("id", id);
+  };
+
+  const handleDeleteSmartRule = async () => {
+    if (!deleteSmartTarget) return;
+    setSmartRules((prev) => prev.filter((r) => r.id !== deleteSmartTarget));
+    setDeleteSmartTarget(null);
+    await supabase.from("smart_alert_rules").delete().eq("id", deleteSmartTarget);
+    toast({ title: "Smart alert deleted" });
+  };
+
 
   const activeAlerts = alerts.filter((a) => a.is_active);
   const inactiveAlerts = alerts.filter((a) => !a.is_active);
@@ -266,6 +336,7 @@ const Alerts = () => {
         <Tabs defaultValue="active">
           <TabsList className="w-full">
             <TabsTrigger value="active" className="flex-1">Active ({activeAlerts.length})</TabsTrigger>
+            <TabsTrigger value="smart" className="flex-1">Smart ⚡ ({smartRules.length})</TabsTrigger>
             <TabsTrigger value="history" className="flex-1">History ({triggered.length})</TabsTrigger>
           </TabsList>
 
@@ -333,6 +404,114 @@ const Alerts = () => {
             )}
           </TabsContent>
 
+          {/* ── Smart Alerts Tab (Pro) ── */}
+          <TabsContent value="smart" className="space-y-4 mt-4">
+            {!isPro ? (
+              <ProGate feature="Smart Alerts">
+                <div className="glass-card p-8 text-center">
+                  <Zap className="h-8 w-8 text-primary mx-auto mb-2" />
+                  <p className="text-sm text-muted-foreground">Event-based alerts like BOS, ChoCH, regime changes, and MTF confluence require Pro plan.</p>
+                </div>
+              </ProGate>
+            ) : (
+              <>
+                {/* Create smart alert */}
+                <div className="glass-card p-4 space-y-3">
+                  <h3 className="text-sm font-semibold text-foreground">New Smart Alert</h3>
+                  <Input
+                    placeholder="Alert name (e.g. BTC BOS on 4h)"
+                    value={smartRuleName}
+                    onChange={(e) => setSmartRuleName(e.target.value)}
+                    className="text-sm"
+                    maxLength={50}
+                  />
+                  <div className="flex flex-wrap gap-2">
+                    {SMART_EVENT_TYPES.map((evt) => (
+                      <button
+                        key={evt.id}
+                        onClick={() => setSmartEventType(evt.id)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                          smartEventType === evt.id
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-secondary/60 text-muted-foreground hover:bg-secondary"
+                        }`}
+                        title={evt.desc}
+                      >
+                        {evt.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-3">
+                    <Select value={smartSymbol} onValueChange={setSmartSymbol}>
+                      <SelectTrigger className="w-28">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {["BTC", "ETH", "SOL", "XRP", "ADA", "DOGE"].map((s) => (
+                          <SelectItem key={s} value={s}>{s}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {(smartEventType === "mtf_confluence") && (
+                      <Input
+                        type="number"
+                        placeholder="Min score (e.g. 80)"
+                        className="w-36"
+                        onChange={(e) => setSmartCondition({ min_score: Number(e.target.value) })}
+                      />
+                    )}
+                    {(smartEventType === "regime_change") && (
+                      <Select onValueChange={(v) => setSmartCondition({ target_regime: v })}>
+                        <SelectTrigger className="w-40">
+                          <SelectValue placeholder="Target regime" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="expansion">Expansion</SelectItem>
+                          <SelectItem value="compression">Compression</SelectItem>
+                          <SelectItem value="trending">Trending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                  <Button onClick={handleCreateSmartRule} disabled={creatingSmart || !smartRuleName.trim()} className="gap-1.5">
+                    <Plus className="h-4 w-4" /> {creatingSmart ? "Creating…" : "Create Smart Alert"}
+                  </Button>
+                </div>
+
+                {/* Smart alerts list */}
+                {smartRules.length === 0 ? (
+                  <div className="glass-card p-8 text-center">
+                    <Zap className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-muted-foreground text-sm">No smart alerts yet.</p>
+                  </div>
+                ) : (
+                  smartRules.map((rule) => {
+                    const evtDef = SMART_EVENT_TYPES.find((e) => e.id === rule.event_type);
+                    return (
+                      <div key={rule.id} className="glass-card p-4 flex items-center justify-between">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="text-[10px] shrink-0 bg-primary/10 text-primary border-primary/30">
+                              {evtDef?.label || rule.event_type}
+                            </Badge>
+                            <span className="text-sm font-medium text-foreground">{rule.rule_name}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">{rule.symbol}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Switch checked={rule.is_active} onCheckedChange={(v) => handleToggleSmartRule(rule.id, v)} />
+                          <Button variant="ghost" size="icon" onClick={() => setDeleteSmartTarget(rule.id)}>
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </>
+            )}
+          </TabsContent>
+
           <TabsContent value="history" className="space-y-3 mt-4">
             {triggered.length === 0 ? (
               <div className="glass-card p-8 text-center">
@@ -364,6 +543,15 @@ const Alerts = () => {
         title="Delete alert?"
         description="This alert will be permanently removed."
         onConfirm={handleDelete}
+        confirmLabel="Delete"
+        destructive
+      />
+      <ConfirmDialog
+        open={!!deleteSmartTarget}
+        onOpenChange={(open) => !open && setDeleteSmartTarget(null)}
+        title="Delete smart alert?"
+        description="This smart alert rule will be permanently removed."
+        onConfirm={handleDeleteSmartRule}
         confirmLabel="Delete"
         destructive
       />

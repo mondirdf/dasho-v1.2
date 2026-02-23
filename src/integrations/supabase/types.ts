@@ -643,6 +643,83 @@ export type Database = {
           },
         ]
       }
+      saved_layouts: {
+        Row: {
+          created_at: string
+          dashboard_id: string
+          id: string
+          layout_json: Json
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          dashboard_id: string
+          id?: string
+          layout_json?: Json
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          dashboard_id?: string
+          id?: string
+          layout_json?: Json
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_layouts_dashboard_id_fkey"
+            columns: ["dashboard_id"]
+            isOneToOne: false
+            referencedRelation: "dashboards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      smart_alert_rules: {
+        Row: {
+          condition_json: Json
+          created_at: string
+          event_type: string
+          id: string
+          is_active: boolean
+          last_triggered_at: string | null
+          rule_name: string
+          symbol: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          condition_json?: Json
+          created_at?: string
+          event_type: string
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          rule_name: string
+          symbol?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          condition_json?: Json
+          created_at?: string
+          event_type?: string
+          id?: string
+          is_active?: boolean
+          last_triggered_at?: string | null
+          rule_name?: string
+          symbol?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       system_logs: {
         Row: {
           created_at: string
