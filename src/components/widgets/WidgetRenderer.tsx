@@ -43,6 +43,8 @@ class WidgetErrorBoundary extends Component<
     return this.props.children;
   }
 }
+import ProGate from "@/components/ProGate";
+import { usePlanLimits } from "@/hooks/usePlanLimits";
 import CryptoPriceWidget from "./CryptoPriceWidget";
 import MultiTrackerWidget from "./MultiTrackerWidget";
 import NewsWidget from "./NewsWidget";
@@ -63,6 +65,12 @@ import DailyBriefWidget from "./DailyBriefWidget";
 import CorrelationWidget from "./CorrelationWidget";
 import JournalWidget from "./JournalWidget";
 import BacktesterWidget from "./BacktesterWidget";
+
+/** Pro-only widget types that get gated for free users */
+const PRO_WIDGET_TYPES = new Set([
+  "structure_scanner", "volatility_regime", "mtf_confluence",
+  "session_monitor", "correlation_matrix", "journal", "backtester",
+]);
 interface Props {
   widget: Widget;
   editMode: boolean;
@@ -100,10 +108,13 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
   const Component = WIDGET_MAP[widget.type];
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const { isPro } = usePlanLimits();
 
   const configJson = widget.config_json as any;
   const widgetStyle: WidgetStyle = configJson?.style || {};
   const def = getWidgetDef(widget.type);
+  const isProWidget = PRO_WIDGET_TYPES.has(widget.type);
+  const shouldGate = isProWidget && !isPro;
 
   return (
     <>
@@ -146,7 +157,13 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
         <div className={editMode ? "pt-8 h-full pointer-events-none" : "h-full"}>
           <WidgetErrorBoundary widgetType={widget.type}>
             {Component ? (
-              <Component config={configJson} />
+              shouldGate ? (
+                <ProGate feature={def?.label ?? widget.type}>
+                  <Component config={configJson} />
+                </ProGate>
+              ) : (
+                <Component config={configJson} />
+              )
             ) : (
               <div className="text-muted-foreground text-sm">
                 Unknown widget type: {widget.type}
