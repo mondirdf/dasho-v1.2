@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const DashboardContent = () => {
-  const { loading, isNewUser } = useDashboard();
+  const { loading, isNewUser, refresh } = useDashboard();
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -37,7 +37,7 @@ const DashboardContent = () => {
   }
 
   if (isNewUser) {
-    return <Onboarding />;
+    return <Onboarding onComplete={refresh} />;
   }
 
   return (
