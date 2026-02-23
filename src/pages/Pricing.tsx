@@ -104,7 +104,7 @@ const Pricing = () => {
       <nav className="sticky top-0 z-50 glass-nav border-b border-border/40">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 sm:h-16 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 shrink-0">
-            <img src={logoDasho} alt={BRAND.name} className="h-20 sm:h-9" />
+            <img src={logoDasho} alt={BRAND.name} className="h-8 sm:h-9" />
           </Link>
           <div className="flex items-center gap-1.5 sm:gap-3">
             <Link to="/login">
@@ -132,7 +132,7 @@ const Pricing = () => {
               Start Free, <span className="text-primary">Go Pro</span> When Ready
             </h1>
             <p className="mt-4 sm:mt-5 text-sm sm:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
-              No subscriptions. One payment, full access. Pay with crypto — instant activation.
+              $15 for 2 months of Pro access. Pay with crypto — instant activation.
             </p>
           </div>
         </section>
@@ -187,10 +187,12 @@ const Pricing = () => {
                   </li>
                 ))}
               </ul>
-              <Button className="w-full h-12 text-sm font-semibold glow-button gap-2 relative z-10" onClick={openUpgrade}>
-                <Zap className="h-4 w-4" />
-                {PRICING.pro.cta}
-              </Button>
+              <Link to="/checkout">
+                <Button className="w-full h-12 text-sm font-semibold glow-button gap-2 relative z-10">
+                  <Zap className="h-4 w-4" />
+                  {PRICING.pro.cta}
+                </Button>
+              </Link>
               <div className="relative z-10 flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
                 <Shield className="h-3 w-3" /> Secure crypto payment · Instant activation
               </div>
@@ -290,9 +292,11 @@ const Pricing = () => {
                     Start Free <ArrowRight className="h-4 w-4" />
                   </Button>
                 </Link>
-                <Button size="lg" variant="outline" className="gap-2 border-primary/30 hover:bg-primary/5" onClick={openUpgrade}>
-                  <Crown className="h-4 w-4 text-primary" /> Upgrade to Pro
-                </Button>
+                <Link to="/checkout">
+                  <Button size="lg" variant="outline" className="gap-2 border-primary/30 hover:bg-primary/5">
+                    <Crown className="h-4 w-4 text-primary" /> Upgrade to Pro
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

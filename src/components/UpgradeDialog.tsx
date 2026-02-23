@@ -102,7 +102,7 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
                       Upgrade to Pro
                     </DialogTitle>
                     <DialogDescription className="text-muted-foreground text-xs mt-0.5">
-                      One-time payment · Lifetime access
+                      $15 USDT · 2 months of Pro access
                     </DialogDescription>
                   </div>
                 </div>
@@ -113,7 +113,7 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
                 <span className="text-3xl font-bold text-foreground tabular-nums">$15</span>
                 <span className="text-sm text-muted-foreground">USDT</span>
                 <span className="ml-2 text-[10px] text-muted-foreground bg-secondary/80 rounded-md px-1.5 py-0.5">
-                  one-time
+                  2 months
                 </span>
               </div>
             </div>
@@ -183,7 +183,7 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
             <div className="rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 p-5 text-center space-y-1">
               <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Send exactly</p>
               <p className="text-3xl font-bold text-foreground tabular-nums">
-                {payment.pay_amount} <span className="text-sm font-normal text-muted-foreground">USDT</span>
+                15 <span className="text-sm font-normal text-muted-foreground">USDT</span>
               </p>
               <p className="text-[11px] text-primary/80 font-medium">TRC20 Network</p>
             </div>
