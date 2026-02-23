@@ -350,7 +350,7 @@ const Index = () => {
                     <li key={f} className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground"><Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-success shrink-0" /> {f}</li>
                   ))}
                 </ul>
-                <Link to="/signup" className="block relative z-10">
+                <Link to={plan.highlighted ? "/checkout" : "/signup"} className="block relative z-10">
                   <Button className={`w-full ${plan.highlighted ? "glow-button" : ""}`} variant={plan.highlighted ? "default" : "outline"}>{plan.cta}</Button>
                 </Link>
               </div>
