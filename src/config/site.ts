@@ -22,7 +22,7 @@
 export const PLAN_LIMITS = {
   free: {
     maxDashboards: 1,
-    maxWidgets: 10,
+    maxWidgets: 15,
     maxAlerts: 10,
   },
   pro: {
@@ -321,7 +321,7 @@ export const PRICING = {
     period: "/forever",
     features: [
       "1 dashboard",
-      "Up to 5 widgets",
+      "Up to 15 widgets",
       "24h AI Market Recap",
       "Price alerts (up to 10)",
       "Real-time market data",
