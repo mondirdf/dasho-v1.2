@@ -39,7 +39,7 @@ const DashboardContent = () => {
   }
 
   return (
-    <div className={`min-h-screen ${isMobile ? "pb-20" : ""}`}>
+    <div className={`min-h-screen ${isMobile ? "pb-24" : ""}`}>
       
       <DashboardHeader />
       <DashboardGrid />
