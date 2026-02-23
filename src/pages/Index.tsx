@@ -329,12 +329,12 @@ const Index = () => {
                 key={plan.name}
                 className={`glass-card-enhanced p-5 sm:p-6 space-y-5 relative transition-all duration-300 ${
                   plan.highlighted
-                    ? "border-primary/50 shadow-[0_0_30px_-5px_hsla(263,70%,60%,0.15)] scale-[1.02] sm:scale-105"
+                    ? "!overflow-visible border-primary/50 shadow-[0_0_30px_-5px_hsla(263,70%,60%,0.15)] scale-[1.02] sm:scale-105"
                     : "hover:border-border/60"
                 }`}
               >
                 {plan.highlighted && "badge" in plan && (
-                  <div className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium z-10">{plan.badge}</div>
+                  <div className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-primary text-primary-foreground text-xs font-medium z-20">{plan.badge}</div>
                 )}
                 <div className="relative z-10">
                   <h3 className="text-base sm:text-lg font-bold text-foreground">{plan.name}</h3>
@@ -382,7 +382,7 @@ const Index = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
           <div className="flex flex-col sm:grid sm:grid-cols-4 gap-6 sm:gap-8">
             <div className="sm:col-span-2">
-              <img src={logoDasho} alt={BRAND.name} className="h-8 sm:h-9" />
+              <img src={logoDasho} alt={BRAND.name} className="h-16 sm:h-18" />
               <p className="text-xs text-muted-foreground mt-3 leading-relaxed max-w-xs">{FOOTER.tagline}</p>
               <p className="text-[11px] text-primary/60 font-medium mt-2">{FOOTER.roadmapNote}</p>
             </div>
