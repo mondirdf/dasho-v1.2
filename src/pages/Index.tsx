@@ -317,14 +317,14 @@ const Index = () => {
       {/* Footer — Fix #10: tighter logo-text gap, #11: roadmap note integrated, #20: better column alignment */}
       <footer className="relative z-10 border-t border-border/50 bg-background/80 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
-            <div className="col-span-2 sm:col-span-2">
+          <div className="flex flex-col sm:grid sm:grid-cols-4 gap-6 sm:gap-8">
+            <div className="sm:col-span-2">
               <img src={logoDasho} alt={BRAND.name} className="h-8 sm:h-9" />
               <p className="text-xs text-muted-foreground mt-3 leading-relaxed max-w-xs">{FOOTER.tagline}</p>
               <p className="text-[11px] text-primary/60 font-medium mt-2">{FOOTER.roadmapNote}</p>
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-semibold text-foreground mb-3">Product</p>
+              <p className="text-xs sm:text-sm font-semibold text-foreground mb-2 sm:mb-3">Product</p>
               <ul className="space-y-1.5 text-xs sm:text-sm text-muted-foreground">
                 {FOOTER.productLinks.map((l) => (
                   <li key={l.label}>
@@ -335,7 +335,7 @@ const Index = () => {
               </ul>
             </div>
             <div>
-              <p className="text-xs sm:text-sm font-semibold text-foreground mb-3">Legal</p>
+              <p className="text-xs sm:text-sm font-semibold text-foreground mb-2 sm:mb-3">Legal</p>
               <ul className="space-y-1.5 text-xs sm:text-sm text-muted-foreground">
                 {FOOTER.legalLinks.map((l: { label: string; to: string }) => <li key={l.label}><Link to={l.to} className="hover:text-foreground transition-colors">{l.label}</Link></li>)}
               </ul>

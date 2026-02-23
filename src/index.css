@@ -345,12 +345,13 @@
 
   /* Mobile bottom nav */
   .mobile-bottom-nav {
-    @apply fixed bottom-0 left-0 right-0 z-30;
-    background: hsla(var(--glass-bg) / 0.9);
-    border-top: 1px solid hsla(var(--glass-border) / 0.4);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding-bottom: env(safe-area-inset-bottom);
+    @apply fixed bottom-0 left-0 right-0 z-40;
+    background: hsla(var(--glass-bg) / 0.95);
+    border-top: 1px solid hsla(var(--glass-border) / 0.5);
+    backdrop-filter: blur(24px) saturate(1.2);
+    -webkit-backdrop-filter: blur(24px) saturate(1.2);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -4px 20px -4px hsla(0, 0%, 0%, 0.3);
   }
 
   /* Hide scrollbar utility */
