@@ -118,7 +118,7 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
                 ) : (
                   <Wallet className="h-4 w-4" />
                 )}
-                {loading ? "Creating payment…" : "Pay $9 with USDT (TRC20)"}
+                {loading ? "Creating payment…" : "Pay $15 with USDT (TRC20)"}
               </Button>
               <Button
                 variant="ghost"

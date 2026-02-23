@@ -408,7 +408,7 @@ const Settings = () => {
                 onClick={() => setUpgradeOpen(true)}
               >
                 <Wallet className="h-4 w-4" />
-                Upgrade to Pro — $9 USDT
+                Upgrade to Pro — $15 USDT
               </Button>
             </div>
           )}
