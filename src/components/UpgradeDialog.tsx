@@ -6,6 +6,7 @@ import {
   Crown, Copy, Check, Loader2, Wallet, Zap, Shield, BarChart3,
   Layout, Bell, FileDown, Sparkles
 } from "lucide-react";
+import { QRCodeSVG } from "qrcode.react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -187,6 +188,19 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
               <p className="text-[11px] text-primary/80 font-medium">TRC20 Network</p>
             </div>
 
+            {/* QR Code */}
+            <div className="flex justify-center">
+              <div className="bg-white rounded-xl p-3">
+                <QRCodeSVG
+                  value={payment.pay_address}
+                  size={140}
+                  level="M"
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                />
+              </div>
+            </div>
+
             {/* Address */}
             <div className="space-y-2">
               <p className="text-xs font-medium text-foreground">Wallet Address</p>
@@ -206,7 +220,7 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
                 </div>
               </div>
               <p className="text-[10px] text-muted-foreground text-center">
-                Tap to copy address
+                Scan QR or tap to copy
               </p>
             </div>
 
