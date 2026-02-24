@@ -121,16 +121,16 @@ serve(async (req) => {
     // Build snapshot from DB
     const snapshot = await buildSnapshotFromDB();
 
-    // ─── AI Provider: Google Gemini ─────────────────────────────
-    const GEMINI_API_KEY = Deno.env.get("GEMINI_API_KEY");
-    if (!GEMINI_API_KEY) throw new Error("GEMINI_API_KEY is not configured");
+    // ─── AI Provider: Lovable AI Gateway ─────────────────────────────
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const aiUrl = "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions";
+    const aiUrl = "https://ai.gateway.lovable.dev/v1/chat/completions";
     const aiHeaders: Record<string, string> = {
-      Authorization: `Bearer ${GEMINI_API_KEY}`,
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
       "Content-Type": "application/json",
     };
-    const aiModel = "gemini-2.5-flash";
+    const aiModel = "google/gemini-2.5-flash";
 
     const aiResponse = await fetch(aiUrl, {
       method: "POST",
