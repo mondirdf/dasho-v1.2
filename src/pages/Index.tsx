@@ -131,12 +131,13 @@ const Index = () => {
               </a>
             </div>
 
-            {/* Social proof stats — subtle strip */}
+            {/* Product metrics — verifiable facts */}
             <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-10">
               {[
-                { value: "2,503", label: "Active traders" },
-                { value: "18K+", label: "Recaps generated" },
-                { value: "30s", label: "Avg. decision time" },
+                { value: "19", label: "Trading Widgets" },
+                { value: "5", label: "Asset Classes" },
+                { value: "5", label: "AI Engines" },
+                { value: "< 2 min", label: "To Full Context" },
               ].map((s) => (
                 <div key={s.label} className="text-center">
                   <p className="text-lg sm:text-2xl font-bold text-foreground">{s.value}</p>
@@ -299,25 +300,26 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Testimonials */}
-        <section className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Traders Love It</h2>
-          <p className="mt-2 text-xs sm:text-sm text-muted-foreground text-center">Join 2,400+ traders who simplified their routine</p>
-          <div className="mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
+        {/* Trading Engines Showcase */}
+        <section className="max-w-5xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">5 Built-in Trading Engines</h2>
+          <p className="mt-2 text-xs sm:text-sm text-muted-foreground text-center max-w-lg mx-auto">Automated analysis that runs in the background — no free tool does this</p>
+          <div className="mt-6 sm:mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-5">
             {[
-              { name: "Alex M.", role: "Day Trader", quote: "I used to spend 30 minutes every morning scanning charts. Now I open Dasho, glance, and I'm ready to trade." },
-              { name: "Sarah K.", role: "Swing Trader", quote: "It's not a TradingView replacement — it's the missing piece. The AI recap alone is worth it." },
-              { name: "Omar R.", role: "Portfolio Manager", quote: "Finally, a tool that respects my time. One screen, full context, zero noise." },
-            ].map((t) => (
-              <div key={t.name} className="glass-card-enhanced p-5 sm:p-6 space-y-3">
-                <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed italic">"{t.quote}"</p>
-                <div className="relative z-10 flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">{t.name[0]}</div>
-                  <div>
-                    <p className="text-xs font-medium text-foreground">{t.name}</p>
-                    <p className="text-[10px] text-muted-foreground">{t.role}</p>
-                  </div>
+              { icon: LineChart, name: "Structure Scanner", desc: "Auto-detects BOS & ChoCH across multiple timeframes with RSI confirmation. Hours of manual analysis, done instantly.", tag: "PRO" },
+              { icon: PieChart, name: "MTF Confluence", desc: "Aligns signals from 5 timeframes simultaneously. See where momentum, structure, and volume agree.", tag: "PRO" },
+              { icon: Gauge, name: "Volatility Regime", desc: "Classifies the market as compression, expansion, trending, or distribution — and tells you what to expect next.", tag: "PRO" },
+              { icon: Target, name: "Mini Backtester", desc: "Test 5 strategies (BOS Entry, ChoCH Reversal, RSI Bounce, EMA Cross, Breakout) on real historical data.", tag: "PRO" },
+              { icon: Clock, name: "Session Monitor", desc: "Live killzone tracking with volume heatmaps. Know exactly when smart money is active.", tag: "PRO" },
+              { icon: Zap, name: "AI Daily Brief", desc: "AI-generated morning summary: what happened overnight, key levels, and what to watch today.", tag: "PRO" },
+            ].map((engine) => (
+              <div key={engine.name} className="glass-card-enhanced p-5 sm:p-6 space-y-3 group hover:border-primary/30 transition-all duration-300 relative">
+                <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-primary/15 border border-primary/25 text-[10px] font-semibold text-primary z-10">{engine.tag}</div>
+                <div className="relative z-10 p-2.5 rounded-lg bg-primary/10 w-fit group-hover:bg-primary/15 transition-colors">
+                  <engine.icon className="h-5 w-5 text-primary" />
                 </div>
+                <h3 className="relative z-10 text-sm sm:text-base font-semibold text-foreground">{engine.name}</h3>
+                <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">{engine.desc}</p>
               </div>
             ))}
           </div>

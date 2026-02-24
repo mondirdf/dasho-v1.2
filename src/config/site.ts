@@ -285,32 +285,32 @@ export const BEFORE_AFTER = {
 export const FEATURES = [
   {
     title: "AI Market Recap",
-    desc: "Wake up to an AI-generated summary of what happened overnight and what to watch today.",
+    desc: "Instead of scanning 10 charts manually, get an AI-generated overnight summary with key levels and what to watch — ready when you wake up.",
     icon: "Zap" as const,
   },
   {
     title: "Sentiment at a Glance",
-    desc: "Fear & Greed, market structure, and momentum — no chart-reading required.",
+    desc: "Fear & Greed, market structure, and momentum — analyzed automatically so you don't have to interpret raw data yourself.",
     icon: "Gauge" as const,
   },
   {
     title: "Smart Alerts",
-    desc: "Set it once, forget it. Get notified only when something actually matters.",
+    desc: "Multi-condition alerts that trigger only when it matters. No more staring at screens waiting for a level to hit.",
     icon: "Bell" as const,
   },
   {
-    title: "Structure Scanner",
-    desc: "Auto-detect BOS & ChoCH across timeframes. See market shifts before they happen.",
+    title: "Auto Structure Scanner",
+    desc: "Manually spotting BOS & ChoCH across timeframes takes hours. Dasho detects them automatically with RSI confirmation.",
     icon: "LineChart" as const,
   },
   {
     title: "Curated News Feed",
-    desc: "No clickbait. Only market-moving news, filtered and ranked by relevance.",
+    desc: "No clickbait, no noise. Only market-moving news, auto-filtered and ranked by relevance so you read what matters.",
     icon: "Newspaper" as const,
   },
   {
     title: "Multi-Asset Overview",
-    desc: "Crypto, stocks, forex, commodities — track everything from one dashboard.",
+    desc: "Crypto, stocks, forex, commodities, indices — 5 asset classes on one screen instead of 5 different apps.",
     icon: "BarChart3" as const,
   },
 ] as const;
@@ -343,7 +343,7 @@ export const PRICING = {
     period: "/forever",
     features: [
       "1 dashboard",
-      "Up to 5 widgets",
+      "Up to 10 widgets",
       "24h AI Market Recap",
       "Price alerts (up to 10)",
       "Real-time market data",
@@ -355,9 +355,9 @@ export const PRICING = {
   pro: {
     name: "Pro",
     price: "$15",
-    period: "/2 months",
-    yearlyNote: "Pay with USDT (TRC20)",
-    badge: "Best Value",
+    period: "/3 months",
+    yearlyNote: "7-day free trial included • Pay with USDT (TRC20)",
+    badge: "~$0.16/day",
     features: [
       "Unlimited dashboards & widgets",
       "Mini Backtester (5 strategies)",
