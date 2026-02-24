@@ -16,24 +16,38 @@ interface StockData {
   market_cap: number | null;
 }
 
-async function fetchFromAlphaVantage(symbol: string, apiKey: string): Promise<StockData | null> {
-  try {
-    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${symbol}&apikey=${apiKey}`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const json = await res.json();
-    const q = json?.["Global Quote"];
-    if (!q || !q["05. price"]) return null;
-    return {
-      symbol,
-      price: parseFloat(q["05. price"]) || 0,
-      change_24h: parseFloat(q["10. change percent"]?.replace("%", "")) || 0,
-      volume: parseInt(q["06. volume"]) || 0,
-      market_cap: null,
-    };
-  } catch {
-    return null;
+/**
+ * Fetch from Twelve Data — fetches one symbol at a time to stay within rate limits
+ */
+async function fetchFromTwelveData(symbols: string[], apiKey: string): Promise<StockData[]> {
+  const results: StockData[] = [];
+  for (const sym of symbols) {
+    try {
+      const url = `https://api.twelvedata.com/quote?symbol=${sym}&apikey=${apiKey}`;
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const q = await res.json();
+      if (q.status === "error" || !q.close) {
+        console.warn(`[fetch-stock-data] ${sym}: ${q.message || "no data"}`);
+        continue;
+      }
+      const price = parseFloat(q.close) || 0;
+      const prevClose = parseFloat(q.previous_close) || 0;
+      const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
+      results.push({
+        symbol: sym,
+        price,
+        change_24h: parseFloat(change.toFixed(2)),
+        volume: parseInt(q.volume) || 0,
+        market_cap: null,
+      });
+      // Small delay between requests to respect rate limits
+      await new Promise((r) => setTimeout(r, 1200));
+    } catch (e) {
+      console.warn(`[fetch-stock-data] ${sym} failed:`, e);
+    }
   }
+  return results;
 }
 
 Deno.serve(async (req) => {
@@ -46,24 +60,16 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const apiKey = Deno.env.get("ALPHA_VANTAGE_API_KEY");
+  const apiKey = Deno.env.get("TWELVE_DATA_API_KEY");
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ ok: false, error: "ALPHA_VANTAGE_API_KEY not configured" }),
+      JSON.stringify({ ok: false, error: "TWELVE_DATA_API_KEY not configured" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
   try {
-    const results: StockData[] = [];
-
-    // Fetch all in parallel — Alpha Vantage free tier allows 25 req/day
-    // but burst of 5 simultaneous is fine
-    const promises = STOCK_SYMBOLS.map((s) => fetchFromAlphaVantage(s, apiKey));
-    const settled = await Promise.all(promises);
-    for (const data of settled) {
-      if (data) results.push(data);
-    }
+    const results = await fetchFromTwelveData(STOCK_SYMBOLS, apiKey);
 
     for (const stock of results) {
       await supabase.from("cache_stock_data").upsert(
@@ -80,7 +86,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ ok: true, count: results.length }),
+      JSON.stringify({ ok: true, source: "twelvedata", count: results.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
