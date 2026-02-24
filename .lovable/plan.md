@@ -1,75 +1,191 @@
-- Improving Core Value: Fix Data Quality and Add Real Value
-- Critical Issues Found
-- After a deep audit of the database and codebase, here's the reality:
-
-  | Data Source    | Status             | Problem                                                   |
-  | -------------- | ------------------ | --------------------------------------------------------- |
-  | Crypto prices  | Working (fresh)    | market_cap = 0 for ALL coins (Binance doesn't provide it) |
-  | Fear and Greed | Working            | Value = 8 (Extreme Fear) - data is live                   |
-  | OHLC candles   | Working            | Only BTC, ETH, SOL - limits Pro engines to 3 symbols      |
-  | News           | Working            | 50 articles cached                                        |
-  | Forex          | STALE (4 days old) | Only 3 pairs, not scheduled                               |
-  | Commodities    | STALE (4 days old) | Only 3 items, not scheduled                               |
-  | Indices        | STALE (4 days old) | Only 1 index (DJIA), not scheduled                        |
-  | Stocks         | EMPTY (0 rows)     | No ALPHA_VANTAGE_API_KEY configured                       |
-  | Daily Brief    | Working            | Last brief from Feb 23                                    |
-
-- The scheduler only runs: `fetch-crypto-data`, `fetch-news`, `check-alerts`. All other data sources (stocks, forex, commodities, indices, OHLC) are NOT scheduled -- they go stale immediately.
-  ---
-- Plan: 6 Fixes to Transform Core Value
-- Fix 1: Add Market Cap Data to Crypto (Critical UX Issue)
-- **Problem**: All crypto shows `market_cap: 0` because Binance doesn't provide it. The Market Context widget shows "Total MCap: $0.00T" which looks broken.
-- **Solution**: After fetching from Binance, enrich data with CoinGecko market cap in `fetch-crypto-data`. Call CoinGecko as a secondary enrichment step (not as fallback) to get market_cap values and merge them.
-- **File**: `supabase/functions/fetch-crypto-data/index.ts`
-  ---
-- Fix 2: Schedule ALL Data Sources (Critical Data Freshness)
-- **Problem**: Forex, commodities, indices, OHLC, and stock data are never refreshed automatically. Only crypto, news, and alerts are in the scheduler.
-- **Solution**: Add all data-fetching functions to the scheduler:
-- Current:  fetch-crypto-data, fetch-news, check-alerts
-Updated:  + fetch-forex-data, fetch-commodity-data, fetch-index-data, 
-          + fetch-stock-data, fetch-binance-klines
-- **File**: `supabase/functions/scheduler/index.ts`
-  ---
-- Fix 3: Remove Alpha Vantage Dependency for Stocks/Indices
-- **Problem**: Stock and index data depends on `ALPHA_VANTAGE_API_KEY` which is NOT configured (not in secrets). This means both widgets show nothing.
-- **Solution**: Replace Alpha Vantage with free APIs that don't require keys:
-- **Stocks**: Use Yahoo Finance unofficial API or similar free endpoint
-- **Indices**: Same approach for S&P 500, NASDAQ, DJIA, Russell 2000
-- **Files**: `supabase/functions/fetch-stock-data/index.ts`, `supabase/functions/fetch-index-data/index.ts`
-  ---
-- Fix 4: Add Watchlist Price Alerts Integration
-- **Problem**: Watchlist and Alerts are completely separate features. Users add symbols to watchlist but can't set alerts from there. This is a missed "aha moment".
-- **Solution**: Add a small bell icon button next to each watchlist item that opens a quick "set alert" dialog inline, pre-filled with the symbol and current price.
-- **File**: `src/components/widgets/WatchlistWidget.tsx`
-  ---
-- Fix 5: Enhance Morning Summary with Actionable Data
-- **Problem**: The Morning Summary dialog only shows top gainers/losers. It doesn't leverage the AI engines at all -- it's just a basic price list.
-- **Solution**: Add to Morning Summary:
-- Fear and Greed value with label
-- Active trading sessions right now
-- One-line AI recap if available (from latest cached recap)
-- Quick action: "Add to Watchlist" for top mover
-- **File**: `src/components/dashboard/MorningSummary.tsx`
-  ---
-- Fix 6: Auto-Refresh OHLC Data for More Symbols
-- **Problem**: OHLC candles only exist for BTC, ETH, SOL. The Structure Scanner, Volatility Regime, and MTF Confluence widgets offer symbol selection (BTC/ETH/SOL) but the OHLC fetch function (`fetch-binance-klines`) needs to be scheduled to keep data fresh.
-- **Solution**: Add `fetch-binance-klines` to the scheduler and ensure it fetches all 3 symbols across all 5 timeframes.
-- **File**: `supabase/functions/scheduler/index.ts` (already covered in Fix 2)
-  ---
-- Implementation Order
-- **Fix 2 + 6**: Update scheduler (immediate impact on data freshness)
-- **Fix 1**: Enrich crypto with market cap (fixes broken MCap display)
-- **Fix 3**: Replace Alpha Vantage for stocks/indices (enables 2 dead widgets)
-- **Fix 4**: Watchlist-to-alerts integration (UX improvement)
-- **Fix 5**: Enhanced Morning Summary (better first impression)
-- Files Changed Summary
 
 
-| File                                            | Change                                                  |
-| ----------------------------------------------- | ------------------------------------------------------- |
-| `supabase/functions/scheduler/index.ts`         | Add forex, commodity, index, stock, klines to schedule  |
-| `supabase/functions/fetch-crypto-data/index.ts` | Add CoinGecko market cap enrichment after Binance fetch |
-| `supabase/functions/fetch-stock-data/index.ts`  | Replace Alpha Vantage with free Yahoo Finance API       |
-| `supabase/functions/fetch-index-data/index.ts`  | Replace Alpha Vantage with free Yahoo Finance API       |
-| `src/components/widgets/WatchlistWidget.tsx`    | Add quick "set alert" button per item                   |
-| `src/components/dashboard/MorningSummary.tsx`   | Add Fear/Greed, session info, AI recap snippet          |
+# Personal Edge Intelligence -- Implementation Plan
+
+## Overview
+
+This adds a complete "Personal Edge Intelligence" system to Dasho: behavior tracking, server-side aggregation, a new widget, and a landing page section. The system tracks how users interact with the platform, captures market context at each interaction, computes weekly insights, and surfaces them in a new "Your Edge Insights" widget.
+
+---
+
+## Step 1: Database Migration
+
+Create two new tables with RLS policies:
+
+### `user_behavior_events`
+- id (uuid, PK)
+- user_id (uuid, NOT NULL)
+- event_type (text, NOT NULL) -- widget_view, symbol_click, alert_create, alert_trigger, morning_summary_open, engine_signal_view
+- symbol (text, nullable)
+- timeframe (text, nullable)
+- market_context_snapshot (jsonb, DEFAULT '{}') -- { fear_greed, volatility_regime, market_trend, session }
+- created_at (timestamptz, DEFAULT now())
+
+RLS: Users can SELECT own rows only. No direct INSERT/UPDATE/DELETE (service role only via edge function).
+
+### `edge_intelligence_summaries`
+- id (uuid, PK)
+- user_id (uuid, NOT NULL)
+- week_start (date, NOT NULL)
+- summary_json (jsonb, DEFAULT '{}')
+- created_at (timestamptz, DEFAULT now())
+
+UNIQUE constraint on (user_id, week_start). RLS: Users can SELECT own rows only.
+
+---
+
+## Step 2: Edge Function -- `track-behavior`
+
+**New file**: `supabase/functions/track-behavior/index.ts`
+
+- Receives: event_type, symbol, timeframe, market_context_snapshot
+- Validates event_type against allowed list
+- Extracts user_id from auth token via getClaims()
+- Inserts into user_behavior_events using service role
+- Fire-and-forget from client side
+
+---
+
+## Step 3: Edge Function -- `edge-intelligence`
+
+**New file**: `supabase/functions/edge-intelligence/index.ts`
+
+Two actions via request body:
+
+**Action: `aggregate`** (called by scheduler)
+- For each user with recent behavior events, query last 7 days of user_behavior_events
+- Compute:
+  - Top 5 symbols by view count
+  - Most used widget types / engines
+  - Market condition correlation (which fear_greed buckets, volatility regimes, sessions user is most active in)
+  - Alert effectiveness: alert_create count vs alert_trigger count
+  - Peak activity sessions (Asia/London/NY)
+- Upsert result into edge_intelligence_summaries
+
+**Action: `get-summary`** (called by widget)
+- Auth required -- extract user_id from token
+- Return latest edge_intelligence_summaries row for that user
+
+---
+
+## Step 4: Config Updates
+
+### `supabase/config.toml`
+Add verify_jwt = false for new functions:
+```
+[functions.track-behavior]
+verify_jwt = false
+
+[functions.edge-intelligence]
+verify_jwt = false
+```
+
+### `supabase/functions/scheduler/index.ts`
+Add edge-intelligence to SCHEDULES array (daily aggregation).
+
+---
+
+## Step 5: Client-Side Behavior Tracking
+
+### Edit: `src/analytics/behaviorTracker.ts`
+
+Add new function `trackBehavior(eventType, options?)`:
+- Captures market context snapshot from Supabase cache tables (fear_greed value, latest session via sessionEngine)
+- Calls `track-behavior` edge function
+- Fire-and-forget pattern (same as existing trackEvent)
+
+### Instrument tracking in existing components:
+
+| Component | Event | Trigger |
+|---|---|---|
+| WidgetRenderer.tsx | widget_view | On mount (useEffect in wrapper) |
+| MorningSummary.tsx | morning_summary_open | When dialog opens |
+| StructureScannerWidget.tsx | engine_signal_view | On mount |
+| VolatilityRegimeWidget.tsx | engine_signal_view | On mount |
+| MTFConfluenceWidget.tsx | engine_signal_view | On mount |
+
+Note: WidgetRenderer already wraps all widgets, so we add a single trackBehavior call there for widget_view events. For engine widgets, we track with symbol/timeframe context.
+
+---
+
+## Step 6: "Your Edge Insights" Widget
+
+### New file: `src/components/widgets/EdgeInsightsWidget.tsx`
+
+Displays:
+- **Data maturity indicator**: "Based on X interactions over Y days"
+- **Top Symbols**: Bar-style list of most viewed symbols
+- **Peak Session**: Which trading session user is most active in
+- **Market Condition Affinity**: "Most active during [Fear/Greed level]"
+- **Alert Hit Rate**: alerts created vs triggered ratio
+- **Most Used Engines**: Which pro engines the user engages with most
+
+Uses WidgetHeader, SecondaryValue from shared.tsx. Fetches data from edge-intelligence function (get-summary action).
+
+### Edit: `src/components/widgets/widgetRegistry.ts`
+Register new widget:
+- type: "edge_insights"
+- category: "pro"
+- label: "Your Edge"
+- icon: Brain (from lucide-react)
+- visual: { bg: "gradient", shadow: "glow", layout: "default", animation: "fadeIn", decorative: true, hoverLift: true }
+- defaultSize: { w: 4, h: 5 }
+
+### Edit: `src/components/widgets/WidgetRenderer.tsx`
+- Import EdgeInsightsWidget
+- Add to WIDGET_MAP: edge_insights: EdgeInsightsWidget
+- Add "edge_insights" to PRO_WIDGET_TYPES set
+
+---
+
+## Step 7: Landing Page Section
+
+### Edit: `src/pages/Index.tsx`
+
+Add new section after "Trading Engines Showcase" (line 326) and before "Pricing" (line 328):
+
+**Title**: "Your Edge. Quantified."
+
+**Subtitle**: "Dasho doesn't just analyze the market. It analyzes how YOU react to the market."
+
+**3 benefit cards** with icons:
+1. Eye icon -- "Discover Your Strongest Conditions" -- Find which market environments align with your best decisions
+2. Target icon -- "Spot Behavioral Biases" -- See if you overtrade in fear or ignore opportunities in greed
+3. Shield icon -- "Build Data-Backed Confidence" -- Replace gut feelings with statistical self-awareness
+
+**Closing line**: "The longer you use Dasho, the smarter your Edge becomes."
+
+**Visual mock**: A glass-card showing a stylized "Your Edge Insights" widget preview with placeholder labels (Top Symbol, Peak Session, Alert Hit Rate, Market Affinity) -- no fake numbers, just structural indicators like progress bars and label placeholders.
+
+---
+
+## File Summary
+
+| File | Action | Description |
+|---|---|---|
+| SQL Migration | Create | user_behavior_events + edge_intelligence_summaries tables with RLS |
+| `supabase/config.toml` | Edit | Add verify_jwt = false for track-behavior and edge-intelligence |
+| `supabase/functions/track-behavior/index.ts` | Create | Receives and stores behavior events |
+| `supabase/functions/edge-intelligence/index.ts` | Create | Aggregates weekly summaries + serves them |
+| `supabase/functions/scheduler/index.ts` | Edit | Add edge-intelligence to schedule |
+| `src/analytics/behaviorTracker.ts` | Edit | Add trackBehavior() with market context capture |
+| `src/components/widgets/EdgeInsightsWidget.tsx` | Create | New "Your Edge" widget |
+| `src/components/widgets/widgetRegistry.ts` | Edit | Register edge_insights widget |
+| `src/components/widgets/WidgetRenderer.tsx` | Edit | Add to WIDGET_MAP + PRO_WIDGET_TYPES + trackBehavior on mount |
+| `src/pages/Index.tsx` | Edit | Add "Your Edge. Quantified." section |
+| `src/components/dashboard/MorningSummary.tsx` | Edit | Add trackBehavior("morning_summary_open") |
+
+## Implementation Order
+
+1. Database migration (tables + RLS)
+2. supabase/config.toml update
+3. track-behavior edge function
+4. edge-intelligence edge function
+5. Scheduler update
+6. behaviorTracker.ts update
+7. EdgeInsightsWidget.tsx creation
+8. Widget registry + renderer registration
+9. Instrument tracking in WidgetRenderer + MorningSummary
+10. Landing page section
+11. Deploy edge functions
+
