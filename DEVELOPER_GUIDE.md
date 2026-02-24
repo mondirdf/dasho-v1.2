@@ -38,7 +38,7 @@
 | Grid | react-grid-layout (desktop) + dnd-kit (mobile) |
 | Backend | Supabase (Postgres + Auth + Edge Functions + Realtime) |
 | Data | Binance API (primary) + CoinGecko + CoinCap (fallbacks) |
-| AI | Lovable AI Gateway / Google Gemini |
+| AI | Google Gemini |
 | Payments | NOWPayments (USDT TRC20) |
 | Charts | Recharts |
 
@@ -222,7 +222,6 @@ See `ARCHITECTURE.md` for the full 22-table schema.
 
 | Provider | Config | Cost |
 |----------|--------|------|
-| **Lovable AI Gateway** (default) | No setup needed | Free tier |
 | **Google Gemini API** | Requires `GEMINI_API_KEY` | Pay-per-use |
 
 Cache: Server-side 6h TTL (shared), client-side 10min TTL. ~4 AI calls/day max.

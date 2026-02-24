@@ -23,7 +23,7 @@ Dasho is a **professional-grade market intelligence dashboard** for crypto trade
 | Grid | react-grid-layout (desktop) + dnd-kit (mobile) |
 | Backend | Supabase (Postgres + Auth + Edge Functions + Realtime) |
 | Data Sources | Binance API (primary), CoinGecko, CoinCap (fallback) |
-| AI | Lovable AI Gateway / Google Gemini |
+| AI | Google Gemini |
 | Payments | NOWPayments (USDT TRC20) |
 
 ---
