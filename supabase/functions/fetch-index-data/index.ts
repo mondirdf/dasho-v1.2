@@ -20,23 +20,36 @@ interface IndexData {
   volume: number;
 }
 
-async function fetchFromAlphaVantage(apiSymbol: string, displaySymbol: string, apiKey: string): Promise<IndexData | null> {
-  try {
-    const url = `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${apiSymbol}&apikey=${apiKey}`;
-    const res = await fetch(url);
-    if (!res.ok) return null;
-    const json = await res.json();
-    const q = json?.["Global Quote"];
-    if (!q || !q["05. price"]) return null;
-    return {
-      symbol: displaySymbol,
-      price: parseFloat(q["05. price"]) || 0,
-      change_24h: parseFloat(q["10. change percent"]?.replace("%", "")) || 0,
-      volume: parseInt(q["06. volume"]) || 0,
-    };
-  } catch {
-    return null;
+/**
+ * Fetch index ETF data from Twelve Data — one at a time with delay for rate limits
+ */
+async function fetchFromTwelveData(apiKey: string): Promise<IndexData[]> {
+  const results: IndexData[] = [];
+  for (const idx of INDEX_SYMBOLS) {
+    try {
+      const url = `https://api.twelvedata.com/quote?symbol=${idx.apiSymbol}&apikey=${apiKey}`;
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const q = await res.json();
+      if (q.status === "error" || !q.close) {
+        console.warn(`[fetch-index-data] ${idx.apiSymbol}: ${q.message || "no data"}`);
+        continue;
+      }
+      const price = parseFloat(q.close) || 0;
+      const prevClose = parseFloat(q.previous_close) || 0;
+      const change = prevClose > 0 ? ((price - prevClose) / prevClose) * 100 : 0;
+      results.push({
+        symbol: idx.displaySymbol,
+        price,
+        change_24h: parseFloat(change.toFixed(2)),
+        volume: parseInt(q.volume) || 0,
+      });
+      await new Promise((r) => setTimeout(r, 1200));
+    } catch (e) {
+      console.warn(`[fetch-index-data] ${idx.apiSymbol} failed:`, e);
+    }
   }
+  return results;
 }
 
 Deno.serve(async (req) => {
@@ -49,19 +62,16 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
   );
 
-  const apiKey = Deno.env.get("ALPHA_VANTAGE_API_KEY");
+  const apiKey = Deno.env.get("TWELVE_DATA_API_KEY");
   if (!apiKey) {
     return new Response(
-      JSON.stringify({ ok: false, error: "ALPHA_VANTAGE_API_KEY not configured" }),
+      JSON.stringify({ ok: false, error: "TWELVE_DATA_API_KEY not configured" }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 
   try {
-    // Fetch all in parallel (4 indices)
-    const promises = INDEX_SYMBOLS.map((i) => fetchFromAlphaVantage(i.apiSymbol, i.displaySymbol, apiKey));
-    const settled = await Promise.all(promises);
-    const results = settled.filter(Boolean) as IndexData[];
+    const results = await fetchFromTwelveData(apiKey);
 
     for (const idx of results) {
       await supabase.from("cache_index_data").upsert(
@@ -77,7 +87,7 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ ok: true, count: results.length }),
+      JSON.stringify({ ok: true, source: "twelvedata", count: results.length }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

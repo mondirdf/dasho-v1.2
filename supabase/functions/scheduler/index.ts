@@ -13,6 +13,11 @@ const SCHEDULES = [
   { name: "fetch-crypto-data", intervalMs: 60_000 },
   { name: "fetch-news", intervalMs: 300_000 },
   { name: "check-alerts", intervalMs: 60_000 },
+  { name: "fetch-forex-data", intervalMs: 300_000 },
+  { name: "fetch-commodity-data", intervalMs: 300_000 },
+  { name: "fetch-index-data", intervalMs: 300_000 },
+  { name: "fetch-stock-data", intervalMs: 300_000 },
+  { name: "fetch-binance-klines", intervalMs: 300_000 },
 ];
 
 async function invokeFunction(name: string): Promise<void> {
