@@ -1,64 +1,75 @@
-- Fix Core Weaknesses - Turn Them Into Strengths
-- Weakness 1: Fake Social Proof (Credibility Killer)
-- **Problem**: The landing page shows fabricated numbers ("2,503 Active traders", "18K+ Recaps generated") and fake testimonials with made-up names. Any visitor who signs up and sees an empty platform will lose trust instantly.
-- **Fix**:
-  - **Replace fake stats** with real, verifiable product metrics:
-- "19 Widgets" (actual count from widget registry)
-- "5 Asset Classes" (Crypto, Stocks, Forex, Commodities, Indices)  
-- "2 min Avg. decision time" (keep - this is a design goal, not a user claim)
-- **Replace fake testimonials** with a "What You Get" section showing actual screenshots/descriptions of real features, or remove the section entirely and replace with a live interactive demo preview that pulls real data
-- **Remove "Join 2,400+ traders"** subtitle from testimonials section
-- **Files to edit**:
-- `src/pages/Index.tsx` - lines 134-146 (stats), lines 302-324 (testimonials)
-- `src/config/site.ts` - no fake data stored here
-  ---
-- Weakness 2: Pricing Not Competitive
-- **Problem**: $15/2 months with USDT-only payment is a barrier. Competitors offer similar dashboards free. The free plan says "Up to 5 widgets" which feels too restrictive.
-- **Fix**:
-- **Increase free plan** from 5 to 10 widgets (already set in PLAN_LIMITS but pricing text says 5)
-- **Lower Pro price** to $15/3 months ($5/mo) - psychologically below $5/mo
-- **Reframe pricing** around daily cost: "Less than $0.15/day"
-- **Add "7-day free trial" badge** prominently on Pro card
-- **Fix the mismatch**: Free plan features list says "Up to 5 widgets" but PLAN_LIMITS says 10
-- **Files to edit**:
-- `src/config/site.ts` - PRICING object (price, features text, period note)
-- `src/pages/Index.tsx` - pricing section rendering
-  ---
-- Weakness 3: No Unique Moat (Why Pay?)
-- **Problem**: Individual features (prices, news, alerts) are available free elsewhere. The landing page doesn't emphasize what's truly unique.
-- **Fix**:
-  - **Rewrite Features section** to emphasize the combination and automation angle:
-- Highlight "5 Trading Engines" that run automatically (Structure Scanner, MTF Confluence, Volatility Regime, Backtester, Session Monitor)
-- These engines are the actual moat - no free tool auto-detects BOS/ChoCH across timeframes
-- **Add a "Pro Engines" highlight section** between features and pricing showing the 5 engines with brief descriptions
-- **Rewrite feature descriptions** to focus on "what you'd have to do manually" vs "what Dasho automates"
-- **Update CTA copy** to emphasize the automation angle
-- **Files to edit**:
-- `src/config/site.ts` - FEATURES array, VALUE_PROPS
-- `src/pages/Index.tsx` - add Pro Engines section
-  ---
-- Weakness 4: Testimonials Section (Remove or Replace)
-- **Problem**: Fake testimonials are worse than no testimonials.
-- **Fix**: Replace with a **"Built-in Trading Engines"** showcase section that displays the 5 real analysis engines with visual cards. This serves double duty: removes fake content and highlights the moat.
-- **Files to edit**:
-- `src/pages/Index.tsx` - replace testimonials section entirely
-  ---
-- Summary of All Changes
+- Improving Core Value: Fix Data Quality and Add Real Value
+- Critical Issues Found
+- After a deep audit of the database and codebase, here's the reality:
 
-  | File                  | Changes                                                                                                                                                     |
-  | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-  | `src/config/site.ts`  | Fix pricing ($9/2mo), fix free plan widget count text (10), update FEATURES descriptions to emphasize automation                                            |
-  | `src/pages/Index.tsx` | Replace fake stats with real product metrics, replace fake testimonials with Trading Engines showcase, add "7-day free trial" badge, add daily cost framing |
+  | Data Source    | Status             | Problem                                                   |
+  | -------------- | ------------------ | --------------------------------------------------------- |
+  | Crypto prices  | Working (fresh)    | market_cap = 0 for ALL coins (Binance doesn't provide it) |
+  | Fear and Greed | Working            | Value = 8 (Extreme Fear) - data is live                   |
+  | OHLC candles   | Working            | Only BTC, ETH, SOL - limits Pro engines to 3 symbols      |
+  | News           | Working            | 50 articles cached                                        |
+  | Forex          | STALE (4 days old) | Only 3 pairs, not scheduled                               |
+  | Commodities    | STALE (4 days old) | Only 3 items, not scheduled                               |
+  | Indices        | STALE (4 days old) | Only 1 index (DJIA), not scheduled                        |
+  | Stocks         | EMPTY (0 rows)     | No ALPHA_VANTAGE_API_KEY configured                       |
+  | Daily Brief    | Working            | Last brief from Feb 23                                    |
 
-- Technical Details
-- `src/config/site.ts` changes:
-- `PRICING.pro.price`: "$15" -> "$9"
-- `PRICING.pro.period`: "/2 months" -> "/2 months"
-- `PRICING.pro.yearlyNote`: Add "7-day free trial included"
-- `PRICING.free.features[1]`: "Up to 5 widgets" -> "Up to 10 widgets" (match PLAN_LIMITS)
-- Update FEATURES descriptions to emphasize automation
-- `src/pages/Index.tsx` changes:
-- Lines 134-146: Replace hardcoded fake stats with product facts (19 Widgets, 5 Asset Classes, 5 AI Engines)
-- Lines 302-324: Replace testimonials with "Trading Engines" section showing Structure Scanner, MTF Confluence, Volatility Regime, Backtester, Session Monitor
-- Pricing section: Add "7-day free trial" and "$0.15/day" framing
-- Remove "Join 2,400+ traders" text from line 305
+- The scheduler only runs: `fetch-crypto-data`, `fetch-news`, `check-alerts`. All other data sources (stocks, forex, commodities, indices, OHLC) are NOT scheduled -- they go stale immediately.
+  ---
+- Plan: 6 Fixes to Transform Core Value
+- Fix 1: Add Market Cap Data to Crypto (Critical UX Issue)
+- **Problem**: All crypto shows `market_cap: 0` because Binance doesn't provide it. The Market Context widget shows "Total MCap: $0.00T" which looks broken.
+- **Solution**: After fetching from Binance, enrich data with CoinGecko market cap in `fetch-crypto-data`. Call CoinGecko as a secondary enrichment step (not as fallback) to get market_cap values and merge them.
+- **File**: `supabase/functions/fetch-crypto-data/index.ts`
+  ---
+- Fix 2: Schedule ALL Data Sources (Critical Data Freshness)
+- **Problem**: Forex, commodities, indices, OHLC, and stock data are never refreshed automatically. Only crypto, news, and alerts are in the scheduler.
+- **Solution**: Add all data-fetching functions to the scheduler:
+- Current:  fetch-crypto-data, fetch-news, check-alerts
+Updated:  + fetch-forex-data, fetch-commodity-data, fetch-index-data, 
+          + fetch-stock-data, fetch-binance-klines
+- **File**: `supabase/functions/scheduler/index.ts`
+  ---
+- Fix 3: Remove Alpha Vantage Dependency for Stocks/Indices
+- **Problem**: Stock and index data depends on `ALPHA_VANTAGE_API_KEY` which is NOT configured (not in secrets). This means both widgets show nothing.
+- **Solution**: Replace Alpha Vantage with free APIs that don't require keys:
+- **Stocks**: Use Yahoo Finance unofficial API or similar free endpoint
+- **Indices**: Same approach for S&P 500, NASDAQ, DJIA, Russell 2000
+- **Files**: `supabase/functions/fetch-stock-data/index.ts`, `supabase/functions/fetch-index-data/index.ts`
+  ---
+- Fix 4: Add Watchlist Price Alerts Integration
+- **Problem**: Watchlist and Alerts are completely separate features. Users add symbols to watchlist but can't set alerts from there. This is a missed "aha moment".
+- **Solution**: Add a small bell icon button next to each watchlist item that opens a quick "set alert" dialog inline, pre-filled with the symbol and current price.
+- **File**: `src/components/widgets/WatchlistWidget.tsx`
+  ---
+- Fix 5: Enhance Morning Summary with Actionable Data
+- **Problem**: The Morning Summary dialog only shows top gainers/losers. It doesn't leverage the AI engines at all -- it's just a basic price list.
+- **Solution**: Add to Morning Summary:
+- Fear and Greed value with label
+- Active trading sessions right now
+- One-line AI recap if available (from latest cached recap)
+- Quick action: "Add to Watchlist" for top mover
+- **File**: `src/components/dashboard/MorningSummary.tsx`
+  ---
+- Fix 6: Auto-Refresh OHLC Data for More Symbols
+- **Problem**: OHLC candles only exist for BTC, ETH, SOL. The Structure Scanner, Volatility Regime, and MTF Confluence widgets offer symbol selection (BTC/ETH/SOL) but the OHLC fetch function (`fetch-binance-klines`) needs to be scheduled to keep data fresh.
+- **Solution**: Add `fetch-binance-klines` to the scheduler and ensure it fetches all 3 symbols across all 5 timeframes.
+- **File**: `supabase/functions/scheduler/index.ts` (already covered in Fix 2)
+  ---
+- Implementation Order
+- **Fix 2 + 6**: Update scheduler (immediate impact on data freshness)
+- **Fix 1**: Enrich crypto with market cap (fixes broken MCap display)
+- **Fix 3**: Replace Alpha Vantage for stocks/indices (enables 2 dead widgets)
+- **Fix 4**: Watchlist-to-alerts integration (UX improvement)
+- **Fix 5**: Enhanced Morning Summary (better first impression)
+- Files Changed Summary
+
+
+| File                                            | Change                                                  |
+| ----------------------------------------------- | ------------------------------------------------------- |
+| `supabase/functions/scheduler/index.ts`         | Add forex, commodity, index, stock, klines to schedule  |
+| `supabase/functions/fetch-crypto-data/index.ts` | Add CoinGecko market cap enrichment after Binance fetch |
+| `supabase/functions/fetch-stock-data/index.ts`  | Replace Alpha Vantage with free Yahoo Finance API       |
+| `supabase/functions/fetch-index-data/index.ts`  | Replace Alpha Vantage with free Yahoo Finance API       |
+| `src/components/widgets/WatchlistWidget.tsx`    | Add quick "set alert" button per item                   |
+| `src/components/dashboard/MorningSummary.tsx`   | Add Fear/Greed, session info, AI recap snippet          |
