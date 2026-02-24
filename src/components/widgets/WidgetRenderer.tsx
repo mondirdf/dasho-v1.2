@@ -68,6 +68,7 @@ import JournalWidget from "./JournalWidget";
 import BacktesterWidget from "./BacktesterWidget";
 import WeeklyReportWidget from "./WeeklyReportWidget";
 import EdgeInsightsWidget from "./EdgeInsightsWidget";
+import PreTradeCheckWidget from "./PreTradeCheckWidget";
 /** Pro-only widget types that get gated for free users */
 const PRO_WIDGET_TYPES = new Set([
   "structure_scanner", "volatility_regime", "mtf_confluence",
@@ -107,6 +108,7 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   backtester: BacktesterWidget,
   weekly_report: WeeklyReportWidget,
   edge_insights: EdgeInsightsWidget,
+  pre_trade_check: PreTradeCheckWidget,
 };
 
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
