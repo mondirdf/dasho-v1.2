@@ -1,1 +1,7 @@
 project_id = "wlustbjdqwemnqtyilxp"
+
+[functions.track-behavior]
+verify_jwt = false
+
+[functions.edge-intelligence]
+verify_jwt = false

@@ -17,7 +17,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   LineChart, BarChart3, Gauge, Globe, Newspaper,
   TrendingUp, Cloud, Gamepad2, Clock, Lock,
-  Activity, Zap, Grid3X3, Eye, BookOpen, Target, FileText,
+  Activity, Zap, Grid3X3, Eye, BookOpen, Target, FileText, Brain,
 } from "lucide-react";
 
 /* ──────────────────────────── Visual Presets ──────────────────────────── */
@@ -477,6 +477,21 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     available: true,
     visual: { bg: "gradient", shadow: "glow", layout: "default", animation: "fadeIn", decorative: true, hoverLift: true },
     defaultSize: { w: 3, h: 5 },
+    constraints: { minW: 3, minH: 4, maxW: 6, maxH: 8 },
+    configFields: [],
+  },
+  // ── PRO: Your Edge Insights ──
+  {
+    type: "edge_insights",
+    category: "pro",
+    assetType: "crypto",
+    label: "Your Edge",
+    desc: "Personal behavioral intelligence & pattern analysis",
+    icon: Brain,
+    iconColor: "text-primary",
+    available: true,
+    visual: { bg: "gradient", shadow: "glow", layout: "default", animation: "fadeIn", decorative: true, hoverLift: true },
+    defaultSize: { w: 4, h: 5 },
     constraints: { minW: 3, minH: 4, maxW: 6, maxH: 8 },
     configFields: [],
   },

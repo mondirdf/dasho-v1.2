@@ -1,7 +1,7 @@
 /**
  * WidgetRenderer — resolves widget type → component, wraps in WidgetContainer.
  */
-import { memo, useState, Component, type ErrorInfo, type ReactNode } from "react";
+import { memo, useState, useEffect, useRef, Component, type ErrorInfo, type ReactNode } from "react";
 import { X, GripVertical, Settings2, AlertTriangle } from "lucide-react";
 import type { Widget } from "@/services/dataService";
 import { getWidgetDef } from "./widgetRegistry";
@@ -9,6 +9,7 @@ import WidgetContainer from "./WidgetContainer";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import WidgetSettingsModal, { type WidgetStyle } from "./WidgetSettingsModal";
 import CsvExportButton from "./CsvExportButton";
+import { trackBehavior } from "@/analytics/behaviorTracker";
 
 /** Per-widget error boundary — prevents one broken widget from crashing the dashboard */
 class WidgetErrorBoundary extends Component<
@@ -66,12 +67,12 @@ import CorrelationWidget from "./CorrelationWidget";
 import JournalWidget from "./JournalWidget";
 import BacktesterWidget from "./BacktesterWidget";
 import WeeklyReportWidget from "./WeeklyReportWidget";
-
+import EdgeInsightsWidget from "./EdgeInsightsWidget";
 /** Pro-only widget types that get gated for free users */
 const PRO_WIDGET_TYPES = new Set([
   "structure_scanner", "volatility_regime", "mtf_confluence",
   "session_monitor", "correlation_matrix", "journal", "backtester",
-  "weekly_report",
+  "weekly_report", "edge_insights",
 ]);
 interface Props {
   widget: Widget;
@@ -105,6 +106,7 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   journal: JournalWidget,
   backtester: BacktesterWidget,
   weekly_report: WeeklyReportWidget,
+  edge_insights: EdgeInsightsWidget,
 };
 
 const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
@@ -112,6 +114,15 @@ const WidgetRenderer = memo(({ widget, editMode, onRemove }: Props) => {
   const [confirmRemove, setConfirmRemove] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const { isPro } = usePlanLimits();
+  const trackedRef = useRef(false);
+
+  // Track widget_view on mount (fire-and-forget)
+  useEffect(() => {
+    if (!trackedRef.current) {
+      trackedRef.current = true;
+      trackBehavior("widget_view", { symbol: (widget.config_json as any)?.symbol });
+    }
+  }, [widget.type]);
 
   const configJson = widget.config_json as any;
   const widgetStyle: WidgetStyle = configJson?.style || {};

@@ -393,6 +393,30 @@ export type Database = {
           },
         ]
       }
+      edge_intelligence_summaries: {
+        Row: {
+          created_at: string
+          id: string
+          summary_json: Json
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          summary_json?: Json
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          summary_json?: Json
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -803,6 +827,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_behavior_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          market_context_snapshot: Json
+          symbol: string | null
+          timeframe: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          market_context_snapshot?: Json
+          symbol?: string | null
+          timeframe?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          market_context_snapshot?: Json
+          symbol?: string | null
+          timeframe?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

@@ -18,6 +18,7 @@ const SCHEDULES = [
   { name: "fetch-index-data", intervalMs: 300_000 },
   { name: "fetch-stock-data", intervalMs: 300_000 },
   { name: "fetch-binance-klines", intervalMs: 300_000 },
+  { name: "edge-intelligence", intervalMs: 86_400_000 },
 ];
 
 async function invokeFunction(name: string): Promise<void> {

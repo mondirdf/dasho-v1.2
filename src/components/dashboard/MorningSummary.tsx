@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Sun, TrendingUp, TrendingDown, Clock, Gauge, Brain } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { analyzeSession } from "@/engines/sessionEngine";
+import { trackBehavior } from "@/analytics/behaviorTracker";
 
 const STORAGE_KEY = "dasho_morning_summary_date";
 
@@ -54,6 +55,7 @@ const MorningSummary = memo(() => {
       if (crypto && crypto.length > 0) {
         setData(crypto.map((c) => ({ symbol: c.symbol, price: c.price, change: c.change_24h })));
         setOpen(true);
+        trackBehavior("morning_summary_open");
       }
 
       if (fgRes.data) {
