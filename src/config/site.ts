@@ -48,9 +48,9 @@ export const BRAND = {
   name: "Dasho",
   namePrefix: "Dash",
   nameHighlight: "o",
-  tagline: "Market Intelligence Dashboard",
+  tagline: "Clarity Before Every Trade",
   description:
-    "A focused market dashboard with real-time crypto data, AI-powered recaps, and customizable trading widgets. Multi-asset support coming soon.",
+    "The pre-trade decision layer for crypto traders. Know the regime, check your bias, and trade with context — not confusion.",
   url: "https://dashooo.vercel.app",
   ogImage: "https://dashooo.vercel.app/og-image.png",
   logo: "/src/assets/logo-dasho.png",
@@ -234,105 +234,105 @@ export const WIDGET_CONFIG_FIELDS: Record<string, Array<{
 /* ═══════════════════════ LANDING PAGE COPY ═══════════════════════ */
 
 export const HERO = {
-  heading: "Open. Glance.",
-  headingHighlight: "Decide.",
+  heading: "Check Before",
+  headingHighlight: "You Trade.",
   subheading:
-    "Dasho isn't a replacement for TradingView — it's what you open first. One screen, 30 seconds, full market clarity.",
-  ctaPrimary: "Start Free",
+    "You wouldn't drive blindfolded. So why trade without knowing the regime, sentiment, and structure? Dasho gives you decision context in 30 seconds — before you touch a chart.",
+  ctaPrimary: "Start Trading With Context",
   ctaSecondary: "See How It Works",
 } as const;
 
 export const VALUE_PROPS = [
   {
-    title: "30 Seconds to Clarity",
-    desc: "Everything you need to know about the market — sentiment, structure, key levels — in one glance.",
+    title: "Know the Regime First",
+    desc: "Bullish or bearish? Expanding or compressing? You should never enter a trade without knowing where you stand.",
     icon: "Zap" as const,
   },
   {
-    title: "Not Another Charting Tool",
-    desc: "TradingView is for analysis. Dasho is for decisions. We filter the noise so you don't have to.",
+    title: "Decision Context, Not More Charts",
+    desc: "TradingView is for drawing lines. Dasho tells you whether those lines even matter right now. Less noise, faster bias, lower cognitive load.",
     icon: "Layout" as const,
   },
   {
-    title: "Your Morning Market Ritual",
-    desc: "Open Dasho with your coffee. See what moved, what's trending, and what needs your attention.",
+    title: "Your Pre-Trade Ritual",
+    desc: "Open Dasho before every session. 30 seconds to form a bias, check the regime, and decide if today is even worth trading.",
     icon: "BarChart3" as const,
   },
 ] as const;
 
 export const BEFORE_AFTER = {
-  title: "From Chaos to Clarity",
+  title: "Trading Without Context Is Gambling",
   before: {
     label: "Without Dasho",
     items: [
-      "10+ browser tabs open",
-      "30 min scanning charts",
-      "Missed signals buried in noise",
-      "Decision fatigue before your first trade",
+      "10+ tabs, conflicting signals everywhere",
+      "No idea if you're in a bullish or bearish regime",
+      "Hesitation before every entry",
+      "Emotional overtrading because you 'feel' the market",
     ],
   },
   after: {
     label: "With Dasho",
     items: [
-      "1 screen, everything you need",
-      "30 seconds to full market context",
-      "AI highlights what actually matters",
-      "Trade with clarity, not confusion",
+      "One screen. Clear regime. Defined bias.",
+      "Know if volatility favors your strategy",
+      "AI tells you what actually moved and why",
+      "Confident execution — or a clear reason to sit out",
     ],
   },
 } as const;
 
 export const FEATURES = [
   {
-    title: "AI Market Recap",
-    desc: "Instead of scanning 10 charts manually, get an AI-generated overnight summary with key levels and what to watch — ready when you wake up.",
+    title: "Know What Actually Matters",
+    desc: "Wake up to an AI-generated brief of what moved overnight, key levels to watch, and whether the regime shifted — so you skip the 30-minute chart scan.",
     icon: "Zap" as const,
   },
   {
-    title: "Sentiment at a Glance",
-    desc: "Fear & Greed, market structure, and momentum — analyzed automatically so you don't have to interpret raw data yourself.",
+    title: "Read Sentiment Instantly",
+    desc: "Fear & Greed, market structure, momentum — synthesized into a single view. Stop guessing how the market 'feels' and start knowing.",
     icon: "Gauge" as const,
   },
   {
-    title: "Smart Alerts",
-    desc: "Multi-condition alerts that trigger only when it matters. No more staring at screens waiting for a level to hit.",
+    title: "Get Alerted When It Matters",
+    desc: "Multi-condition alerts that fire only when real setups form. No more screen-staring, no more false triggers draining your focus.",
     icon: "Bell" as const,
   },
   {
-    title: "Auto Structure Scanner",
-    desc: "Manually spotting BOS & ChoCH across timeframes takes hours. Dasho detects them automatically with RSI confirmation.",
+    title: "See Structure Shifts Before They Trap You",
+    desc: "BOS and ChoCH detection across timeframes — automatically. The structure breaks you'd spend hours hunting are flagged in seconds.",
     icon: "LineChart" as const,
   },
   {
-    title: "Curated News Feed",
-    desc: "No clickbait, no noise. Only market-moving news, auto-filtered and ranked by relevance so you read what matters.",
+    title: "Only News That Moves Markets",
+    desc: "Zero clickbait. Zero noise. Only headlines ranked by actual market impact — so you read 5 items instead of 50.",
     icon: "Newspaper" as const,
   },
   {
-    title: "Multi-Asset Overview",
-    desc: "Crypto, stocks, forex, commodities, indices — 5 asset classes on one screen instead of 5 different apps.",
+    title: "Every Asset Class, One Screen",
+    desc: "Crypto, stocks, forex, commodities, indices — all in one place. No more switching between 5 apps to build a complete market picture.",
     icon: "BarChart3" as const,
   },
 ] as const;
 
 export const HOW_IT_WORKS = [
   { step: "1", title: "Sign Up in 10 Seconds", desc: "No credit card. No setup wizard. Just your email and you're in." },
-  { step: "2", title: "Pick Your Widgets", desc: "Choose what matters to you — prices, news, sentiment, alerts. Drag and done." },
-  { step: "3", title: "Open Every Morning", desc: "Make Dasho your first tab. 30 seconds of clarity before every trading session." },
+  { step: "2", title: "Build Your Decision Screen", desc: "Pick the signals that matter to your strategy — regime, sentiment, structure, news. Done in 60 seconds." },
+  { step: "3", title: "Check Before Every Trade", desc: "Make Dasho your pre-trade ritual. 30 seconds of context before you commit capital." },
 ] as const;
 
 export const USE_CASES = [
   {
-    title: "The Morning Glancer",
-    desc: "You don't need 10 charts. You need to know: what moved, what's hot, and should I act? Dasho tells you in seconds.",
+    title: "The Overwhelmed Trader",
+    desc: "You have 10 tabs open and still don't know if you should be long or short. Dasho gives you a regime, a bias, and a decision — in 30 seconds.",
   },
   {
-    title: "The Busy Trader",
-    desc: "You have a job, a life, and a portfolio. Dasho gives you market intelligence without the time commitment.",
+    title: "The Part-Time Trader",
+    desc: "You can't watch charts all day. Dasho compresses hours of analysis into a single pre-trade check so you trade smarter, not longer.",
   },
   {
-    title: "The Signal Hunter",
-    desc: "BOS/ChoCH detection, MTF confluence, volatility regime — the analysis TradingView can't automate.",
+    title: "The Edge Seeker",
+    desc: "You want structure breaks, confluence, and volatility context — the analysis layer that separates guessing from decision-making.",
   },
 ] as const;
 
@@ -378,38 +378,38 @@ export const PRICING = {
 export const FAQ = [
   {
     q: "Is Dasho a replacement for TradingView?",
-    a: "No — and that's the point. TradingView is for deep chart analysis. Dasho is the screen you check first: market sentiment, structure shifts, and AI recaps in 30 seconds flat.",
+    a: "No. TradingView is where you draw lines and analyze charts. Dasho is the layer you check before you even open TradingView — regime, sentiment, structure, and a clear bias in 30 seconds.",
   },
   {
     q: "Is it free?",
-    a: "Yes! The free plan includes a dashboard with up to 5 widgets, real-time data, and price alerts. Upgrade to Pro for unlimited dashboards and advanced analysis tools.",
+    a: "Yes. The free plan includes a full dashboard with up to 10 widgets, real-time data, and price alerts. Pro unlocks unlimited dashboards, AI briefs, and advanced decision tools.",
   },
   {
-    q: "What kind of data does Dasho show?",
-    a: "Live prices, Fear & Greed index, AI market recaps, curated news, structure scans (BOS/ChoCH), MTF confluence, and more — across crypto, stocks, forex, and commodities.",
+    q: "What exactly does the Pre-Trade Check do?",
+    a: "It combines regime detection, volatility state, sentiment, and news into a single actionable summary — plus a risk posture and a 4-point checklist so you never enter a trade without context.",
   },
   {
     q: "How fast is the data?",
-    a: "Market data refreshes every 60 seconds and news every 5 minutes. All data is cached server-side for instant loading.",
+    a: "Market data refreshes every 60 seconds, news every 5 minutes. Everything is cached server-side for instant loading — no waiting.",
   },
   {
     q: "Can I use it on mobile?",
-    a: "Absolutely. Dasho is fully responsive and works beautifully on any device — perfect for a quick morning check on your phone.",
+    a: "Absolutely. Dasho is fully responsive — perfect for a 30-second pre-trade check on your phone before you commit capital.",
   },
   {
     q: "Is my data secure?",
-    a: "Yes. All data is protected with Row Level Security. Your dashboards, alerts, and settings are completely private.",
+    a: "Yes. All data is protected with Row Level Security. Your dashboards, watchlists, and settings are completely private.",
   },
 ] as const;
 
 export const CTA = {
-  heading: "Your morning just got smarter.",
-  subheading: "Stop scrolling 10 tabs. Start with one screen that tells you everything.",
-  button: "Start Free",
+  heading: "Trade with context. Or don't trade at all.",
+  subheading: "Every trade without regime awareness is a coin flip. Dasho makes sure you never enter blind again.",
+  button: "See The Market Clearly",
 } as const;
 
 export const FOOTER = {
-  tagline: "Dasho — the smart add-on for traders who value their time. Open, glance, decide.",
+  tagline: "Dasho — the decision layer between you and the market. Check before you trade.",
   productLinks: [
     { label: "Features", href: "#features" },
     { label: "Dashboard", to: "/dashboard" },
@@ -419,7 +419,7 @@ export const FOOTER = {
     { label: "Privacy Policy", to: "/privacy" },
     { label: "Terms of Service", to: "/terms" },
   ],
-  roadmapNote: "Multi-Asset Support Coming Soon",
+  roadmapNote: "Pre-Trade Decision Engine — Live Now",
 } as const;
 
 /* ═══════════════════════ MOCK DATA (LANDING) ═════════════════════ */
