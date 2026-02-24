@@ -18,6 +18,7 @@ import {
   LineChart, BarChart3, Gauge, Globe, Newspaper,
   TrendingUp, Cloud, Gamepad2, Clock, Lock,
   Activity, Zap, Grid3X3, Eye, BookOpen, Target, FileText, Brain,
+  ShieldCheck,
 } from "lucide-react";
 
 /* ──────────────────────────── Visual Presets ──────────────────────────── */
@@ -493,6 +494,24 @@ export const WIDGET_REGISTRY: WidgetRegistryEntry[] = [
     visual: { bg: "gradient", shadow: "glow", layout: "default", animation: "fadeIn", decorative: true, hoverLift: true },
     defaultSize: { w: 4, h: 5 },
     constraints: { minW: 3, minH: 4, maxW: 6, maxH: 8 },
+    configFields: [],
+  },
+  // ── Pre-Trade Check (pinned to top) ──
+  {
+    type: "pre_trade_check",
+    category: "market",
+    assetType: "crypto",
+    label: "Pre-Trade Check",
+    desc: "Actionable pre-trade checkpoint combining all signals",
+    icon: ShieldCheck,
+    iconColor: "text-primary",
+    available: true,
+    visual: {
+      bg: "gradient", shadow: "glow", layout: "padded", animation: "fadeIn",
+      accentHsl: "263 70% 60%", decorative: true, hoverLift: true,
+    },
+    defaultSize: { w: 6, h: 5 },
+    constraints: { minW: 4, minH: 4, maxW: 12, maxH: 8 },
     configFields: [],
   },
 ];

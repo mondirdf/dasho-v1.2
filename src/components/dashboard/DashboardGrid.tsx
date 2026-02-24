@@ -76,15 +76,18 @@ const DashboardGrid = () => {
   const [settingsWidgetId, setSettingsWidgetId] = useState<string | null>(null);
   const settingsWidget = widgets.find((w) => w.id === settingsWidgetId) ?? null;
 
-  /** Build layout items — ensure market_recap is at y=0 (top of grid) */
+  /** Build layout items — ensure pre_trade_check & market_recap are at top */
   const constrainedLayout = useMemo(() => {
     return layout.map((item) => {
       const widget = widgets.find((w) => w.id === item.i);
       const c = getWidgetConstraints(widget?.type ?? "");
+      const isPTC = widget?.type === "pre_trade_check";
       const isRecap = widget?.type === "market_recap";
       return {
         ...item,
-        // Push recap to top-left if not manually positioned
+        // Push pre-trade check to absolute top
+        ...(isPTC && !editMode ? { y: 0, x: 0 } : {}),
+        // Push recap just below PTC
         ...(isRecap && item.y > 0 && !editMode ? { y: 0, x: 0 } : {}),
         minW: c.minW,
         minH: c.minH,
@@ -94,12 +97,15 @@ const DashboardGrid = () => {
     });
   }, [layout, widgets, editMode]);
 
-  /** Sort widgets: market_recap always first, then by layout y position */
+  /** Sort widgets: pre_trade_check first, then market_recap, then by layout y */
   const sortedWidgets = useMemo(() => {
+    const priority = ["pre_trade_check", "market_recap"];
     return [...widgets].sort((a, b) => {
-      // market_recap always comes first
-      if (a.type === "market_recap" && b.type !== "market_recap") return -1;
-      if (b.type === "market_recap" && a.type !== "market_recap") return 1;
+      const pa = priority.indexOf(a.type);
+      const pb = priority.indexOf(b.type);
+      if (pa !== -1 && pb === -1) return -1;
+      if (pb !== -1 && pa === -1) return 1;
+      if (pa !== -1 && pb !== -1) return pa - pb;
       const la = layout.find((l) => l.i === a.id);
       const lb = layout.find((l) => l.i === b.id);
       return (la?.y ?? 0) - (lb?.y ?? 0);
