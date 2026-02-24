@@ -3,7 +3,7 @@ import {
   BarChart3, Bell, Layout, Zap, Shield, Globe,
   ArrowRight, Check, ChevronDown, TrendingUp, TrendingDown,
   Newspaper, LineChart, Gauge, Target, PieChart, Users,
-  Coffee, Clock, Eye, X,
+  Coffee, Clock, Eye, X, Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -325,7 +325,87 @@ const Index = () => {
           </div>
         </section>
 
-        {/* Pricing */}
+        {/* Your Edge. Quantified. */}
+        <section className="max-w-5xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
+          <div className="text-center mb-6 sm:mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-4">
+              <Brain className="h-3.5 w-3.5 text-primary" />
+              <span className="text-xs font-medium text-primary">Personal Edge Intelligence</span>
+            </div>
+            <h2 className="text-xl sm:text-3xl font-bold text-foreground">Your Edge. Quantified.</h2>
+            <p className="mt-2 sm:mt-3 text-xs sm:text-base text-muted-foreground max-w-xl mx-auto">
+              Dasho doesn't just analyze the market. It analyzes how <span className="text-foreground font-medium">YOU</span> react to the market.
+            </p>
+          </div>
+
+          {/* Benefit cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-5 mb-6 sm:mb-8">
+            {[
+              { icon: Eye, title: "Discover Your Strongest Conditions", desc: "Find which market environments align with your best decisions." },
+              { icon: Target, title: "Spot Behavioral Biases", desc: "See if you overtrade in fear or ignore opportunities in greed." },
+              { icon: Shield, title: "Build Data-Backed Confidence", desc: "Replace gut feelings with statistical self-awareness." },
+            ].map((card) => (
+              <div key={card.title} className="glass-card-enhanced p-5 sm:p-6 space-y-3 group hover:border-primary/30 transition-all duration-300">
+                <div className="relative z-10 p-2.5 rounded-lg bg-primary/10 w-fit group-hover:bg-primary/15 transition-colors">
+                  <card.icon className="h-5 w-5 text-primary" />
+                </div>
+                <h3 className="relative z-10 text-sm sm:text-base font-semibold text-foreground">{card.title}</h3>
+                <p className="relative z-10 text-xs sm:text-sm text-muted-foreground leading-relaxed">{card.desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Visual mock of "Your Edge Insights" widget */}
+          <div className="max-w-sm mx-auto">
+            <div className="glass-card-enhanced p-5 sm:p-6 space-y-4 border-primary/20">
+              <div className="flex items-center gap-2 mb-1">
+                <Brain className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold text-foreground">Your Edge Insights</span>
+                <span className="ml-auto px-2 py-0.5 rounded-full bg-primary/15 border border-primary/25 text-[10px] font-semibold text-primary">PRO</span>
+              </div>
+
+              {/* Top Symbol placeholder */}
+              <div className="space-y-1.5">
+                <p className="text-[11px] text-muted-foreground">Top Symbols</p>
+                {["", "", ""].map((_, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="w-8 h-2 rounded bg-muted-foreground/20" />
+                    <div className="flex-1 h-1.5 rounded-full bg-secondary overflow-hidden">
+                      <div className="h-full rounded-full bg-primary/40" style={{ width: `${90 - i * 25}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Session + Affinity */}
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2.5 rounded-lg bg-secondary/40 border border-border/30 text-center">
+                  <Clock className="h-3 w-3 text-muted-foreground mx-auto mb-1" />
+                  <p className="text-[10px] text-muted-foreground">Peak Session</p>
+                  <div className="w-12 h-2 rounded bg-muted-foreground/20 mx-auto mt-1" />
+                </div>
+                <div className="p-2.5 rounded-lg bg-secondary/40 border border-border/30 text-center">
+                  <Gauge className="h-3 w-3 text-muted-foreground mx-auto mb-1" />
+                  <p className="text-[10px] text-muted-foreground">Market Affinity</p>
+                  <div className="w-16 h-2 rounded bg-muted-foreground/20 mx-auto mt-1" />
+                </div>
+              </div>
+
+              {/* Alert Hit Rate placeholder */}
+              <div className="p-2.5 rounded-lg bg-secondary/40 border border-border/30">
+                <p className="text-[10px] text-muted-foreground mb-1.5">Alert Effectiveness</p>
+                <div className="h-1.5 rounded-full bg-secondary overflow-hidden">
+                  <div className="h-full rounded-full bg-primary/40" style={{ width: "65%" }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-center text-xs sm:text-sm text-muted-foreground/70 mt-6 italic">
+            "The longer you use Dasho, the smarter your Edge becomes."
+          </p>
+        </section>
+
         <section id="pricing" className="max-w-4xl mx-auto px-3 sm:px-4 py-8 sm:py-16">
           <h2 className="text-xl sm:text-3xl font-bold text-foreground text-center">Simple Pricing</h2>
           <p className="mt-2 sm:mt-3 text-xs sm:text-base text-muted-foreground text-center">Start free, upgrade when you need more.</p>
