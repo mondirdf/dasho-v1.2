@@ -161,7 +161,12 @@ const DisplaySettingsSection = ({
   onChange: (p: UserPreferences) => void;
 }) => {
   const { isPro } = usePlanLimits();
-  const currentTheme = (typeof document !== "undefined" && document.documentElement.getAttribute("data-theme")) || "dark";
+  const [currentTheme, setCurrentTheme] = useState(() => {
+    if (typeof document !== "undefined") {
+      return document.documentElement.getAttribute("data-theme") || "dark";
+    }
+    return "dark";
+  });
 
   const themes = [
     { id: "dark", label: "Dark", desc: "Default dark theme", free: true },
@@ -170,7 +175,7 @@ const DisplaySettingsSection = ({
     { id: "light", label: "Light", desc: "Light mode", free: false },
   ];
 
-  const setTheme = (id: string) => {
+  const applyTheme = (id: string) => {
     if (!isPro && !themes.find((t) => t.id === id)?.free) return;
     if (id === "dark") {
       document.documentElement.removeAttribute("data-theme");
@@ -178,6 +183,7 @@ const DisplaySettingsSection = ({
       document.documentElement.setAttribute("data-theme", id);
     }
     localStorage.setItem("dasho-theme", id);
+    setCurrentTheme(id);
   };
 
   return (
@@ -200,7 +206,7 @@ const DisplaySettingsSection = ({
             return (
               <button
                 key={t.id}
-                onClick={() => !locked && setTheme(t.id)}
+                onClick={() => !locked && applyTheme(t.id)}
                 className={`p-3 rounded-xl text-left border transition-all ${
                   active
                     ? "bg-primary/10 border-primary/30 ring-1 ring-primary/20"
