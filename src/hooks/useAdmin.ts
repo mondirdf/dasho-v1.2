@@ -12,6 +12,23 @@ interface BehaviorAnalytics {
   retentionRate: number;
   behaviorTrend: { date: string; dashboard_opens: number; recap_views: number }[];
   topWidgets: { type: string; count: number }[];
+  userInsights: {
+    visitorsToday: number;
+    newUsersToday: number;
+    returningUsersToday: number;
+    recurringUsers7d: number;
+    sessionsToday: number;
+    avgSessionMinutesToday: number;
+    avgSessionMinutes7d: number;
+    topVisitorsToday: {
+      userId: string;
+      email: string | null;
+      displayName: string | null;
+      events: number;
+      sessions: number;
+      lastSeenAt: string;
+    }[];
+  };
 }
 
 interface AdminStats {

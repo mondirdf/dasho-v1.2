@@ -17,6 +17,7 @@ import { VALUE_PROPS, BEFORE_AFTER } from "@/config/site";
 import logoDasho from "@/assets/logo-dasho-dark-bg.png";
 import dashboardPreview from "@/assets/dashboard-preview.jpg";
 import SEOHead from "@/components/SEOHead";
+import { BUILD_INFO, BUILD_SHA_SHORT } from "@/config/buildInfo";
 
 /* Icon map for features */
 const ICON_MAP: Record<string, any> = {
@@ -47,7 +48,7 @@ const Index = () => {
   if (!loading && user) return <Navigate to="/dashboard" replace />;
 
   return (
-    <div className="min-h-screen relative">
+    <div className="landing-professional min-h-screen relative">
       <SEOHead title={SEO.home.title} description={SEO.home.description} path="/" />
       {/* Animated background */}
       <div className="animated-bg">
@@ -98,8 +99,8 @@ const Index = () => {
       <main className="relative z-10">
         {/* Hero — Morning ritual narrative */}
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsla(263,70%,66%,0.15),transparent_55%)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsla(220,70%,55%,0.08),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,hsla(252,100%,68%,0.08),transparent_58%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,hsla(252,100%,68%,0.05),transparent_52%)]" />
           <div className="relative max-w-6xl mx-auto px-4 pt-12 sm:pt-24 pb-10 sm:pb-16 text-center">
             {/* Tagline chip */}
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 mb-6">
@@ -507,7 +508,13 @@ const Index = () => {
           </div>
         </div>
         <div className="border-t border-border/50 py-3 sm:py-4">
-          <p className="text-center text-[11px] text-muted-foreground">&copy; {BRAND.year} {BRAND.name}. All rights reserved.</p>
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-center text-[11px] text-muted-foreground">&copy; {BRAND.year} {BRAND.name}. All rights reserved.</p>
+            <p className="text-center text-[10px] text-muted-foreground/70">
+              Build: <span className="font-mono">{BUILD_SHA_SHORT}</span> · Branch: {BUILD_INFO.branch}
+            </p>
+            <p className="text-center text-[10px] text-muted-foreground/70">Made by df</p>
+          </div>
         </div>
       </footer>
     </div>

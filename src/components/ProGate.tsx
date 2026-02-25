@@ -16,10 +16,15 @@ interface ProGateProps {
 }
 
 const ProGate = memo(({ feature, forceGate, children }: ProGateProps) => {
-  const { isPro } = usePlanLimits();
+  const { isPro, loading } = usePlanLimits();
   const [modalOpen, setModalOpen] = useState(false);
 
   if (isPro && !forceGate) {
+    return <>{children}</>;
+  }
+
+  // Avoid Pro-user flicker on first paint while plan is still loading.
+  if (loading && !forceGate) {
     return <>{children}</>;
   }
 
