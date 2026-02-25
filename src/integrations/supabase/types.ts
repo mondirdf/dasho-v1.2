@@ -810,6 +810,69 @@ export type Database = {
         }
         Relationships: []
       }
+      trades: {
+        Row: {
+          created_at: string
+          direction: string
+          entry_price: number
+          entry_time: string
+          exit_price: number | null
+          exit_time: string | null
+          id: string
+          market_context: Json
+          notes: string | null
+          outcome: string | null
+          pnl: number | null
+          pnl_percent: number | null
+          position_size: number | null
+          status: string
+          symbol: string
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          direction?: string
+          entry_price: number
+          entry_time?: string
+          exit_price?: number | null
+          exit_time?: string | null
+          id?: string
+          market_context?: Json
+          notes?: string | null
+          outcome?: string | null
+          pnl?: number | null
+          pnl_percent?: number | null
+          position_size?: number | null
+          status?: string
+          symbol?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          entry_price?: number
+          entry_time?: string
+          exit_price?: number | null
+          exit_time?: string | null
+          id?: string
+          market_context?: Json
+          notes?: string | null
+          outcome?: string | null
+          pnl?: number | null
+          pnl_percent?: number | null
+          position_size?: number | null
+          status?: string
+          symbol?: string
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       triggered_alerts: {
         Row: {
           alert_id: string

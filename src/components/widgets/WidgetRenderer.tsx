@@ -64,7 +64,8 @@ import SessionMonitorWidget from "./SessionMonitorWidget";
 import WatchlistWidget from "./WatchlistWidget";
 import DailyBriefWidget from "./DailyBriefWidget";
 import CorrelationWidget from "./CorrelationWidget";
-import JournalWidget from "./JournalWidget";
+import TradeJournalWidget from "./TradeJournalWidget";
+import TradePatternWidget from "./TradePatternWidget";
 import BacktesterWidget from "./BacktesterWidget";
 import WeeklyReportWidget from "./WeeklyReportWidget";
 import EdgeInsightsWidget from "./EdgeInsightsWidget";
@@ -73,7 +74,7 @@ import PreTradeCheckWidget from "./PreTradeCheckWidget";
 const PRO_WIDGET_TYPES = new Set([
   "structure_scanner", "volatility_regime", "mtf_confluence",
   "session_monitor", "correlation_matrix", "journal", "backtester",
-  "weekly_report", "edge_insights",
+  "weekly_report", "edge_insights", "trade_patterns",
 ]);
 interface Props {
   widget: Widget;
@@ -104,7 +105,8 @@ const WIDGET_MAP: Record<string, React.ComponentType<{ config: any }>> = {
   watchlist: WatchlistWidget,
   daily_brief: DailyBriefWidget,
   correlation_matrix: CorrelationWidget,
-  journal: JournalWidget,
+  journal: TradeJournalWidget,
+  trade_patterns: TradePatternWidget,
   backtester: BacktesterWidget,
   weekly_report: WeeklyReportWidget,
   edge_insights: EdgeInsightsWidget,
