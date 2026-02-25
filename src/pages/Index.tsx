@@ -111,11 +111,8 @@ const Index = () => {
               {HERO.heading}{" "}<span className="gradient-text">{HERO.headingHighlight}</span>
             </h1>
             <div className="mt-4 sm:mt-6 text-sm sm:text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed space-y-2">
-              <p>Most traders analyze for 30 minutes…<br/>and still enter without knowing the regime.</p>
-              <p className="text-foreground/50">Structure shifts. Volatility expands. Sentiment flips.</p>
-              <p>If you don't see it early — <span className="text-foreground/90 font-medium">you trade exposed.</span></p>
-              <p className="mt-3">Dasho gives you bias, structure, and regime context<br/>in <span className="text-primary font-medium">30 seconds</span>.</p>
-              <p className="text-foreground/50 italic">Before the hesitation. Before the mistake.</p>
+              <p>Most traders analyze for 30 minutes… and still enter blind.</p>
+              <p>Dasho gives you bias, structure, and regime context in <span className="text-primary font-medium">30 seconds</span>.</p>
             </div>
 
             {/* Companion badge */}
@@ -136,20 +133,7 @@ const Index = () => {
               </a>
             </div>
 
-            {/* Dashboard screenshot — credibility layer */}
-            <div className="mt-10 sm:mt-14 max-w-[1150px] mx-auto w-[92%] sm:w-full">
-              <p className="text-[11px] sm:text-xs text-muted-foreground/50 tracking-wide mb-3">
-                See today's full market context in one glance.
-              </p>
-              <img
-                src={dashboardPreview}
-                alt="Dasho dashboard showing Strong Bearish bias, BTC Volatility, Global Indices, Watchlist, and AI Recap"
-                className="w-full rounded-[var(--radius)] shadow-[0_8px_40px_-12px_hsl(var(--foreground)/0.12)] border border-border/30"
-                loading="lazy"
-              />
-            </div>
-
-            {/* Product metrics — verifiable facts */}
+            {/* Product metrics */}
             <div className="mt-8 sm:mt-10 flex flex-wrap items-center justify-center gap-6 sm:gap-10">
               {[
                 { value: "19", label: "Trading Widgets" },
@@ -162,6 +146,19 @@ const Index = () => {
                   <p className="text-[10px] sm:text-xs text-muted-foreground">{s.label}</p>
                 </div>
               ))}
+            </div>
+
+            {/* Dashboard screenshot — credibility layer */}
+            <div className="mt-10 sm:mt-14 max-w-[1150px] mx-auto w-[92%] sm:w-full">
+              <p className="text-[11px] sm:text-xs text-muted-foreground/50 tracking-wide mb-3">
+                See today's full market context in one glance.
+              </p>
+              <img
+                src={dashboardPreview}
+                alt="Dasho dashboard showing Strong Bearish bias, BTC Volatility, Global Indices, Watchlist, and AI Recap"
+                className="w-full rounded-[var(--radius)] shadow-[0_8px_40px_-12px_hsl(var(--foreground)/0.12)] border border-border/30"
+                loading="lazy"
+              />
             </div>
           </div>
         </section>
