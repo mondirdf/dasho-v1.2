@@ -34,7 +34,14 @@ export function usePlanLimits(): PlanLimits & ProFeatures & { loading: boolean }
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setPlan("free");
+      setTrialEndsAt(null);
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
     fetchProfile(user.id)
       .then((p) => {
         setPlan(p?.plan || "free");

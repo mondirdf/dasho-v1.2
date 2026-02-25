@@ -276,6 +276,8 @@ Tests 5 strategies on historical OHLC data:
 ### Secrets Required:
 - `NOWPAYMENTS_API_KEY` — API key for invoice creation
 - `NOWPAYMENTS_IPN_SECRET` — IPN webhook signature verification
+- `TWELVE_DATA_API_KEY` — Primary stock/forex market data provider
+- `FINNHUB_API_KEY` — Optional fallback stock data provider (used when Twelve Data fails)
 
 ---
 

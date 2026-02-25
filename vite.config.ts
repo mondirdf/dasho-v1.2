@@ -17,4 +17,13 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    __APP_BUILD_SHA__: JSON.stringify(
+      process.env.VERCEL_GIT_COMMIT_SHA || process.env.GIT_COMMIT_SHA || "local"
+    ),
+    __APP_BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+    __APP_BUILD_BRANCH__: JSON.stringify(
+      process.env.VERCEL_GIT_COMMIT_REF || process.env.GIT_BRANCH || "local"
+    ),
+  },
 }));

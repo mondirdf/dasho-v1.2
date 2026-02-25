@@ -6,6 +6,12 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+interface AnalyticsEventRow {
+  user_id: string | null;
+  session_id: string | null;
+  created_at: string;
+}
+
 async function verifyAdmin(req: Request) {
   const authHeader = req.headers.get("Authorization");
   if (!authHeader?.startsWith("Bearer ")) throw new Error("Unauthorized");
@@ -132,7 +138,9 @@ Deno.serve(async (req) => {
     // ── Stats (default — no action specified) ──
 
     const now = new Date();
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const todayStartDate = new Date(now);
+    todayStartDate.setUTCHours(0, 0, 0, 0);
+    const todayStart = todayStartDate.toISOString();
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
     // Total users
@@ -307,6 +315,124 @@ Deno.serve(async (req) => {
       .slice(0, 5)
       .map(([type, count]) => ({ type, count }));
 
+    // ── USER INSIGHTS ──
+    const { data: analyticsTodayRaw } = await supabaseAdmin
+      .from("analytics_events")
+      .select("user_id, session_id, created_at")
+      .gte("created_at", todayStart)
+      .order("created_at", { ascending: true });
+
+    const analyticsToday = (analyticsTodayRaw ?? []) as AnalyticsEventRow[];
+    const todayUserIds = analyticsToday
+      .map((e) => e.user_id)
+      .filter((id): id is string => Boolean(id));
+    const visitorsToday = new Set(todayUserIds).size;
+
+    const { data: usersCreatedTodayRaw } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .gte("created_at", todayStart);
+    const usersCreatedTodayIds = new Set((usersCreatedTodayRaw ?? []).map((u) => u.id));
+    const newUsersToday = usersCreatedTodayIds.size;
+
+    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: priorActiveRaw } = await supabaseAdmin
+      .from("analytics_events")
+      .select("user_id")
+      .lt("created_at", todayStart)
+      .gte("created_at", monthAgo)
+      .not("user_id", "is", null);
+    const priorActiveUsers = new Set((priorActiveRaw ?? []).map((e) => e.user_id));
+    const returningUsersToday = Array.from(new Set(todayUserIds)).filter((id) => priorActiveUsers.has(id)).length;
+
+    const { data: analyticsWeekRaw } = await supabaseAdmin
+      .from("analytics_events")
+      .select("user_id, session_id, created_at")
+      .gte("created_at", weekAgo)
+      .not("user_id", "is", null);
+    const analyticsWeek = (analyticsWeekRaw ?? []) as AnalyticsEventRow[];
+
+    const userActiveDays = new Map<string, Set<string>>();
+    for (const e of analyticsWeek) {
+      if (!e.user_id) continue;
+      const day = e.created_at.slice(0, 10);
+      const days = userActiveDays.get(e.user_id) ?? new Set<string>();
+      days.add(day);
+      userActiveDays.set(e.user_id, days);
+    }
+    const recurringUsers7d = Array.from(userActiveDays.values()).filter((days) => days.size >= 3).length;
+
+    const calcAvgSessionMinutes = (events: AnalyticsEventRow[]): number => {
+      const sessionSpans = new Map<string, { min: number; max: number }>();
+      for (const e of events) {
+        if (!e.session_id) continue;
+        const ts = new Date(e.created_at).getTime();
+        const span = sessionSpans.get(e.session_id);
+        if (!span) {
+          sessionSpans.set(e.session_id, { min: ts, max: ts });
+        } else {
+          span.min = Math.min(span.min, ts);
+          span.max = Math.max(span.max, ts);
+        }
+      }
+      if (sessionSpans.size === 0) return 0;
+      let totalMinutes = 0;
+      for (const span of sessionSpans.values()) {
+        totalMinutes += Math.max(0, (span.max - span.min) / 60000);
+      }
+      return Number((totalMinutes / sessionSpans.size).toFixed(1));
+    };
+
+    const sessionsToday = new Set(
+      analyticsToday.map((e) => e.session_id).filter((id): id is string => Boolean(id))
+    ).size;
+    const avgSessionMinutesToday = calcAvgSessionMinutes(analyticsToday);
+    const avgSessionMinutes7d = calcAvgSessionMinutes(analyticsWeek);
+
+    const topVisitorCounters = new Map<string, { events: number; sessionIds: Set<string>; lastSeenAt: string }>();
+    for (const e of analyticsToday) {
+      if (!e.user_id) continue;
+      const current = topVisitorCounters.get(e.user_id) ?? {
+        events: 0,
+        sessionIds: new Set<string>(),
+        lastSeenAt: e.created_at,
+      };
+      current.events += 1;
+      if (e.session_id) current.sessionIds.add(e.session_id);
+      if (e.created_at > current.lastSeenAt) current.lastSeenAt = e.created_at;
+      topVisitorCounters.set(e.user_id, current);
+    }
+
+    const topVisitorIds = Array.from(topVisitorCounters.entries())
+      .sort((a, b) => b[1].events - a[1].events)
+      .slice(0, 10)
+      .map(([userId]) => userId);
+
+    let profileById = new Map<string, { email: string | null; display_name: string | null }>();
+    if (topVisitorIds.length > 0) {
+      const { data: topVisitorProfiles } = await supabaseAdmin
+        .from("profiles")
+        .select("id, email, display_name")
+        .in("id", topVisitorIds);
+
+      profileById = new Map(
+        (topVisitorProfiles ?? []).map((p) => [p.id, { email: p.email, display_name: p.display_name }])
+      );
+    }
+
+    const topVisitorsToday = topVisitorIds.map((userId) => {
+      const counters = topVisitorCounters.get(userId)!;
+      const profile = profileById.get(userId);
+      return {
+        userId,
+        email: profile?.email ?? null,
+        displayName: profile?.display_name ?? null,
+        events: counters.events,
+        sessions: counters.sessionIds.size,
+        lastSeenAt: counters.lastSeenAt,
+      };
+    });
+
     return new Response(
       JSON.stringify({
         totalUsers: totalUsers ?? 0,
@@ -326,6 +452,16 @@ Deno.serve(async (req) => {
           retentionRate: parseFloat(retentionRate),
           behaviorTrend,
           topWidgets,
+          userInsights: {
+            visitorsToday,
+            newUsersToday,
+            returningUsersToday,
+            recurringUsers7d,
+            sessionsToday,
+            avgSessionMinutesToday,
+            avgSessionMinutes7d,
+            topVisitorsToday,
+          },
         },
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
