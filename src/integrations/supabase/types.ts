@@ -417,6 +417,51 @@ export type Database = {
         }
         Relationships: []
       }
+      edge_scores: {
+        Row: {
+          components: Json
+          created_at: string
+          id: string
+          losses_against_pattern: number | null
+          rules_followed: number | null
+          rules_violated: number | null
+          score: number
+          trades_count: number | null
+          updated_at: string
+          user_id: string
+          week_start: string
+          wins_in_favorable: number | null
+        }
+        Insert: {
+          components?: Json
+          created_at?: string
+          id?: string
+          losses_against_pattern?: number | null
+          rules_followed?: number | null
+          rules_violated?: number | null
+          score?: number
+          trades_count?: number | null
+          updated_at?: string
+          user_id: string
+          week_start: string
+          wins_in_favorable?: number | null
+        }
+        Update: {
+          components?: Json
+          created_at?: string
+          id?: string
+          losses_against_pattern?: number | null
+          rules_followed?: number | null
+          rules_violated?: number | null
+          score?: number
+          trades_count?: number | null
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+          wins_in_favorable?: number | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           created_at: string
@@ -812,19 +857,24 @@ export type Database = {
       }
       trades: {
         Row: {
+          behavioral_flags: Json | null
           created_at: string
           direction: string
+          entry_hour: number | null
           entry_price: number
           entry_time: string
           exit_price: number | null
           exit_time: string | null
           id: string
           market_context: Json
+          news_intensity: string | null
           notes: string | null
           outcome: string | null
           pnl: number | null
           pnl_percent: number | null
           position_size: number | null
+          pre_trade_check_skipped: boolean | null
+          rule_violations: string[] | null
           status: string
           symbol: string
           tags: string[] | null
@@ -832,19 +882,24 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          behavioral_flags?: Json | null
           created_at?: string
           direction?: string
+          entry_hour?: number | null
           entry_price: number
           entry_time?: string
           exit_price?: number | null
           exit_time?: string | null
           id?: string
           market_context?: Json
+          news_intensity?: string | null
           notes?: string | null
           outcome?: string | null
           pnl?: number | null
           pnl_percent?: number | null
           position_size?: number | null
+          pre_trade_check_skipped?: boolean | null
+          rule_violations?: string[] | null
           status?: string
           symbol?: string
           tags?: string[] | null
@@ -852,19 +907,24 @@ export type Database = {
           user_id: string
         }
         Update: {
+          behavioral_flags?: Json | null
           created_at?: string
           direction?: string
+          entry_hour?: number | null
           entry_price?: number
           entry_time?: string
           exit_price?: number | null
           exit_time?: string | null
           id?: string
           market_context?: Json
+          news_intensity?: string | null
           notes?: string | null
           outcome?: string | null
           pnl?: number | null
           pnl_percent?: number | null
           position_size?: number | null
+          pre_trade_check_skipped?: boolean | null
+          rule_violations?: string[] | null
           status?: string
           symbol?: string
           tags?: string[] | null

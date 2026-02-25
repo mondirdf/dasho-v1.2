@@ -1,6 +1,7 @@
 /**
- * Trade Pattern Detection Engine
+ * Trade Pattern Detection Engine (v2)
  * Analyzes historical trades to find win/loss patterns correlated with market conditions.
+ * Includes time-of-day clustering, behavioral flag analysis, and NL insights.
  * Pure computation — no side effects.
  */
 
@@ -17,16 +18,21 @@ export interface Trade {
   exit_time: string | null;
   market_context: MarketContextSnapshot;
   tags: string[];
+  pre_trade_check_skipped?: boolean;
+  behavioral_flags?: any[];
+  entry_hour?: number;
+  rule_violations?: string[];
 }
 
 export interface MarketContextSnapshot {
-  regime?: string;        // compression | expansion | trending | distribution
+  regime?: string;
   volatility_score?: number;
-  bias_label?: string;    // Strong Bullish → Strong Bearish
+  bias_label?: string;
   bias_score?: number;
   fear_greed?: number;
-  session?: string;       // Asian | London | New York | Off
+  session?: string;
   confidence?: number;
+  news_intensity?: string;
 }
 
 export interface PatternInsight {
@@ -50,7 +56,9 @@ export interface TradeStats {
   totalPnl: number;
   bestTrade: number;
   worstTrade: number;
-  avgHoldTime: number; // hours
+  avgHoldTime: number;
+  longestWinStreak: number;
+  longestLoseStreak: number;
 }
 
 export interface PatternAnalysis {
@@ -61,6 +69,19 @@ export interface PatternAnalysis {
 }
 
 /* ──────────────────── Stats ──────────────────── */
+
+function computeStreaks(trades: Trade[]): { winStreak: number; loseStreak: number } {
+  let maxWin = 0, maxLose = 0, curWin = 0, curLose = 0;
+  const sorted = [...trades]
+    .filter((t) => t.outcome)
+    .sort((a, b) => new Date(a.entry_time).getTime() - new Date(b.entry_time).getTime());
+  for (const t of sorted) {
+    if (t.outcome === "win") { curWin++; curLose = 0; maxWin = Math.max(maxWin, curWin); }
+    else if (t.outcome === "loss") { curLose++; curWin = 0; maxLose = Math.max(maxLose, curLose); }
+    else { curWin = 0; curLose = 0; }
+  }
+  return { winStreak: maxWin, loseStreak: maxLose };
+}
 
 function computeStats(trades: Trade[]): TradeStats {
   const closed = trades.filter((t) => t.outcome && t.pnl != null);
@@ -77,7 +98,6 @@ function computeStats(trades: Trade[]): TradeStats {
   const totalWin = winPnls.reduce((a, b) => a + b, 0);
   const totalLoss = lossPnls.reduce((a, b) => a + b, 0);
 
-  // Average hold time in hours
   let avgHoldTime = 0;
   const withExit = closed.filter((t) => t.exit_time);
   if (withExit.length) {
@@ -89,6 +109,7 @@ function computeStats(trades: Trade[]): TradeStats {
   }
 
   const allPnls = closed.map((t) => t.pnl!);
+  const { winStreak, loseStreak } = computeStreaks(closed);
 
   return {
     totalTrades: closed.length,
@@ -103,6 +124,8 @@ function computeStats(trades: Trade[]): TradeStats {
     bestTrade: allPnls.length ? Math.max(...allPnls) : 0,
     worstTrade: allPnls.length ? Math.min(...allPnls) : 0,
     avgHoldTime,
+    longestWinStreak: winStreak,
+    longestLoseStreak: loseStreak,
   };
 }
 
@@ -126,7 +149,7 @@ function analyzeByCondition(
   const insights: PatternInsight[] = [];
 
   for (const [value, group] of groups) {
-    if (group.length < 2) continue; // need at least 2 trades for pattern
+    if (group.length < 2) continue;
 
     const wins = group.filter((t) => t.outcome === "win").length;
     const winRate = (wins / group.length) * 100;
@@ -151,17 +174,19 @@ export function analyzeTradePatterns(trades: Trade[]): PatternAnalysis {
   const stats = computeStats(trades);
 
   const allInsights: PatternInsight[] = [
-    // By regime
     ...analyzeByCondition(trades, (t) => t.market_context.regime, "Regime"),
-    // By session
     ...analyzeByCondition(trades, (t) => t.market_context.session, "Session"),
-    // By bias
     ...analyzeByCondition(trades, (t) => t.market_context.bias_label, "Bias"),
-    // By direction
     ...analyzeByCondition(trades, (t) => t.direction, "Direction"),
-    // By symbol
     ...analyzeByCondition(trades, (t) => t.symbol, "Symbol"),
-    // By fear/greed zone
+    // Time of day
+    ...analyzeByCondition(trades, (t) => {
+      const hour = t.entry_hour ?? new Date(t.entry_time).getUTCHours();
+      const block = Math.floor(hour / 4) * 4;
+      const labels: Record<number, string> = { 0: "00-04 UTC", 4: "04-08 UTC", 8: "08-12 UTC", 12: "12-16 UTC", 16: "16-20 UTC", 20: "20-00 UTC" };
+      return labels[block];
+    }, "Time"),
+    // Sentiment zone
     ...analyzeByCondition(trades, (t) => {
       const fg = t.market_context.fear_greed;
       if (fg == null) return undefined;
@@ -171,27 +196,29 @@ export function analyzeTradePatterns(trades: Trade[]): PatternAnalysis {
       if (fg <= 75) return "Greed";
       return "Extreme Greed";
     }, "Sentiment"),
+    // Pre-trade check skipped vs followed
+    ...analyzeByCondition(trades, (t) => {
+      if (t.pre_trade_check_skipped === undefined) return undefined;
+      return t.pre_trade_check_skipped ? "Check Skipped" : "Check Followed";
+    }, "Discipline"),
+    // Behavioral flags
+    ...analyzeByCondition(trades, (t) => {
+      if (!Array.isArray(t.behavioral_flags) || t.behavioral_flags.length === 0) return "Clean Entry";
+      const flagTypes = t.behavioral_flags.map((f: any) => typeof f === "string" ? f : f?.type || "unknown");
+      return flagTypes[0]; // primary flag
+    }, "Behavior"),
   ];
 
-  // Sort by significance (trade count * deviation from 50%)
   allInsights.sort((a, b) => {
     const sigA = a.tradeCount * Math.abs(a.winRate - 50);
     const sigB = b.tradeCount * Math.abs(b.winRate - 50);
     return sigB - sigA;
   });
 
-  const bestConditions = allInsights
-    .filter((i) => i.type === "positive")
-    .slice(0, 5);
-
-  const worstConditions = allInsights
-    .filter((i) => i.type === "negative")
-    .slice(0, 5);
-
   return {
     stats,
-    insights: allInsights.slice(0, 10),
-    bestConditions,
-    worstConditions,
+    insights: allInsights.slice(0, 12),
+    bestConditions: allInsights.filter((i) => i.type === "positive").slice(0, 5),
+    worstConditions: allInsights.filter((i) => i.type === "negative").slice(0, 5),
   };
 }
