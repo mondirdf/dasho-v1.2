@@ -161,10 +161,11 @@ Deno.serve(async (req) => {
       status: 405,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-  } catch (err) {
-    const status = err.message === "Unauthorized" ? 401
-      : err.message === "Forbidden" ? 403 : 500;
-    return new Response(JSON.stringify({ error: err.message }), {
+  } catch (err: unknown) {
+    const msg = (err as Error).message;
+    const status = msg === "Unauthorized" ? 401
+      : msg === "Forbidden" ? 403 : 500;
+    return new Response(JSON.stringify({ error: msg }), {
       status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

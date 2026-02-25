@@ -116,7 +116,7 @@ const DashboardHeader = () => {
 
         <div className="flex items-center gap-1 sm:gap-1.5">
           <StreakCounter />
-          {!isMobile && <AddWidgetSheet />}
+          <AddWidgetSheet />
           {!isMobile && <SavedLayoutsMenu />}
           <Button
             size="sm"
