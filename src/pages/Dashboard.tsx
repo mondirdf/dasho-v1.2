@@ -10,6 +10,7 @@ import MorningSummary from "@/components/dashboard/MorningSummary";
 import PersonalBiasPanel from "@/components/dashboard/PersonalBiasPanel";
 
 import Onboarding from "@/pages/Onboarding";
+import FeedbackModal from "@/components/FeedbackModal";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -48,6 +49,7 @@ const DashboardContent = () => {
       
       <RenameDialog />
       <MorningSummary />
+      <FeedbackModal />
     </div>
   );
 };
