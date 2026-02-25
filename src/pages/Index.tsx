@@ -15,6 +15,7 @@ import {
 } from "@/config/site";
 import { VALUE_PROPS, BEFORE_AFTER } from "@/config/site";
 import logoDasho from "@/assets/logo-dasho-dark-bg.png";
+import dashboardPreview from "@/assets/dashboard-preview.jpg";
 import SEOHead from "@/components/SEOHead";
 
 /* Icon map for features */
@@ -133,6 +134,19 @@ const Index = () => {
                   {HERO.ctaSecondary}
                 </Button>
               </a>
+            </div>
+
+            {/* Dashboard screenshot — credibility layer */}
+            <div className="mt-10 sm:mt-14 max-w-[1150px] mx-auto w-[92%] sm:w-full">
+              <p className="text-[11px] sm:text-xs text-muted-foreground/50 tracking-wide mb-3">
+                See today's full market context in one glance.
+              </p>
+              <img
+                src={dashboardPreview}
+                alt="Dasho dashboard showing Strong Bearish bias, BTC Volatility, Global Indices, Watchlist, and AI Recap"
+                className="w-full rounded-[var(--radius)] shadow-[0_8px_40px_-12px_hsl(var(--foreground)/0.12)] border border-border/30"
+                loading="lazy"
+              />
             </div>
 
             {/* Product metrics — verifiable facts */}
