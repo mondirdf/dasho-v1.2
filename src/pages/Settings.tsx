@@ -20,6 +20,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   ArrowLeft, User, Shield, Trash2, LogOut, Crown,
   BarChart3, Sparkles, SlidersHorizontal, Check, Palette, Download, Wallet,
+  MessageSquare,
 } from "lucide-react";
 import { usePlanLimits } from "@/hooks/usePlanLimits";
 import { useNavigate } from "react-router-dom";
@@ -254,6 +255,54 @@ const DisplaySettingsSection = ({
   );
 };
 
+const FeedbackSection = ({ userId }: { userId?: string }) => {
+  const { toast } = useToast();
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const handleSend = async () => {
+    if (!userId || !message.trim()) return;
+    setSending(true);
+    try {
+      const { error } = await supabase.from("feedback" as any).insert({
+        user_id: userId,
+        message: message.trim().slice(0, 2000),
+        source: "settings",
+      });
+      if (error) throw error;
+      toast({ title: "Thank you!", description: "Your feedback has been submitted." });
+      setMessage("");
+    } catch {
+      toast({ title: "Failed to send feedback", variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
+  };
+
+  return (
+    <section className="glass-card p-6 space-y-4">
+      <div className="flex items-center gap-2">
+        <MessageSquare className="h-5 w-5 text-primary" />
+        <h2 className="text-base font-semibold text-foreground">Feedback</h2>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Help us improve Dasho. Share your thoughts, bugs, or feature ideas.
+      </p>
+      <textarea
+        value={message}
+        onChange={(e) => setMessage(e.target.value)}
+        placeholder="What could be better?"
+        maxLength={2000}
+        rows={4}
+        className="w-full rounded-lg border border-border bg-background/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/40 resize-none"
+      />
+      <Button onClick={handleSend} disabled={sending || !message.trim()} size="sm">
+        {sending ? "Sending…" : "Send Feedback"}
+      </Button>
+    </section>
+  );
+};
+
 /* ── Main Settings Page ── */
 
 const Settings = () => {
@@ -484,6 +533,9 @@ const Settings = () => {
             <LogOut className="h-4 w-4" /> Sign Out
           </Button>
         </section>
+
+        {/* Feedback */}
+        <FeedbackSection userId={user?.id} />
 
         <Separator />
 
