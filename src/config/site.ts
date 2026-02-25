@@ -234,11 +234,11 @@ export const WIDGET_CONFIG_FIELDS: Record<string, Array<{
 /* ═══════════════════════ LANDING PAGE COPY ═══════════════════════ */
 
 export const HERO = {
-  heading: "Check Before",
-  headingHighlight: "You Trade.",
+  heading: "Know Before",
+  headingHighlight: "You Enter.",
   subheading:
-    "You wouldn't drive blindfolded. So why trade without knowing the regime, sentiment, and structure? Dasho gives you decision context in 30 seconds — before you touch a chart.",
-  ctaPrimary: "Start Trading With Context",
+    "Every minute you spend scanning charts without knowing the regime is a minute you're exposed. Structure shifts, sentiment flips, volatility traps — they don't wait for you to catch up. Dasho gives you regime awareness, structural clarity, and a defined bias in 30 seconds. Before the hesitation. Before the mistake.",
+  ctaPrimary: "Get Clarity First",
   ctaSecondary: "See How It Works",
 } as const;
 
