@@ -109,9 +109,13 @@ const Index = () => {
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1] max-w-4xl mx-auto">
               {HERO.heading}{" "}<span className="gradient-text">{HERO.headingHighlight}</span>
             </h1>
-            <p className="mt-4 sm:mt-6 text-sm sm:text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-              {HERO.subheading}
-            </p>
+            <div className="mt-4 sm:mt-6 text-sm sm:text-lg text-foreground/70 max-w-2xl mx-auto leading-relaxed space-y-2">
+              <p>Most traders analyze for 30 minutes…<br/>and still enter without knowing the regime.</p>
+              <p className="text-foreground/50">Structure shifts. Volatility expands. Sentiment flips.</p>
+              <p>If you don't see it early — <span className="text-foreground/90 font-medium">you trade exposed.</span></p>
+              <p className="mt-3">Dasho gives you bias, structure, and regime context<br/>in <span className="text-primary font-medium">30 seconds</span>.</p>
+              <p className="text-foreground/50 italic">Before the hesitation. Before the mistake.</p>
+            </div>
 
             {/* Companion badge */}
             <p className="mt-3 text-xs text-muted-foreground/60 flex items-center justify-center gap-1.5">
