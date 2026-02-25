@@ -237,7 +237,7 @@ export const HERO = {
   heading: "Know Before",
   headingHighlight: "You Enter.",
   subheading:
-    "Every minute you spend scanning charts without knowing the regime is a minute you're exposed. Structure shifts, sentiment flips, volatility traps — they don't wait for you to catch up. Dasho gives you regime awareness, structural clarity, and a defined bias in 30 seconds. Before the hesitation. Before the mistake.",
+    "Most traders analyze for 30 minutes… and still enter without knowing the regime. Structure shifts. Volatility expands. Sentiment flips. If you don't see it early — you trade exposed. Dasho gives you bias, structure, and regime context in 30 seconds. Before the hesitation. Before the mistake.",
   ctaPrimary: "Get Clarity First",
   ctaSecondary: "See How It Works",
 } as const;
