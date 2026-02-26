@@ -50,9 +50,11 @@ export function usePlanLimits(): PlanLimits & ProFeatures & { loading: boolean }
       .finally(() => setLoading(false));
   }, [user]);
 
-  // Trial counts as Pro if still active
-  const isTrialActive = trialEndsAt ? new Date(trialEndsAt).getTime() > Date.now() : false;
-  const isPro = plan === "pro" || (plan === "free" && isTrialActive);
+  // Trial/temporary Pro logic
+  const trialTs = trialEndsAt ? new Date(trialEndsAt).getTime() : null;
+  const isTrialActive = trialTs !== null && trialTs > Date.now();
+  const isExpiredTimedPro = plan === "pro" && trialTs !== null && trialTs <= Date.now();
+  const isPro = (plan === "pro" && !isExpiredTimedPro) || (plan === "free" && isTrialActive);
   const limits = isPro ? PLAN_LIMITS.pro : PLAN_LIMITS.free;
 
   const features: ProFeatures = {
