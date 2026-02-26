@@ -16,7 +16,7 @@ import {
   Users, DollarSign, TrendingUp, TrendingDown,
   Activity, ShieldCheck, Tag, Plus, Lock,
   BarChart3, Eye, MousePointerClick, Sparkles, Repeat,
-  Crown, Search,
+  Crown, Search, UserCheck, UserPlus, Clock3,
 } from "lucide-react";
 import {
   LineChart, Line, AreaChart, Area,
@@ -578,6 +578,79 @@ const AdminDashboard = () => {
                   <StatCard label="7-Day Retention" value={`${analytics.retentionRate}%`} icon={Repeat}
                     trend={analytics.retentionRate > 20 ? "up" : "neutral"} />
                 </div>
+
+                {analytics.userInsights && (
+                  <>
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                      <StatCard
+                        label="دخلوا اليوم"
+                        value={analytics.userInsights.visitorsToday}
+                        icon={Users}
+                        sub={`${analytics.userInsights.sessionsToday} جلسات اليوم`}
+                      />
+                      <StatCard
+                        label="يدخلون باستمرار (7d)"
+                        value={analytics.userInsights.recurringUsers7d}
+                        icon={UserCheck}
+                        sub="نشط 3 أيام أو أكثر"
+                        trend="up"
+                      />
+                      <StatCard
+                        label="مستخدمون جدد اليوم"
+                        value={analytics.userInsights.newUsersToday}
+                        icon={UserPlus}
+                        sub={`${analytics.userInsights.returningUsersToday} عائدون اليوم`}
+                      />
+                      <StatCard
+                        label="متوسط مدة الجلسة"
+                        value={`${analytics.userInsights.avgSessionMinutesToday} د`}
+                        icon={Clock3}
+                        sub={`${analytics.userInsights.avgSessionMinutes7d} د متوسط 7 أيام`}
+                      />
+                    </div>
+
+                    <Card className="glass-card">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                          أكثر المستخدمين نشاطًا اليوم
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        {analytics.userInsights.topVisitorsToday.length === 0 ? (
+                          <p className="text-sm text-muted-foreground text-center py-4">لا توجد زيارات مسجلة اليوم</p>
+                        ) : (
+                          <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                              <thead>
+                                <tr className="text-muted-foreground text-xs border-b border-border">
+                                  <th className="text-left py-2 px-2">المستخدم</th>
+                                  <th className="text-left py-2 px-2">الأحداث</th>
+                                  <th className="text-left py-2 px-2">الجلسات</th>
+                                  <th className="text-left py-2 px-2">آخر ظهور</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {analytics.userInsights.topVisitorsToday.map((visitor) => (
+                                  <tr key={visitor.userId} className="border-b border-border/50">
+                                    <td className="py-2 px-2">
+                                      <p className="font-medium text-foreground">{visitor.displayName || "—"}</p>
+                                      <p className="text-xs text-muted-foreground">{visitor.email || visitor.userId}</p>
+                                    </td>
+                                    <td className="py-2 px-2 tabular-nums-animate">{visitor.events}</td>
+                                    <td className="py-2 px-2 tabular-nums-animate">{visitor.sessions}</td>
+                                    <td className="py-2 px-2 text-xs text-muted-foreground">
+                                      {new Date(visitor.lastSeenAt).toLocaleTimeString()}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </>
+                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                   <div className="col-span-full lg:col-span-2">
