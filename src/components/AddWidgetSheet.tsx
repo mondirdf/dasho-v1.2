@@ -10,12 +10,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Plus, Lock, Check, ArrowLeft, ArrowRight, Settings2 } from "lucide-react";
+import { Plus, Lock, Check, ArrowLeft, ArrowRight, Settings2, Search, Sparkles } from "lucide-react";
 import { useDashboard } from "@/contexts/DashboardContext";
 import { trackEvent } from "@/analytics/behaviorTracker";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { WIDGET_REGISTRY, WIDGET_CATEGORIES, getWidgetDef } from "@/components/widgets/widgetRegistry";
 import type { ConfigField } from "@/components/widgets/widgetRegistry";
+import { getFilteredWidgets } from "@/components/widgets/addWidgetSheetUtils";
 
 interface AddWidgetSheetProps {
   variant?: "default" | "mobile";
@@ -23,15 +24,16 @@ interface AddWidgetSheetProps {
   onDone?: () => void;
 }
 
-type WidgetConfig = Record<string, Record<string, any>>;
+type ConfigValue = string | number | boolean | undefined;
+type WidgetConfig = Record<string, Record<string, ConfigValue>>;
 
 /** Render a single config field */
 const ConfigFieldInput = ({
   field, value, onChange,
 }: {
   field: ConfigField;
-  value: any;
-  onChange: (v: any) => void;
+  value: ConfigValue;
+  onChange: (v: ConfigValue) => void;
 }) => {
   switch (field.type) {
     case "text":
@@ -83,14 +85,23 @@ const ConfigFieldInput = ({
 };
 
 const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetProps) => {
-  const { addWidget } = useDashboard();
+  const { addWidget, widgets } = useDashboard();
   const [open, setOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [adding, setAdding] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showInstalledOnly, setShowInstalledOnly] = useState(false);
   // Step: "select" = choose widgets, "configure" = set per-widget config
   const [step, setStep] = useState<"select" | "configure">("select");
   const [configs, setConfigs] = useState<WidgetConfig>({});
+
+  const installedCounts = useMemo(() => {
+    return widgets.reduce<Record<string, number>>((acc, widget) => {
+      acc[widget.type] = (acc[widget.type] ?? 0) + 1;
+      return acc;
+    }, {});
+  }, [widgets]);
 
   const toggleSelect = useCallback((type: string) => {
     setSelected((prev) => {
@@ -106,6 +117,8 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
     setStep("select");
     setConfigs({});
     setActiveCategory("all");
+    setSearchTerm("");
+    setShowInstalledOnly(false);
   }, []);
 
   /** Move to configure step — initialize defaults */
@@ -113,7 +126,7 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
     const initial: WidgetConfig = {};
     for (const type of selected) {
       const def = getWidgetDef(type);
-      const fieldDefaults: Record<string, any> = {};
+      const fieldDefaults: Record<string, ConfigValue> = {};
       for (const f of def?.configFields ?? []) {
         fieldDefaults[f.key] = f.defaultValue;
       }
@@ -123,10 +136,10 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
     setStep("configure");
   }, [selected]);
 
-  const updateFieldConfig = useCallback((type: string, key: string, value: any) => {
+  const updateFieldConfig = useCallback((type: string, key: string, value: ConfigValue) => {
     setConfigs((prev) => ({
       ...prev,
-      [type]: { ...prev[type], [key]: value },
+      [type]: { ...(prev[type] || {}), [key]: value },
     }));
   }, []);
 
@@ -147,9 +160,15 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
   }, [selected, configs, addWidget, onDone, resetState]);
 
   const activeCats = WIDGET_CATEGORIES.filter((c) => c.available).map((c) => c.id);
-  const filtered = activeCategory === "all"
-    ? WIDGET_REGISTRY.filter((w) => activeCats.includes(w.category as any))
-    : WIDGET_REGISTRY.filter((w) => w.category === activeCategory);
+  const filtered = getFilteredWidgets({
+    widgets: WIDGET_REGISTRY,
+    activeCategory,
+    activeCategories: activeCats,
+    searchTerm,
+    showInstalledOnly,
+    installedCounts,
+    selected,
+  });
 
   /** Check if any selected widget has configFields */
   const hasConfigurableWidgets = [...selected].some((t) => {
@@ -180,11 +199,40 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
         ))}
       </div>
 
+      {/* Search + quick filter */}
+      <div className="flex items-center gap-2 mb-2">
+        <div className="relative flex-1">
+          <Search className="h-3.5 w-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
+          <Input
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search widgets..."
+            className="h-8 pl-8 bg-secondary/30 border-border/50 text-xs"
+          />
+        </div>
+        <Button
+          type="button"
+          variant={showInstalledOnly ? "default" : "outline"}
+          size="sm"
+          className="h-8 text-[11px]"
+          onClick={() => setShowInstalledOnly((prev) => !prev)}
+        >
+          Installed
+        </Button>
+      </div>
+
       {/* Widget grid */}
       <div className="flex-1 overflow-y-auto space-y-1.5 pr-1">
+        {filtered.length === 0 && (
+          <div className="text-center text-xs text-muted-foreground py-8 border border-dashed border-border/50 rounded-xl bg-secondary/10">
+            No widgets match this filter.
+          </div>
+        )}
+
         {filtered.map((w) => {
           const isSelected = selected.has(w.type);
           const Icon = w.icon;
+          const count = installedCounts[w.type] ?? 0;
           return (
             <button
               key={w.type}
@@ -206,9 +254,19 @@ const AddWidgetSheet = ({ variant = "default", inline, onDone }: AddWidgetSheetP
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-medium text-foreground">{w.label}</p>
+                  {count > 0 && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/80 text-muted-foreground">
+                      Added ×{count}
+                    </span>
+                  )}
                   {!w.available && (
                     <span className="flex items-center gap-1 text-[10px] text-muted-foreground bg-secondary/60 px-1.5 py-0.5 rounded-full">
                       <Lock className="h-2.5 w-2.5" /> Soon
+                    </span>
+                  )}
+                  {w.available && count === 0 && (
+                    <span className="flex items-center gap-1 text-[10px] text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">
+                      <Sparkles className="h-2.5 w-2.5" /> New
                     </span>
                   )}
                   {w.available && w.configFields.length > 0 && (
