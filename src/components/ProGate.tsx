@@ -23,9 +23,13 @@ const ProGate = memo(({ feature, forceGate, children }: ProGateProps) => {
     return <>{children}</>;
   }
 
-  // Avoid Pro-user flicker on first paint while plan is still loading.
+  // Show nothing while loading to prevent free users from seeing Pro content
   if (loading && !forceGate) {
-    return <>{children}</>;
+    return (
+      <div className="flex items-center justify-center h-full min-h-[80px]">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+      </div>
+    );
   }
 
   return (
