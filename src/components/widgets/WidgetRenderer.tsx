@@ -75,6 +75,7 @@ const PRO_WIDGET_TYPES = new Set([
   "structure_scanner", "volatility_regime", "mtf_confluence",
   "session_monitor", "correlation_matrix", "journal", "backtester",
   "weekly_report", "edge_insights", "trade_patterns",
+  "daily_brief", "pre_trade_check",
 ]);
 interface Props {
   widget: Widget;

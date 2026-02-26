@@ -39,9 +39,19 @@ export function useTrialStatus(): TrialStatus {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const isPaidPro = plan === "pro";
+  const now = new Date();
+  const endDate = trialEndsAt ? new Date(trialEndsAt) : null;
 
-  if (loading || !trialEndsAt || isPaidPro) {
+  // Some users have temporary Pro stored as plan='pro' + trial_ends_at.
+  // Once that date passes, they must be treated as free.
+  const isExpiredTimedPro =
+    plan === "pro" &&
+    endDate !== null &&
+    endDate.getTime() <= now.getTime();
+
+  const isPaidPro = plan === "pro" && !isExpiredTimedPro;
+
+  if (loading || !endDate || isPaidPro) {
     return {
       isTrialActive: false,
       isTrialExpired: false,
@@ -53,8 +63,6 @@ export function useTrialStatus(): TrialStatus {
     };
   }
 
-  const now = new Date();
-  const endDate = new Date(trialEndsAt);
   const diffMs = endDate.getTime() - now.getTime();
   const daysRemaining = Math.max(0, Math.ceil(diffMs / (1000 * 60 * 60 * 24)));
 
