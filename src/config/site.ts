@@ -355,9 +355,9 @@ export const PRICING = {
   pro: {
     name: "Pro",
     price: "$15",
-    period: "/3 months",
+    period: "/2 months",
     yearlyNote: "7-day free trial included • Pay with USDT (TRC20)",
-    badge: "~$0.16/day",
+    badge: "~$0.25/day",
     features: [
       "Unlimited dashboards & widgets",
       "Mini Backtester (5 strategies)",
