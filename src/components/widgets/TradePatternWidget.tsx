@@ -1,12 +1,14 @@
 /**
- * TradePatternWidget v2 — Behavioral Intelligence Dashboard
- * Shows Edge Score, NL insights, time clusters, and pattern analysis.
+ * TradePatternWidget v3 — Behavioral Intelligence Dashboard
+ * Shows Edge Score with early momentum, NL insights, early pattern detection,
+ * micro-feedback, time clusters, and pattern analysis.
  */
 import { useState, useEffect } from "react";
 import {
   Brain, TrendingUp, TrendingDown, BarChart3,
-  AlertTriangle, Zap, Clock, Shield,
+  AlertTriangle, Zap, Clock, Shield, Sparkles,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { analyzeTradePatterns, type PatternAnalysis, type PatternInsight } from "@/engines/tradePatternEngine";
@@ -17,18 +19,22 @@ import {
   type EdgeScoreBreakdown,
   type BehavioralInsight,
   type TimeCluster,
+  type MicroFeedback,
 } from "@/engines/behavioralIntelligenceEngine";
+import { generateEarlyInsights, type EarlyInsight, type EarlyInsightResult } from "@/engines/earlyInsightEngine";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 
 const TradePatternWidget = ({ config }: { config: any }) => {
   const { user } = useAuth();
   const [analysis, setAnalysis] = useState<PatternAnalysis | null>(null);
-  const [edgeScore, setEdgeScore] = useState<EdgeScoreBreakdown | null>(null);
+  const [edgeScore, setEdgeScore] = useState<(EdgeScoreBreakdown & { microFeedback: MicroFeedback[] }) | null>(null);
   const [nlInsights, setNlInsights] = useState<BehavioralInsight[]>([]);
+  const [earlyResult, setEarlyResult] = useState<EarlyInsightResult | null>(null);
   const [timeClusters, setTimeClusters] = useState<TimeCluster[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"edge" | "insights" | "patterns" | "time">("edge");
+  const [tab, setTab] = useState<"edge" | "early" | "insights" | "patterns" | "time">("edge");
+  const [showScoreAnim, setShowScoreAnim] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -52,13 +58,26 @@ const TradePatternWidget = ({ config }: { config: any }) => {
         setAnalysis(analyzeTradePatterns(trades));
 
         const prevScore = scoreRes.data?.[0]?.score ?? 50;
-        setEdgeScore(computeEdgeScore(trades, Number(prevScore)));
+        const edge = computeEdgeScore(trades, Number(prevScore));
+        setEdgeScore(edge);
         setNlInsights(generateNLInsights(trades));
         setTimeClusters(clusterByTimeOfDay(trades));
 
+        // Generate early insights
+        const early = generateEarlyInsights(trades);
+        setEarlyResult(early);
+        
+        // Default to early tab if < 10 trades
+        if (trades.length < 10 && early.insights.length > 0) {
+          setTab("early");
+        }
+
+        // Trigger score animation
+        setShowScoreAnim(true);
+        setTimeout(() => setShowScoreAnim(false), 2000);
+
         // Persist edge score
         const weekStart = getWeekStart();
-        const edge = computeEdgeScore(trades, Number(prevScore));
         await supabase.from("edge_scores").upsert({
           user_id: user.id,
           week_start: weekStart,
@@ -91,6 +110,16 @@ const TradePatternWidget = ({ config }: { config: any }) => {
   }
 
   const { stats } = analysis;
+  const isEarlyPhase = stats.totalTrades <= 20;
+
+  // Build tab list — show "early" tab when in early phase
+  const tabs = [
+    { key: "edge" as const, label: "🧠 Insights" },
+    ...(earlyResult && earlyResult.insights.length > 0 ? [{ key: "early" as const, label: "⚡ Early Patterns" }] : []),
+    { key: "patterns" as const, label: "📊 Patterns" },
+    { key: "time" as const, label: "🕐 Time" },
+    { key: "insights" as const, label: "🎯 Best/Worst" },
+  ];
 
   return (
     <div className="h-full flex flex-col gap-2 overflow-hidden">
@@ -102,11 +131,20 @@ const TradePatternWidget = ({ config }: { config: any }) => {
         <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/70">
           Decision Intelligence
         </span>
+        {isEarlyPhase && earlyResult && (
+          <Badge variant="outline" className="text-[7px] px-1.5 py-0 border-primary/20 text-primary/60 ml-auto">
+            {earlyResult.maturityPercent}% mature
+          </Badge>
+        )}
       </div>
 
-      {/* Edge Score Hero */}
+      {/* Edge Score Hero with animation */}
       {edgeScore && (
-        <div className="p-2.5 rounded-lg bg-secondary/30 border border-border/20 shrink-0">
+        <motion.div
+          className="p-2.5 rounded-lg bg-secondary/30 border border-border/20 shrink-0"
+          animate={showScoreAnim ? { scale: [1, 1.02, 1] } : {}}
+          transition={{ duration: 0.5 }}
+        >
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-2">
               <Zap className={`h-4 w-4 ${
@@ -114,12 +152,17 @@ const TradePatternWidget = ({ config }: { config: any }) => {
               }`} />
               <div>
                 <p className="text-[9px] text-muted-foreground/50 uppercase tracking-wider">Edge Score</p>
-                <p className={`text-lg font-black tabular-nums ${
-                  edgeScore.overall >= 70 ? "text-success" : edgeScore.overall >= 45 ? "text-warning" : "text-destructive"
-                }`}>
+                <motion.p
+                  className={`text-lg font-black tabular-nums ${
+                    edgeScore.overall >= 70 ? "text-success" : edgeScore.overall >= 45 ? "text-warning" : "text-destructive"
+                  }`}
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
                   {edgeScore.overall}
                   <span className="text-[9px] font-normal text-muted-foreground/40">/100</span>
-                </p>
+                </motion.p>
               </div>
             </div>
             <Badge
@@ -133,12 +176,34 @@ const TradePatternWidget = ({ config }: { config: any }) => {
               {edgeScore.trend === "improving" ? "↑ Improving" : edgeScore.trend === "declining" ? "↓ Declining" : "→ Stable"}
             </Badge>
           </div>
-          <div className="grid grid-cols-3 gap-1.5">
-            <ScorePill label="Discipline" value={edgeScore.discipline} />
-            <ScorePill label="Context" value={edgeScore.contextAwareness} />
-            <ScorePill label="Patterns" value={edgeScore.patternAdherence} />
+
+          {/* Score Breakdown: Discipline (35%) | Context (35%) | Patterns (30%) */}
+          <div className="grid grid-cols-3 gap-1.5 mb-1.5">
+            <ScorePill label="Discipline 35%" value={edgeScore.discipline} />
+            <ScorePill label="Context 35%" value={edgeScore.contextAwareness} />
+            <ScorePill label="Patterns 30%" value={edgeScore.patternAdherence} />
           </div>
-        </div>
+
+          {/* Micro-feedback (early phase only) */}
+          {edgeScore.microFeedback.length > 0 && (
+            <div className="space-y-0.5 mt-1">
+              {edgeScore.microFeedback.slice(0, 3).map((mf, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.15 }}
+                  className={`flex items-center gap-1.5 text-[8px] ${
+                    mf.type === "positive" ? "text-success/70" : "text-destructive/70"
+                  }`}
+                >
+                  <Sparkles className="h-2.5 w-2.5 shrink-0" />
+                  <span>{mf.message}</span>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
       )}
 
       {/* Quick Stats */}
@@ -151,12 +216,7 @@ const TradePatternWidget = ({ config }: { config: any }) => {
 
       {/* Tabs */}
       <div className="flex gap-1 shrink-0 overflow-x-auto scrollbar-none">
-        {([
-          { key: "edge", label: "🧠 Insights" },
-          { key: "patterns", label: "📊 Patterns" },
-          { key: "time", label: "🕐 Time" },
-          { key: "insights", label: "⚡ Best/Worst" },
-        ] as const).map((t) => (
+        {tabs.map((t) => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
@@ -179,6 +239,43 @@ const TradePatternWidget = ({ config }: { config: any }) => {
           ) : (
             <p className="text-[10px] text-muted-foreground/40 text-center py-4">Need more trades for insights</p>
           )
+        )}
+
+        {tab === "early" && earlyResult && (
+          <>
+            {/* Maturity indicator */}
+            <div className="p-2.5 rounded-lg bg-primary/5 border border-primary/10">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[9px] uppercase tracking-wider text-primary/50 font-bold">
+                  Insight Maturity
+                </span>
+                <span className="text-[9px] text-primary/60 font-semibold">
+                  {earlyResult.maturityLevel === "early" ? "Early Detection" : earlyResult.maturityLevel === "developing" ? "Developing" : "Mature"}
+                </span>
+              </div>
+              <div className="relative h-1.5 rounded-full bg-secondary/60 overflow-hidden">
+                <motion.div
+                  className="absolute inset-y-0 left-0 rounded-full bg-primary/60"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${earlyResult.maturityPercent}%` }}
+                  transition={{ duration: 0.8, ease: "easeOut" }}
+                />
+              </div>
+              <p className="text-[8px] text-muted-foreground/40 mt-1">
+                Insight confidence will improve with more trades
+              </p>
+            </div>
+
+            {earlyResult.insights.map((insight) => (
+              <EarlyInsightCard key={insight.id} insight={insight} />
+            ))}
+
+            {earlyResult.insights.length === 0 && (
+              <p className="text-[10px] text-muted-foreground/40 text-center py-4">
+                Log more trades to detect early patterns
+              </p>
+            )}
+          </>
         )}
 
         {tab === "patterns" && (
@@ -260,11 +357,43 @@ function NLInsightCard({ insight }: { insight: BehavioralInsight }) {
           <div className="flex items-center gap-2 mt-1 text-[8px] text-muted-foreground/40">
             <span>{insight.tradeCount} trades</span>
             <span>•</span>
-            <span>Confidence: {insight.confidence}%</span>
+            <span>{insight.confidence}% confidence</span>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+function EarlyInsightCard({ insight }: { insight: EarlyInsight }) {
+  const Icon = insight.type === "positive" ? TrendingUp : insight.type === "negative" ? AlertTriangle : Brain;
+  const color = insight.type === "positive" ? "text-success" : insight.type === "negative" ? "text-destructive" : "text-muted-foreground";
+  const bg = insight.type === "positive" ? "bg-success/5 border-success/15" : insight.type === "negative" ? "bg-destructive/5 border-destructive/15" : "bg-secondary/30 border-border/20";
+
+  return (
+    <motion.div
+      className={`p-2.5 rounded-lg border ${bg}`}
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <div className="flex items-start gap-2">
+        <Icon className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${color}`} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <Badge variant="outline" className="text-[7px] px-1 py-0 border-primary/20 text-primary/50">
+              Early Pattern Detected
+            </Badge>
+          </div>
+          <p className="text-[10px] font-medium text-foreground/80 leading-relaxed">{insight.message}</p>
+          <p className="text-[8px] text-muted-foreground/50 mt-1 italic">{insight.improvementHint}</p>
+          <div className="flex items-center gap-2 mt-1 text-[8px] text-muted-foreground/40">
+            <span>{insight.tradeCount} trades</span>
+            <span>•</span>
+            <span>{insight.confidence}% confidence</span>
+          </div>
+        </div>
+      </div>
+    </motion.div>
   );
 }
 
