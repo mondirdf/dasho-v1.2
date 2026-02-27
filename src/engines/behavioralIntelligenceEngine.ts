@@ -160,7 +160,7 @@ export function generatePreTradeFeedback(
   const warnings: string[] = [];
   const closed = historicalTrades.filter((t) => t.outcome && t.pnl != null);
 
-  if (closed.length < 5) {
+  if (closed.length < 3) {
     return {
       expectancy: "unknown",
       confidence: 0,
@@ -198,7 +198,7 @@ export function generatePreTradeFeedback(
     return total > 0 && matches / total >= 0.6;
   });
 
-  if (matching.length < 3) {
+  if (matching.length < 2) {
     return {
       expectancy: "unknown",
       confidence: 10,
@@ -297,25 +297,57 @@ export function clusterByTimeOfDay(trades: Trade[]): TimeCluster[] {
     .sort((a, b) => a.hour - b.hour);
 }
 
-/* ──────────────────── Edge Score ──────────────────── */
+/* ──────────────────── Edge Score (with Early Momentum) ──────────────────── */
+
+export interface MicroFeedback {
+  message: string;
+  points: number;
+  type: "positive" | "negative";
+}
 
 export function computeEdgeScore(
   trades: Trade[],
   previousScore: number = 50
-): EdgeScoreBreakdown {
+): EdgeScoreBreakdown & { microFeedback: MicroFeedback[] } {
   const closed = trades.filter((t) => t.outcome && t.pnl != null);
+  const microFeedback: MicroFeedback[] = [];
 
   if (closed.length < 3) {
-    return { overall: previousScore, discipline: 50, contextAwareness: 50, patternAdherence: 50, trend: "stable" };
+    return { overall: previousScore, discipline: 50, contextAwareness: 50, patternAdherence: 50, trend: "stable", microFeedback: [] };
   }
+
+  const isEarlyPhase = closed.length <= 20;
+  // Higher impact multiplier for early phase discipline behaviors
+  const disciplineMultiplier = isEarlyPhase ? 1.4 : 1.0;
+  const contextMultiplier = isEarlyPhase ? 1.3 : 1.0;
 
   // Discipline: % of trades without behavioral flags
   const flagged = closed.filter(
     (t) => Array.isArray((t as any).behavioral_flags) && (t as any).behavioral_flags.length > 0
   );
-  const discipline = ((closed.length - flagged.length) / closed.length) * 100;
+  const rawDiscipline = ((closed.length - flagged.length) / closed.length) * 100;
+  const discipline = Math.min(100, rawDiscipline * disciplineMultiplier);
 
-  // Context Awareness: win rate in favorable conditions (trending/expansion + aligned bias)
+  // Bonus micro-feedback for discipline in early phase
+  if (isEarlyPhase) {
+    const completedPreTrade = closed.filter((t) => !(t as any).pre_trade_check_skipped).length;
+    if (completedPreTrade > 0) {
+      microFeedback.push({ message: `+${Math.round(completedPreTrade * 3)} pts for completing Pre-Trade Check`, points: completedPreTrade * 3, type: "positive" });
+    }
+    const fullyLoggedContext = closed.filter((t) => t.market_context.regime && t.market_context.session).length;
+    if (fullyLoggedContext > 0) {
+      microFeedback.push({ message: `+${Math.round(fullyLoggedContext * 2)} pts for logging full context`, points: fullyLoggedContext * 2, type: "positive" });
+    }
+    // Penalty for ignoring warnings
+    const ignoredWarnings = closed.filter((t) =>
+      (t as any).pre_trade_check_skipped && t.market_context.regime === "expansion"
+    ).length;
+    if (ignoredWarnings > 0) {
+      microFeedback.push({ message: `-${ignoredWarnings * 4} pts for trading in high-risk regime`, points: -(ignoredWarnings * 4), type: "negative" });
+    }
+  }
+
+  // Context Awareness: win rate in favorable conditions
   const favorableTrades = closed.filter((t) => {
     const r = t.market_context.regime;
     const favorable = r === "trending" || r === "expansion";
@@ -324,11 +356,12 @@ export function computeEdgeScore(
       (t.direction === "short" && t.market_context.bias_label?.toLowerCase().includes("bearish"));
     return favorable && aligned;
   });
-  const contextAwareness = favorableTrades.length >= 2
+  const rawContextAwareness = favorableTrades.length >= 2
     ? (favorableTrades.filter((t) => t.outcome === "win").length / favorableTrades.length) * 100
     : 50;
+  const contextAwareness = Math.min(100, rawContextAwareness * contextMultiplier);
 
-  // Pattern Adherence: did user avoid bad conditions? 
+  // Pattern Adherence: did user avoid bad conditions?
   const badConditionTrades = closed.filter(
     (t) => t.market_context.regime === "compression" || (t as any).pre_trade_check_skipped
   );
@@ -336,21 +369,32 @@ export function computeEdgeScore(
     ? ((closed.length - badConditionTrades.length) / closed.length) * 100
     : 50;
 
+  // Micro-feedback for avoiding bad regimes
+  if (isEarlyPhase && badConditionTrades.length === 0 && closed.length >= 3) {
+    microFeedback.push({ message: `+4 pts for avoiding high-risk regime`, points: 4, type: "positive" });
+  }
+
   const overall = Math.round(discipline * 0.35 + contextAwareness * 0.35 + patternAdherence * 0.3);
 
-  // Trend: compare to previous
   const diff = overall - previousScore;
   const trend: "improving" | "declining" | "stable" =
     diff > 3 ? "improving" : diff < -3 ? "declining" : "stable";
 
-  return { overall, discipline: Math.round(discipline), contextAwareness: Math.round(contextAwareness), patternAdherence: Math.round(patternAdherence), trend };
+  return {
+    overall,
+    discipline: Math.round(discipline),
+    contextAwareness: Math.round(contextAwareness),
+    patternAdherence: Math.round(patternAdherence),
+    trend,
+    microFeedback,
+  };
 }
 
 /* ──────────────────── Natural Language Insights ──────────────────── */
 
 export function generateNLInsights(trades: Trade[]): BehavioralInsight[] {
   const closed = trades.filter((t) => t.outcome && t.pnl != null);
-  if (closed.length < 5) return [];
+  if (closed.length < 3) return [];
 
   const insights: BehavioralInsight[] = [];
 
@@ -364,7 +408,7 @@ export function generateNLInsights(trades: Trade[]): BehavioralInsight[] {
   }
 
   for (const [regime, group] of regimeGroups) {
-    if (group.length < 3) continue;
+    if (group.length < 2) continue;
     const wins = group.filter((t) => t.outcome === "win").length;
     const wr = (wins / group.length) * 100;
     if (wr >= 65) {
@@ -389,7 +433,7 @@ export function generateNLInsights(trades: Trade[]): BehavioralInsight[] {
   // Time-of-day insights
   const timeClusters = clusterByTimeOfDay(closed);
   for (const tc of timeClusters) {
-    if (tc.trades < 3) continue;
+    if (tc.trades < 2) continue;
     if (tc.winRate >= 65) {
       insights.push({
         id: `time_${tc.hour}_good`,
