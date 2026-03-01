@@ -13,7 +13,7 @@ const NAV_ITEMS = [
 
 const ITEM_COUNT = NAV_ITEMS.length;
 const BAR_W = 400;
-const BAR_H = 68;
+const BAR_H = 72;
 const DIP_RADIUS = 34;
 const DIP_DEPTH = 14;
 
@@ -69,7 +69,7 @@ const MobileBottomNav = () => {
       >
         <motion.path
           d={currentPath}
-          fill="hsl(228 30% 10%)"
+          fill="hsl(228 28% 12%)"
           initial={false}
           animate={{ d: currentPath }}
           transition={{ type: "spring", stiffness: 350, damping: 35, mass: 0.8 }}
