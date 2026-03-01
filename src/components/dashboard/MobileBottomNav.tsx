@@ -60,7 +60,18 @@ const MobileBottomNav = () => {
 
   return (
     <nav className="mobile-bottom-nav" aria-label="Main navigation">
-      {/* SVG curved background — liquid glass */}
+      {/* Glass background layer */}
+      <div
+        className="absolute inset-0 rounded-t-2xl overflow-hidden"
+        style={{
+          background: 'hsla(var(--glass-bg) / 0.55)',
+          backdropFilter: 'blur(40px) saturate(2) brightness(1.05)',
+          WebkitBackdropFilter: 'blur(40px) saturate(2) brightness(1.05)',
+          borderTop: '1px solid hsla(var(--glass-border) / 0.2)',
+          boxShadow: '0 -8px 32px -4px hsla(228, 40%, 4%, 0.4), inset 0 1px 0 0 hsla(0, 0%, 100%, 0.1)',
+        }}
+      />
+      {/* SVG curved dip */}
       <svg
         className="absolute inset-0 w-full h-full"
         viewBox={`0 0 ${BAR_W} ${BAR_H}`}
@@ -69,8 +80,8 @@ const MobileBottomNav = () => {
       >
         <defs>
           <linearGradient id="glass-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(228 30% 18%)" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="hsl(228 30% 8%)" stopOpacity="0.6" />
+            <stop offset="0%" stopColor="hsl(228 30% 18%)" stopOpacity="0" />
+            <stop offset="100%" stopColor="hsl(228 30% 8%)" stopOpacity="0" />
           </linearGradient>
         </defs>
         <motion.path
@@ -84,7 +95,7 @@ const MobileBottomNav = () => {
         <motion.path
           d={currentPath}
           fill="none"
-          stroke="hsla(0, 0%, 100%, 0.1)"
+          stroke="hsla(0, 0%, 100%, 0.12)"
           strokeWidth="0.5"
           initial={false}
           animate={{ d: currentPath }}
