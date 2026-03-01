@@ -361,14 +361,12 @@
     transition: color 0.3s ease;
   }
 
-  /* Mobile bottom nav — liquid glass */
+  /* Mobile bottom nav */
   .mobile-bottom-nav {
     @apply fixed bottom-0 left-0 right-0 z-40;
     height: calc(68px + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: transparent;
-    backdrop-filter: blur(28px) saturate(1.8) brightness(1.1);
-    -webkit-backdrop-filter: blur(28px) saturate(1.8) brightness(1.1);
   }
 
   /* ── Mobile widget optimizations ── */

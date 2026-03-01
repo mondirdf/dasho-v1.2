@@ -60,43 +60,16 @@ const MobileBottomNav = () => {
 
   return (
     <nav className="mobile-bottom-nav" aria-label="Main navigation">
-      {/* Glass background layer */}
-      <div
-        className="absolute inset-0 rounded-t-2xl overflow-hidden"
-        style={{
-          background: 'hsla(var(--glass-bg) / 0.55)',
-          backdropFilter: 'blur(40px) saturate(2) brightness(1.05)',
-          WebkitBackdropFilter: 'blur(40px) saturate(2) brightness(1.05)',
-          borderTop: '1px solid hsla(var(--glass-border) / 0.2)',
-          boxShadow: '0 -8px 32px -4px hsla(228, 40%, 4%, 0.4), inset 0 1px 0 0 hsla(0, 0%, 100%, 0.1)',
-        }}
-      />
-      {/* SVG curved dip */}
+      {/* SVG curved background */}
       <svg
         className="absolute inset-0 w-full h-full"
         viewBox={`0 0 ${BAR_W} ${BAR_H}`}
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
       >
-        <defs>
-          <linearGradient id="glass-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(228 30% 18%)" stopOpacity="0" />
-            <stop offset="100%" stopColor="hsl(228 30% 8%)" stopOpacity="0" />
-          </linearGradient>
-        </defs>
         <motion.path
           d={currentPath}
-          fill="url(#glass-fill)"
-          initial={false}
-          animate={{ d: currentPath }}
-          transition={{ type: "spring", stiffness: 350, damping: 35, mass: 0.8 }}
-        />
-        {/* Top highlight line for glass refraction */}
-        <motion.path
-          d={currentPath}
-          fill="none"
-          stroke="hsla(0, 0%, 100%, 0.12)"
-          strokeWidth="0.5"
+          fill="hsl(228 30% 10%)"
           initial={false}
           animate={{ d: currentPath }}
           transition={{ type: "spring", stiffness: 350, damping: 35, mass: 0.8 }}
