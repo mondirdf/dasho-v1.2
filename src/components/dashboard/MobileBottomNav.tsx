@@ -60,16 +60,32 @@ const MobileBottomNav = () => {
 
   return (
     <nav className="mobile-bottom-nav" aria-label="Main navigation">
-      {/* SVG curved background */}
+      {/* SVG curved background — liquid glass */}
       <svg
         className="absolute inset-0 w-full h-full"
         viewBox={`0 0 ${BAR_W} ${BAR_H}`}
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
       >
+        <defs>
+          <linearGradient id="glass-fill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="hsl(228 30% 18%)" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="hsl(228 30% 8%)" stopOpacity="0.6" />
+          </linearGradient>
+        </defs>
         <motion.path
           d={currentPath}
-          fill="hsl(228 30% 10%)"
+          fill="url(#glass-fill)"
+          initial={false}
+          animate={{ d: currentPath }}
+          transition={{ type: "spring", stiffness: 350, damping: 35, mass: 0.8 }}
+        />
+        {/* Top highlight line for glass refraction */}
+        <motion.path
+          d={currentPath}
+          fill="none"
+          stroke="hsla(0, 0%, 100%, 0.1)"
+          strokeWidth="0.5"
           initial={false}
           animate={{ d: currentPath }}
           transition={{ type: "spring", stiffness: 350, damping: 35, mass: 0.8 }}
