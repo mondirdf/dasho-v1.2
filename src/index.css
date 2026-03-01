@@ -361,12 +361,25 @@
     transition: color 0.3s ease;
   }
 
-  /* Mobile bottom nav */
+  /* Mobile bottom nav — liquid glass */
   .mobile-bottom-nav {
     @apply fixed bottom-0 left-0 right-0 z-40;
     height: calc(68px + env(safe-area-inset-bottom, 0px));
     padding-bottom: env(safe-area-inset-bottom, 0px);
     background: transparent;
+  }
+  .mobile-bottom-nav .liquid-glass-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 24px 24px 0 0;
+    background: hsla(var(--card) / 0.35);
+    backdrop-filter: blur(28px) saturate(1.6);
+    -webkit-backdrop-filter: blur(28px) saturate(1.6);
+    border-top: 1px solid hsla(var(--border) / 0.25);
+    box-shadow:
+      0 -4px 30px -6px hsla(var(--primary) / 0.08),
+      inset 0 1px 0 0 hsla(0 0% 100% / 0.08);
+    pointer-events: none;
   }
 
   /* ── Mobile widget optimizations ── */
