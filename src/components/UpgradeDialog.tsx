@@ -2,6 +2,7 @@
  * UpgradeDialog — Premium upgrade flow with crypto payment.
  */
 import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Crown, Copy, Check, Loader2, Wallet, Zap, Shield, BarChart3,
   Layout, Bell, FileDown, Sparkles
@@ -17,7 +18,9 @@ import {
 } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 import { trackEvent } from "@/analytics/behaviorTracker";
+import { extractFunctionErrorMessage } from "@/lib/extractFunctionError";
 
 interface PaymentInfo {
   payment_id: string;
@@ -41,11 +44,23 @@ const PRO_FEATURES = [
 
 const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
   const { toast } = useToast();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [payment, setPayment] = useState<PaymentInfo | null>(null);
   const [copied, setCopied] = useState(false);
 
   const handleUpgrade = useCallback(async () => {
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to create a payment.",
+      });
+      onOpenChange(false);
+      navigate("/login");
+      return;
+    }
+
     setLoading(true);
     trackEvent("upgrade_click");
     try {
@@ -58,15 +73,16 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
       setPayment(data as PaymentInfo);
       trackEvent("payment_created");
     } catch (e: any) {
+      const errorMessage = await extractFunctionErrorMessage(e, "Failed to create payment. Try again.");
       toast({
         title: "Payment error",
-        description: e.message || "Failed to create payment. Try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
-  }, [toast]);
+  }, [navigate, onOpenChange, toast, user]);
 
   const copyAddress = useCallback(() => {
     if (!payment) return;
@@ -138,7 +154,7 @@ const UpgradeDialog = ({ open, onOpenChange }: UpgradeDialogProps) => {
               <Button
                 className="w-full h-12 text-base font-semibold glow-button gap-2.5"
                 onClick={handleUpgrade}
-                disabled={loading}
+                disabled={loading || authLoading}
               >
                 {loading ? (
                   <Loader2 className="h-5 w-5 animate-spin" />

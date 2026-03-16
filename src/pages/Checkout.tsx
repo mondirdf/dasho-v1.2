@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useDefaultTheme } from "@/hooks/useDefaultTheme";
 import { trackEvent } from "@/analytics/behaviorTracker";
+import { extractFunctionErrorMessage } from "@/lib/extractFunctionError";
 import logoDasho from "@/assets/logo-dasho-dark-bg.png";
 
 interface PaymentInfo {
@@ -51,9 +52,10 @@ const Checkout = () => {
       setPayment(data as PaymentInfo);
       trackEvent("payment_created");
     } catch (e: any) {
+      const errorMessage = await extractFunctionErrorMessage(e, "Failed to create payment. Try again.");
       toast({
         title: "Payment error",
-        description: e.message || "Failed to create payment. Try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {

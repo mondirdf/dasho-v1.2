@@ -55,6 +55,11 @@ Deno.serve(async (req) => {
       throw new Error("NOWPAYMENTS_API_KEY not configured");
     }
 
+    const SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!SERVICE_ROLE_KEY) {
+      throw new Error("SUPABASE_SERVICE_ROLE_KEY not configured");
+    }
+
     const callbackUrl = `${Deno.env.get("SUPABASE_URL")}/functions/v1/nowpayments-webhook`;
 
     const paymentRes = await fetch("https://api.nowpayments.io/v1/payment", {
@@ -85,10 +90,10 @@ Deno.serve(async (req) => {
     // Log pending payment with service role
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      SERVICE_ROLE_KEY
     );
 
-    await supabaseAdmin.from("payments").insert({
+    const { error: insertError } = await supabaseAdmin.from("payments").insert({
       user_id: userId,
       amount: 15,
       currency: "USD",
@@ -103,6 +108,14 @@ Deno.serve(async (req) => {
       },
     });
 
+    if (insertError) {
+      console.error("Failed to persist payment row:", insertError);
+      return new Response(
+        JSON.stringify({ error: "Payment created but failed to persist", details: insertError.message }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(
       JSON.stringify({
         payment_id: paymentData.payment_id,
@@ -114,8 +127,10 @@ Deno.serve(async (req) => {
     );
   } catch (err) {
     console.error("create-payment error:", err);
+
+    const details = err instanceof Error ? err.message : "Unknown error";
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: "Internal server error", details }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
