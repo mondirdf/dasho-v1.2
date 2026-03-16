@@ -37,17 +37,20 @@ Deno.serve(async (req) => {
 
     const userId = user.id;
 
-    // Check if user is already pro
+    // Block payment only if the user still has an active Pro subscription.
     const { data: profile } = await supabase
       .from("profiles")
-      .select("plan")
+      .select("plan, trial_ends_at")
       .eq("id", userId)
       .single();
 
-    if (profile?.plan === "pro") {
-      console.warn("User already on Pro:", userId);
+    const proEndsAt = profile?.trial_ends_at ? new Date(profile.trial_ends_at).getTime() : null;
+    const hasActivePro = profile?.plan === "pro" && (proEndsAt === null || proEndsAt > Date.now());
+
+    if (hasActivePro) {
+      console.warn("User already on active Pro:", userId);
       return new Response(
-        JSON.stringify({ error: "You are already on the Pro plan." }),
+        JSON.stringify({ error: "You already have an active Pro plan." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
