@@ -45,8 +45,9 @@ Deno.serve(async (req) => {
       .single();
 
     if (profile?.plan === "pro") {
+      console.warn("User already on Pro:", userId);
       return new Response(
-        JSON.stringify({ error: "Already on Pro plan" }),
+        JSON.stringify({ error: "You are already on the Pro plan." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
